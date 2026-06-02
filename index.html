@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memorice Teocrático</title>
+  <style>
+    :root {
+      --primary-color: #2a527a;
+      --primary-light: #4477a6;
+      --accent-color: #d4af37;
+      --bg-dark: #101622;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-card: rgba(255, 255, 255, 0.15);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --transition-speed: 0.3s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-image 0.8s ease-in-out;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fondo degradado superpuesto para garantizar legibilidad */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(16, 22, 34, 0.92), rgba(28, 48, 74, 0.82));
+      z-index: -2;
+    }
+
+    /* Estructura Principal */
+    .app-container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 24px;
+      flex-grow: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Barra Lateral / Información */
+    .sidebar {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      height: fit-content;
+    }
+
+    .app-header {
+      text-align: center;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 16px;
+    }
+
+    .app-header h1 {
+      font-size: 1.9rem;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .app-header span {
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Campo Nombre de Usuario */
+    .user-profile {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .user-profile label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .username-input-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    .username-input {
+      flex-grow: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color var(--transition-speed);
+    }
+
+    .username-input:focus {
+      border-color: var(--primary-light);
+    }
+
+    /* Tarjetas de Estadísticas */
+    .stats-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .stat-value.accent {
+      color: var(--accent-color);
+    }
+
+    /* Botones de Acción */
+    .btn {
+      width: 100%;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease-in-out;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Tabla Top 10 */
+    .leaderboard-container {
+      border-top: 1px solid var(--glass-border);
+      padding-top: 20px;
+    }
+
+    .leaderboard-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 8px 6px;
+      text-align: left;
+    }
+
+    .leaderboard-table th {
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: 600;
+    }
+
+    .leaderboard-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .leaderboard-table td.rank {
+      width: 32px;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+
+    .leaderboard-table td.score {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    /* Área de Juego Central */
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Temporizador */
+    .timer-container {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    .timer-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 95px;
+      letter-spacing: 1px;
+    }
+
+    .timer-track {
+      flex-grow: 1;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+      border-radius: 6px;
+      transition: width 0.1s linear;
+    }
+
+    .timer-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* Tablero de Juego */
+    .board-wrapper {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      min-height: 500px;
+      position: relative;
+    }
+
+    .game-board {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      justify-content: center;
+    }
+
+    /* Grillas del Tablero adaptables */
+    .grid-4 { grid-template-columns: repeat(2, 1fr); max-width: 320px; }
+    .grid-8 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
+    .grid-16 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
+    .grid-20 { grid-template-columns: repeat(5, 1fr); max-width: 720px; }
+    .grid-24 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
+    .grid-30 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
+    .grid-40 { grid-template-columns: repeat(8, 1fr); max-width: 900px; }
+
+    @media (max-width: 768px) {
+      .board-wrapper {
+        padding: 12px;
+        min-height: 400px;
+      }
+      .game-board {
+        gap: 8px;
+      }
+      /* Ajuste adaptativo para móviles reduciendo columnas */
+      .grid-16 { grid-template-columns: repeat(4, 1fr); }
+      .grid-20 { grid-template-columns: repeat(4, 1fr); }
+      .grid-24 { grid-template-columns: repeat(4, 1fr); }
+      .grid-30 { grid-template-columns: repeat(5, 1fr); }
+      .grid-40 { grid-template-columns: repeat(5, 1fr); }
+    }
+
+    /* Estructura 3D de las Tarjetas */
+    .card {
+      aspect-ratio: 1 / 1;
+      perspective: 1000px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Reverso de la tarjeta (Frente Común) */
+    .card-back {
+      background: linear-gradient(135deg, #1b355a, #0b1526);
+      color: var(--accent-color);
+    }
+
+    .card-back::after {
+      content: "✦";
+      font-size: 2rem;
+      opacity: 0.6;
+      animation: floatSymbol 2.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatSymbol {
+      from { transform: scale(1); opacity: 0.4; }
+      to { transform: scale(1.15); opacity: 0.8; }
+    }
+
+    /* Frente de la tarjeta (Imagen Oculta) */
+    .card-front {
+      background: #080d16;
+      transform: rotateY(180deg);
+    }
+
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Efecto de Coincidencia (Match) */
+    .matched {
+      animation: matchSuccessPulse 0.5s ease-in-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes matchSuccessPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); box-shadow: 0 0 20px var(--accent-color); }
+      100% { transform: scale(1); opacity: 0.85; }
+    }
+
+    /* Notificación Flotante (Overlay) */
+    .feedback-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(13, 19, 31, 0.96);
+      border: 2px solid var(--accent-color);
+      border-radius: 20px;
+      padding: 36px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+      display: none;
+      animation: modalEntry 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      max-width: 90%;
+      width: 420px;
+    }
+
+    @keyframes modalEntry {
+      from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    .feedback-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-bottom: 12px;
+    }
+
+    .feedback-subtitle {
+      font-size: 1rem;
+      color: var(--text-main);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    /* Panel de Administración */
+    .admin-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .admin-panel.active {
+      display: flex;
+    }
+
+    .admin-title {
+      font-size: 1.4rem;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 850px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .admin-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .admin-box h3 {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .images-scroll-container {
+      max-height: 260px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+      gap: 10px;
+      background: rgba(0,0,0,0.35);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .admin-img-wrapper {
+      position: relative;
+      aspect-ratio: 1/1;
+    }
+
+    .admin-img-thumb {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .admin-img-delete {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: background 0.2s;
+    }
+
+    .admin-img-delete:hover {
+      background: #dc2626;
+    }
+
+    .admin-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .admin-input {
+      flex-grow: 1;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .admin-input:focus {
+      border-color: var(--primary-light);
+    }
+
+    .bg-setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .bg-setting-row label {
+      font-size: 0.85rem;
+      min-width: 90px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Mensajes Flotantes de Puntos Gana (Toast) */
+    .score-toast {
+      position: absolute;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--accent-color);
+      pointer-events: none;
+      animation: floatToastAnimation 1.4s ease-out forwards;
+      z-index: 100;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.85);
+    }
+
+    @keyframes floatToastAnimation {
+      0% { transform: translateY(10px) scale(0.85); opacity: 0; }
+      15% { opacity: 1; }
+      100% { transform: translateY(-90px) scale(1.15); opacity: 0; }
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      margin-top: auto;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-overlay"></div>
+
+  <div class="app-container">
+    
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar">
+      <div class="app-header">
+        <h1>Memorice Teocrático</h1>
+        <span>Estímulo & Concentración</span>
+      </div>
+
+      <!-- Perfil / Nombre -->
+      <div class="user-profile">
+        <label for="usernameInput">Nombre del Jugador</label>
+        <div class="username-input-container">
+          <input type="text" id="usernameInput" class="username-input" value="Jugador" maxlength="15">
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-label">Nivel</div>
+          <div id="displayLevel" class="stat-value">1</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Récord</div>
+          <div id="displayRecord" class="stat-value accent">0</div>
+        </div>
+        <div class="stat-card" style="grid-column: span 2;">
+          <div class="stat-label">Puntaje de Partida</div>
+          <div id="displayScore" class="stat-value">0</div>
+        </div>
+      </div>
+
+      <!-- Botones Principales -->
+      <button id="btnShare" class="btn btn-primary">
+        Compartir Puntos
+      </button>
+
+      <button id="btnToggleAdmin" class="btn btn-secondary">
+        Panel de Administración
+      </button>
+
+      <!-- Tabla de Clasificación Simulada (Top 10) -->
+      <div class="leaderboard-container">
+        <div class="leaderboard-title">
+          <span>Top 10 Global</span>
+          <span style="font-size: 0.75rem; color: var(--accent-color);">Simulado</span>
+        </div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Jugador</th>
+              <th style="text-align: right;">Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Rellenado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </aside>
+
+    <!-- ÁREA DE JUEGO -->
+    <main class="game-area">
+      
+      <!-- Temporizador -->
+      <div class="timer-container">
+        <span class="timer-label">Tiempo Par:</span>
+        <div class="timer-track">
+          <div id="timerBar" class="timer-bar"></div>
+        </div>
+        <span id="timerText" class="timer-text">10s</span>
+      </div>
+
+      <!-- Contenedor del Tablero -->
+      <div class="board-wrapper" id="boardWrapper">
+        <div id="gameBoard" class="game-board grid-4">
+          <!-- Las tarjetas se generan mediante JavaScript -->
+        </div>
+
+        <!-- Overlay de Feedback / Notificaciones de Fin de Nivel -->
+        <div id="feedbackOverlay" class="feedback-overlay">
+          <div id="feedbackTitle" class="feedback-title">¡Gran Trabajo!</div>
+          <div id="feedbackSubtitle" class="feedback-subtitle">Has superado el nivel actual. Prepárate para el siguiente reto.</div>
+          <button id="btnFeedbackAction" class="btn btn-primary" style="margin: 0 auto; width: auto; min-width: 160px;">Siguiente Nivel</button>
+        </div>
+      </div>
+
+      <!-- Botones de Control de Partida -->
+      <div style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
+        <button id="btnRestartLevel" class="btn btn-secondary" style="width: auto; min-width: 140px;">Reiniciar Nivel</button>
+        <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
+      </div>
+
+      <!-- PANEL DE ADMINISTRACIÓN -->
+      <section id="adminPanel" class="admin-panel">
+        <div class="admin-title">
+          <h2>Panel Administrativo Local</h2>
+          <button id="btnCloseAdmin" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <div class="admin-grid">
+          <!-- Colección de Imágenes de Juego -->
+          <div class="admin-box">
+            <h3>Imágenes de las Tarjetas (Mínimo 20)</h3>
+            <div id="adminCardImagesList" class="images-scroll-container">
+              <!-- Las miniaturas se inyectan dinámicamente -->
+            </div>
+            <div class="admin-form">
+              <input type="url" id="inputNewCardImg" class="admin-input" placeholder="Nueva URL de imagen (Unsplash, etc.)">
+              <button id="btnAddCardImg" class="btn btn-primary" style="width: auto;">Añadir</button>
+            </div>
+          </div>
+
+          <!-- Fondos por Nivel -->
+          <div class="admin-box">
+            <h3>Imágenes de Fondo por Nivel</h3>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div class="bg-setting-row">
+                <label>Nivel 1</label>
+                <input type="url" id="bgLvl1" class="admin-input bg-lvl-input" data-level="1">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 2</label>
+                <input type="url" id="bgLvl2" class="admin-input bg-lvl-input" data-level="2">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 3</label>
+                <input type="url" id="bgLvl3" class="admin-input bg-lvl-input" data-level="3">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 4</label>
+                <input type="url" id="bgLvl4" class="admin-input bg-lvl-input" data-level="4">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 5</label>
+                <input type="url" id="bgLvl5" class="admin-input bg-lvl-input" data-level="5">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 6</label>
+                <input type="url" id="bgLvl6" class="admin-input bg-lvl-input" data-level="6">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 7+</label>
+                <input type="url" id="bgLvl7" class="admin-input bg-lvl-input" data-level="7">
+              </div>
+            </div>
+            <button id="btnSaveBgs" class="btn btn-primary" style="margin-top: 14px;">Guardar Fondos</button>
+          </div>
+        </div>
+
+        <div style="text-align: right; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+          <button id="btnRestoreDefaults" class="btn btn-secondary" style="width: auto; display: inline-flex;">Restaurar Valores por Defecto</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>Memorice Teocrático — Concentración, memoria y agilidad mental.</p>
+  </footer>
+
+  <script>
+    // --- ARREGLOS DE DATOS POR DEFECTO ---
+    const DEFAULT_CARD_IMAGES = [
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=150&q=80",
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=150&q=80",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=150&q=80",
+      "https://images.unsplash.com/photo-1472214222541-d510753a8707?w=150&q=80",
+      "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=150&q=80",
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&q=80",
+      "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=150&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&q=80",
+      "https://images.unsplash.com/photo-1433832597046-4f10e10ac764?w=150&q=80",
+      "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=150&q=80",
+      "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=150&q=80",
+      "https://images.unsplash.com/photo-1452415089435-a76b373cfad7?w=150&q=80",
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=150&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=150&q=80",
+      "https://images.unsplash.com/photo-1500627869374-13cd993b1115?w=150&q=80",
+      "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=150&q=80",
+      "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=150&q=80",
+      "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=150&q=80",
+      "https://images.unsplash.com/photo-1510784722466-f2aa9c52faa6?w=150&q=80",
+      "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=150&q=80",
+      "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?w=150&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=150&q=80",
+      "https://images.unsplash.com/photo-1434064511983-18c6dae20ed5?w=150&q=80",
+      "https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=150&q=80"
+    ];
+
+    const DEFAULT_BG_IMAGES = {
+      1: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1200&q=80",
+      2: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+      3: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+      4: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      5: "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1200&q=80",
+      6: "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=1200&q=80",
+      7: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
+    };
+
+    const DEFAULT_LEADERBOARD = [
+      { name: "Noé", score: 3200 },
+      { name: "Daniel", score: 2800 },
+      { name: "Ester", score: 2500 },
+      { name: "Ruth", score: 2200 },
+      { name: "David", score: 1900 },
+      { name: "Lidia", score: 1700 },
+      { name: "Samuel", score: 1500 },
+      { name: "Sara", score: 1200 },
+      { name: "Enoc", score: 950 },
+      { name: "Job", score: 800 }
+    ];
+
+    // --- ESTADO GENERAL ---
+    let state = {
+      username: "Jugador Teocrático",
+      level: 1,
+      score: 0,
+      record: 0,
+      leaderboard: [],
+      cardImages: [],
+      bgImages: {},
+      
+      // Control de Turnos
+      boardCards: [],         
+      firstCardElement: null,
+      firstCardData: null,
+      secondCardElement: null,
+      secondCardData: null,
+      isProcessing: false,
+      
+      // Control de Memoria
+      seenCardsIndices: new Set(), 
+      firstCardWasSeen: false,
+      
+      // Temporizador
+      timeLeft: 10,
+      timerInterval: null,
+      turnStartTime: null
+    };
+
+    // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
+    function loadState() {
+      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
+      state.level = parseInt(localStorage.getItem("mt_level")) || 1;
+      state.score = parseInt(localStorage.getItem("mt_score")) || 0;
+      state.record = parseInt(localStorage.getItem("mt_record")) || 0;
+      
+      const savedLeaderboard = localStorage.getItem("mt_leaderboard");
+      state.leaderboard = savedLeaderboard ? JSON.parse(savedLeaderboard) : [...DEFAULT_LEADERBOARD];
+
+      const savedCards = localStorage.getItem("mt_card_images");
+      state.cardImages = savedCards ? JSON.parse(savedCards) : [...DEFAULT_CARD_IMAGES];
+
+      const savedBgs = localStorage.getItem("mt_bg_images");
+      state.bgImages = savedBgs ? JSON.parse(savedBgs) : {...DEFAULT_BG_IMAGES};
+    }
+
+    function saveState() {
+      localStorage.setItem("mt_username", state.username);
+      localStorage.setItem("mt_level", state.level);
+      localStorage.setItem("mt_score", state.score);
+      localStorage.setItem("mt_record", state.record);
+      localStorage.setItem("mt_leaderboard", JSON.stringify(state.leaderboard));
+      localStorage.setItem("mt_card_images", JSON.stringify(state.cardImages));
+      localStorage.setItem("mt_bg_images", JSON.stringify(state.bgImages));
+    }
+
+    // --- REFERENCIAS ELEMENTOS DOM ---
+    const usernameInput = document.getElementById("usernameInput");
+    const displayLevel = document.getElementById("displayLevel");
+    const displayRecord = document.getElementById("displayRecord");
+    const displayScore = document.getElementById("displayScore");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const timerBar = document.getElementById("timerBar");
+    const timerText = document.getElementById("timerText");
+    const gameBoard = document.getElementById("gameBoard");
+    
+    const feedbackOverlay = document.getElementById("feedbackOverlay");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackSubtitle = document.getElementById("feedbackSubtitle");
+    const btnFeedbackAction = document.getElementById("btnFeedbackAction");
+
+    const adminPanel = document.getElementById("adminPanel");
+    const btnToggleAdmin = document.getElementById("btnToggleAdmin");
+    const btnCloseAdmin = document.getElementById("btnCloseAdmin");
+    const adminCardImagesList = document.getElementById("adminCardImagesList");
+    const inputNewCardImg = document.getElementById("inputNewCardImg");
+    const btnAddCardImg = document.getElementById("btnAddCardImg");
+    const btnSaveBgs = document.getElementById("btnSaveBgs");
+    const btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener("DOMContentLoaded", () => {
+      loadState();
+      setupEvents();
+      startLevel(state.level);
+    });
+
+    function setupEvents() {
+      // Nombre de usuario editable
+      usernameInput.value = state.username;
+      usernameInput.addEventListener("change", () => {
+        state.username = usernameInput.value.trim() || "Jugador Teocrático";
+        saveState();
+        updateLeaderboardWithCurrent();
+        updateLeaderboardView();
+      });
+
+      // Botón Compartir
+      document.getElementById("btnShare").addEventListener("click", shareScore);
+
+      // Toggle Admin Panel
+      btnToggleAdmin.addEventListener("click", () => {
+        adminPanel.classList.toggle("active");
+        if (adminPanel.classList.contains("active")) {
+          adminPanel.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+      btnCloseAdmin.addEventListener("click", () => {
+        adminPanel.classList.remove("active");
+      });
+
+      // Controles del Panel Admin
+      btnAddCardImg.addEventListener("click", addNewCardImage);
+      btnSaveBgs.addEventListener("click", saveCustomBackgrounds);
+      btnRestoreDefaults.addEventListener("click", restoreDefaults);
+
+      // Controles de Nivel
+      document.getElementById("btnRestartLevel").addEventListener("click", () => startLevel(state.level));
+      document.getElementById("btnResetGame").addEventListener("click", resetAllGame);
+    }
+
+    // --- LÓGICA DE DIFICULTAD Y NIVELES ---
+    function getCardCountForLevel(level) {
+      if (level === 1) return 4;
+      if (level === 2) return 8;
+      if (level === 3) return 16;
+      if (level === 4) return 20;
+      if (level === 5) return 24;
+      if (level === 6) return 30;
+      return 40; // Nivel 7 en adelante
+    }
+
+    function startLevel(level) {
+      // Detener loops anteriores
+      clearInterval(state.timerInterval);
+      resetTimerUI();
+      feedbackOverlay.style.display = "none";
+      
+      state.level = level;
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      state.seenCardsIndices.clear();
+
+      displayLevel.textContent = state.level;
+      displayScore.textContent = state.score;
+      displayRecord.textContent = state.record;
+
+      // Fondo dinámico por nivel
+      const bgIndex = Math.min(level, 7);
+      const bgUrl = state.bgImages[bgIndex] || state.bgImages[7];
+      document.body.style.backgroundImage = `url('${bgUrl}')`;
+
+      // Definir tarjetas del tablero
+      const totalCards = getCardCountForLevel(level);
+      const pairsCount = totalCards / 2;
+
+      // Clonar piscina de imágenes cargadas para mezclarlas
+      let imagePool = [...state.cardImages];
+      shuffleArray(imagePool);
+
+      let selectedImages = [];
+      for (let i = 0; i < pairsCount; i++) {
+        // En caso de que se configure menos tarjetas en el admin, repetimos cíclicamente
+        const img = imagePool[i % imagePool.length];
+        selectedImages.push(img, img); 
+      }
+
+      shuffleArray(selectedImages);
+
+      state.boardCards = selectedImages.map((img, idx) => ({
+        id: idx,
+        img: img,
+        matched: false
+      }));
+
+      // Renderización final
+      renderBoard(totalCards);
+      updateLeaderboardView();
+      populateAdminPanel();
+    }
+
+    function renderBoard(totalCards) {
+      gameBoard.className = `game-board grid-${totalCards}`;
+      gameBoard.innerHTML = "";
+
+      state.boardCards.forEach((cardData) => {
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "card";
+        cardContainer.dataset.id = cardData.id;
+
+        const cardInner = document.createElement("div");
+        cardInner.className = "card-inner";
+
+        const cardBack = document.createElement("div");
+        cardBack.className = "card-back";
+
+        const cardFront = document.createElement("div");
+        cardFront.className = "card-front";
+        const img = document.createElement("img");
+        img.src = cardData.img;
+        img.alt = "Memory Front";
+        img.loading = "lazy";
+        cardFront.appendChild(img);
+
+        cardInner.appendChild(cardBack);
+        cardInner.appendChild(cardFront);
+        cardContainer.appendChild(cardInner);
+
+        cardContainer.addEventListener("click", () => handleCardClick(cardContainer, cardData));
+        gameBoard.appendChild(cardContainer);
+      });
+    }
+
+    // --- MANEJO DEL TURNO DEL JUEGO ---
+    function handleCardClick(cardElement, cardData) {
+      if (state.isProcessing) return;
+      if (cardData.matched) return;
+      if (cardElement.classList.contains("flipped")) return;
+
+      cardElement.classList.add("flipped");
+
+      if (!state.firstCardElement) {
+        // Primera tarjeta volteada
+        state.firstCardElement = cardElement;
+        state.firstCardData = cardData;
+
+        // Registrar si esta carta ya fue vista antes
+        state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
+
+        // Iniciar cuenta regresiva exacta de 10s
+        startTimer();
+      } else {
+        // Segunda tarjeta volteada
+        state.secondCardElement = cardElement;
+        state.secondCardData = cardData;
+
+        // Detener temporizador de inmediato al voltear
+        stopTimer();
+        state.isProcessing = true;
+
+        const secondCardWasSeen = state.seenCardsIndices.has(cardData.id);
+
+        if (state.firstCardData.img === state.secondCardData.img) {
+          // ¡HAY COINCIDENCIA!
+          handleMatch(state.firstCardWasSeen, secondCardWasSeen);
+        } else {
+          // NO COINCIDEN
+          handleMismatch();
+        }
+      }
+    }
+
+    // --- CÁLCULO ESTRICTO DE REGLAS DE PUNTUACIÓN ---
+    function handleMatch(firstSeen, secondSeen) {
+      state.firstCardData.matched = true;
+      state.secondCardData.matched = true;
+
+      state.firstCardElement.classList.add("matched");
+      state.secondCardElement.classList.add("matched");
+
+      let pointsGained = 0;
+      let isPerfect = false;
+
+      // REGLA 1: Condición de Memoria Perfecta
+      if (!firstSeen && !secondSeen) {
+        pointsGained = 100; // Fijo sin importar el tiempo
+        isPerfect = true;
+      } else {
+        // REGLA 2: Condición con Tarjetas ya Vistas (Inversamente proporcional al tiempo)
+        const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
+        let secondsCeil = Math.ceil(elapsedSeconds);
+        if (secondsCeil < 1) secondsCeil = 1;
+
+        pointsGained = 100 - (secondsCeil * 10);
+        
+        // Puntuación mínima si lo hace en segundo 9, 10 o al límite
+        if (pointsGained < 10) {
+          pointsGained = 10;
+        }
+      }
+
+      // Marcar de forma efectiva en el historial de vistas
+      state.seenCardsIndices.add(state.firstCardData.id);
+      state.seenCardsIndices.add(state.secondCardData.id);
+
+      // Guardar Score
+      state.score += pointsGained;
+      if (state.score > state.record) {
+        state.record = state.score;
+      }
+
+      saveState();
+
+      // Desplegar feedback numérico sobre la tarjeta coincidente
+      createScoreToast(state.secondCardElement, `+${pointsGained} Pts ${isPerfect ? '¡Memoria Perfecta!' : ''}`);
+
+      // Actualizar UI
+      displayScore.textContent = state.score;
+      displayRecord.textContent = state.record;
+      updateLeaderboardWithCurrent();
+
+      resetTurnState();
+      checkLevelCompletion();
+    }
+
+    function handleMismatch() {
+      // Registrar en el conjunto de tarjetas vistas para penalizar en futuros intentos
+      state.seenCardsIndices.add(state.firstCardData.id);
+      state.seenCardsIndices.add(state.secondCardData.id);
+
+      // Dejar volteadas un segundo antes de volverlas boca abajo
+      setTimeout(() => {
+        if (state.firstCardElement && state.secondCardElement) {
+          state.firstCardElement.classList.remove("flipped");
+          state.secondCardElement.classList.remove("flipped");
+        }
+        resetTurnState();
+      }, 1000);
+    }
+
+    function resetTurnState() {
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      resetTimerUI();
+    }
+
+    // --- TEMPORIZADOR EXACTO ---
+    function startTimer() {
+      state.timeLeft = 10;
+      state.turnStartTime = Date.now();
+      updateTimerUI();
+
+      clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - state.turnStartTime) / 1000;
+        state.timeLeft = 10 - elapsed;
+
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          state.timeLeft = 0;
+          updateTimerUI();
+          handleTimeout();
+        } else {
+          updateTimerUI();
+        }
+      }, 50); // Comprobaciones fluidas cada 50ms
+    }
+
+    function stopTimer() {
+      clearInterval(state.timerInterval);
+    }
+
+    function updateTimerUI() {
+      const displaySec = Math.max(0, Math.ceil(state.timeLeft));
+      timerText.textContent = `${displaySec}s`;
+      const percentage = (state.timeLeft / 10) * 100;
+      timerBar.style.width = `${percentage}%`;
+    }
+
+    function resetTimerUI() {
+      timerBar.style.width = "100%";
+      timerText.textContent = "10s";
+    }
+
+    function handleTimeout() {
+      state.isProcessing = true;
+      
+      // Registrar en el historial de vistas al agotarse el tiempo
+      if (state.firstCardData) {
+        state.seenCardsIndices.add(state.firstCardData.id);
+      }
+
+      createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
+
+      setTimeout(() => {
+        if (state.firstCardElement) {
+          state.firstCardElement.classList.remove("flipped");
+        }
+        resetTurnState();
+      }, 1000);
+    }
+
+    // --- INDICADOR FLOTANTE DE PUNTUACIÓN (TOAST) ---
+    function createScoreToast(element, text) {
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
+      
+      const toast = document.createElement("div");
+      toast.className = "score-toast";
+      toast.textContent = text;
+      
+      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
+      toast.style.top = `${rect.top - boardRect.top}px`;
+      
+      document.getElementById("boardWrapper").appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 1400);
+    }
+
+    // --- REVISIÓN DE FIN DE NIVEL ---
+    function checkLevelCompletion() {
+      const isLevelComplete = state.boardCards.every(card => card.matched);
+      if (isLevelComplete) {
+        setTimeout(() => {
+          showLevelCompleteModal();
+        }, 800);
+      }
+    }
+
+    function showLevelCompleteModal() {
+      feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
+      feedbackSubtitle.textContent = `Has emparejado todas las tarjetas con éxito. Tu puntaje actual es de ${state.score} puntos. Prepárate para el siguiente desafío.`;
+      btnFeedbackAction.textContent = "Continuar";
+      
+      btnFeedbackAction.onclick = () => {
+        feedbackOverlay.style.display = "none";
+        startLevel(state.level + 1);
+      };
+
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- SIMULACIÓN Y ACTUALIZACIÓN DEL TOP 10 ---
+    function updateLeaderboardView() {
+      leaderboardBody.innerHTML = "";
+      
+      // Ordenar por puntaje descendente
+      state.leaderboard.sort((a, b) => b.score - a.score);
+
+      state.leaderboard.slice(0, 10).forEach((user, idx) => {
+        const row = document.createElement("tr");
+        const isCurrentUser = (user.name === state.username);
+        
+        if (isCurrentUser) {
+          row.style.fontWeight = "bold";
+          row.style.color = "var(--accent-color)";
+          row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+        }
+
+        row.innerHTML = `
+          <td class="rank">#${idx + 1}</td>
+          <td>${user.name}</td>
+          <td class="score">${user.score}</td>
+        `;
+        leaderboardBody.appendChild(row);
+      });
+    }
+
+    function updateLeaderboardWithCurrent() {
+      const idx = state.leaderboard.findIndex(u => u.name === state.username);
+      if (idx !== -1) {
+        if (state.score > state.leaderboard[idx].score) {
+          state.leaderboard[idx].score = state.score;
+        }
+      } else {
+        state.leaderboard.push({ name: state.username, score: state.score });
+      }
+
+      state.leaderboard.sort((a, b) => b.score - a.score);
+      
+      // Mantener solo un top 10 real
+      if (state.leaderboard.length > 10) {
+        state.leaderboard = state.leaderboard.slice(0, 10);
+      }
+
+      saveState();
+    }
+
+    // --- COMPARTIR PUNTOS (CLIPBOARD) ---
+    function shareScore() {
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también y pon a prueba tu agilidad mental: ${window.location.href}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert("¡Enlace e invitación de puntaje copiados al portapapeles con éxito!");
+      }).catch(err => {
+        console.error("Fallo al copiar enlace: ", err);
+      });
+    }
+
+    // --- REINICIOS ---
+    function resetAllGame() {
+      if (confirm("¿Estás completamente seguro de querer reiniciar toda tu partida? Se restablecerá tu nivel y puntaje a cero.")) {
+        state.score = 0;
+        state.level = 1;
+        state.seenCardsIndices.clear();
+        saveState();
+        startLevel(1);
+      }
+    }
+
+    // --- CONTROL DEL PANEL DE ADMINISTRACIÓN ---
+    function populateAdminPanel() {
+      // Inyectar imágenes de cartas
+      adminCardImagesList.innerHTML = "";
+      state.cardImages.forEach((imgUrl, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "admin-img-wrapper";
+
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.className = "admin-img-thumb";
+        img.alt = `Thumb ${idx}`;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "&times;";
+        deleteBtn.className = "admin-img-delete";
+        deleteBtn.addEventListener("click", () => deleteCardImage(idx));
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(deleteBtn);
+        adminCardImagesList.appendChild(wrapper);
+      });
+
+      // Mapear los fondos de pantalla de cada nivel a los inputs correspondientes
+      for (let i = 1; i <= 7; i++) {
+        const input = document.getElementById(`bgLvl${i}`);
+        if (input) {
+          input.value = state.bgImages[i] || "";
+        }
+      }
+    }
+
+    function addNewCardImage() {
+      const url = inputNewCardImg.value.trim();
+      if (!url) return;
+
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        alert("Por favor, ingresa una URL web válida que empiece con http:// o https://");
+        return;
+      }
+
+      state.cardImages.push(url);
+      saveState();
+      populateAdminPanel();
+      inputNewCardImg.value = "";
+    }
+
+    function deleteCardImage(index) {
+      // Requerimos al menos 20 para el soporte del tablero máximo del Nivel 7 (40 tarjetas / 20 pares)
+      if (state.cardImages.length <= 20) {
+        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas para soportar el tablero máximo de 40 cartas (20 pares).");
+        return;
+      }
+
+      state.cardImages.splice(index, 1);
+      saveState();
+      populateAdminPanel();
+    }
+
+    function saveCustomBackgrounds() {
+      let updated = false;
+      for (let i = 1; i <= 7; i++) {
+        const input = document.getElementById(`bgLvl${i}`);
+        if (input && input.value.trim() !== "") {
+          state.bgImages[i] = input.value.trim();
+          updated = true;
+        }
+      }
+
+      if (updated) {
+        saveState();
+        alert("Configuración de fondos guardada correctamente.");
+        // Refrescar el fondo de forma inmediata
+        const currentBgIndex = Math.min(state.level, 7);
+        const bgUrl = state.bgImages[currentBgIndex] || state.bgImages[7];
+        document.body.style.backgroundImage = `url('${bgUrl}')`;
+      }
+    }
+
+    function restoreDefaults() {
+      if (confirm("¿Estás seguro de restablecer todos los elementos de administración, fondos y récords a sus valores originales de fábrica?")) {
+        localStorage.removeItem("mt_username");
+        localStorage.removeItem("mt_level");
+        localStorage.removeItem("mt_score");
+        localStorage.removeItem("mt_record");
+        localStorage.removeItem("mt_leaderboard");
+        localStorage.removeItem("mt_card_images");
+        localStorage.removeItem("mt_bg_images");
+        
+        loadState();
+        usernameInput.value = state.username;
+        populateAdminPanel();
+        startLevel(1);
+      }
+    }
+
+    // --- ALGORITMOS DE UTILIDAD (SHUFFLE) ---
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+  </script>
+</body>
+</html>
