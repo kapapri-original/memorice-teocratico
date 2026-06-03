@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Memorice Teocrático</title>
+  
+  <!-- INCLUSIÓN DEL SDK DE SUPABASE (Versión 2 vía CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --primary-color: #2a527a;
@@ -693,11 +697,11 @@
         Panel de Administración
       </button>
 
-      <!-- Tabla de Clasificación Simulada (Top 10) -->
+      <!-- Tabla de Clasificación Global (Top 10) -->
       <div class="leaderboard-container">
         <div class="leaderboard-title">
           <span>Top 10 Global</span>
-          <span style="font-size: 0.75rem; color: var(--accent-color);">Simulado</span>
+          <span style="font-size: 0.75rem; color: var(--accent-color);">En Vivo</span>
         </div>
         <table class="leaderboard-table">
           <thead>
@@ -708,7 +712,7 @@
             </tr>
           </thead>
           <tbody id="leaderboardBody">
-            <!-- Rellenado dinámicamente -->
+            <!-- Rellenado dinámicamente desde Supabase -->
           </tbody>
         </table>
       </div>
@@ -813,57 +817,64 @@
 
   <footer>
     <p>Memorice Teocrático — Concentración, memoria y agilidad mental.</p>
+    
   </footer>
 
   <script>
+    // --- CREDENCIALES E INICIALIZACIÓN DE SUPABASE ---
+    const SUPABASE_URL = "https://wvgarzantccdfhrzmpho.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_hSg8GIq6OlwB5hiVmHTkBQ_prRYfl2N";
+    // Nota: Usamos window.supabase.createClient para evitar el error lógico 
+    // de declarar "const supabase" reescribiendo la propia variable global.
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // --- ARREGLOS DE DATOS POR DEFECTO ---
     const DEFAULT_CARD_IMAGES = [
-"https://i.ibb.co/Xxbqj3n4/2017089-univ-lss-lg.jpg",
-"https://i.ibb.co/fzhYGgLJ/1102013273-univ-lss-lg.jpg",
-"https://i.ibb.co/4R83yTPX/2013566-univ-lss-lg.jpg",
-"https://i.ibb.co/DyT2V2F/1102013272-univ-lss-lg.jpg",
-"https://i.ibb.co/B2ZcNLvr/2017010-univ-lss-lg.jpg",
-"https://i.ibb.co/vxnX4Fxs/1102013271-univ-lss-lg.jpg",
-"https://i.ibb.co/jPHwFQJY/2015809-univ-lss-lg.jpg",
-"https://i.ibb.co/27yZ5DvK/1102013269-univ-lss-lg.jpg",
-"https://i.ibb.co/cch9NRsV/1102013268-univ-lss-lg.jpg",
-"https://i.ibb.co/BVq1cGqb/1102013267-univ-lss-lg.jpg",
-"https://i.ibb.co/HLskvtqq/502019377-univ-lss-lg.jpg",
-"https://i.ibb.co/qMdmHV6b/1102013266-univ-lss-lg.jpg",
-"https://i.ibb.co/FRXdWTw/1102013265-univ-lss-lg.jpg",
-"https://i.ibb.co/0ynj94hk/2014326-univ-lss-lg.jpg",
-"https://i.ibb.co/5gxVmG5h/1102013264-univ-lss-lg.jpg",
-"https://i.ibb.co/MygHjZdZ/1102013263-univ-lss-lg.jpg",
-"https://i.ibb.co/TDXj8vqf/1102013262-univ-lss-lg.jpg",
-"https://i.ibb.co/N6gHT4G6/1102013261-univ-lss-lg.jpg",
-"https://i.ibb.co/twkH4SwP/1102013260-univ-lss-lg.jpg",
-"https://i.ibb.co/zV7G19M2/1102013259-univ-lss-lg.jpg",
-"https://i.ibb.co/pNJpKCs/502018120-univ-lss-lg.jpg",
-"https://i.ibb.co/9mY7zqJs/2014086-univ-lss-lg.jpg",
-"https://i.ibb.co/MzJFfGg/1102013258-univ-lss-lg.jpg",
-"https://i.ibb.co/67Lwkqcd/1102013257-univ-lss-lg.jpg",
-"https://i.ibb.co/Jwxt4QvC/1102013256-univ-lss-lg.jpg",
-"https://i.ibb.co/0RnGcdDt/1102013255-univ-lss-lg.jpg",
-"https://i.ibb.co/Ndmxxzr5/502018361-univ-lss-lg.jpg",
-"https://i.ibb.co/BHSDzJ5S/2016327-univ-lss-lg.jpg",
-"https://i.ibb.co/sdXnwvVC/502018360-univ-lss-lg.jpg",
-"https://i.ibb.co/DggW4MTj/1102013254-univ-lss-lg.jpg",
-"https://i.ibb.co/hxy2WtvT/1102013253-univ-lss-lg.jpg",
-"https://i.ibb.co/WpyG9pJR/1102013252-univ-lss-lg.jpg",
-"https://i.ibb.co/5xSSGW1C/1102013251-univ-lss-lg.jpg",
-"https://i.ibb.co/TB8zLzQ9/1102013250-univ-lss-lg.jpg",
-"https://i.ibb.co/JRL5XJKY/2015566-univ-lss-lg.jpg",
-"https://i.ibb.co/tPQdNLHP/2013809-univ-lss-lg.jpg",
-"https://i.ibb.co/RprZ1nXN/501500100-univ-lss-lg.jpg",
-"https://i.ibb.co/TB5RFdH8/502019376-univ-lss-lg.jpg",
-"https://i.ibb.co/dwzL3x9b/502019375-univ-lss-lg.jpg",
-"https://i.ibb.co/20Wy864g/2015327-univ-lss-lg.jpg",
-"https://i.ibb.co/tPHPsMwx/2015086-univ-lss-lg.jpg",
-"https://i.ibb.co/DfZHP3pG/2014807-univ-lss-lg.jpg",
-"https://i.ibb.co/zHD0S3LH/2014568-univ-lss-lg.jpg",
-"https://i.ibb.co/wZBTt02K/2016091-univ-lss-lg.jpg",
-"https://i.ibb.co/m5QN1bZP/2017172-univ-lss-lg.jpg"
-     
+      "https://i.ibb.co/Xxbqj3n4/2017089-univ-lss-lg.jpg",
+      "https://i.ibb.co/fzhYGgLJ/1102013273-univ-lss-lg.jpg",
+      "https://i.ibb.co/4R83yTPX/2013566-univ-lss-lg.jpg",
+      "https://i.ibb.co/DyT2V2F/1102013272-univ-lss-lg.jpg",
+      "https://i.ibb.co/B2ZcNLvr/2017010-univ-lss-lg.jpg",
+      "https://i.ibb.co/vxnX4Fxs/1102013271-univ-lss-lg.jpg",
+      "https://i.ibb.co/jPHwFQJY/2015809-univ-lss-lg.jpg",
+      "https://i.ibb.co/27yZ5DvK/1102013269-univ-lss-lg.jpg",
+      "https://i.ibb.co/cch9NRsV/1102013268-univ-lss-lg.jpg",
+      "https://i.ibb.co/BVq1cGqb/1102013267-univ-lss-lg.jpg",
+      "https://i.ibb.co/HLskvtqq/502019377-univ-lss-lg.jpg",
+      "https://i.ibb.co/qMdmHV6b/1102013266-univ-lss-lg.jpg",
+      "https://i.ibb.co/FRXdWTw/1102013265-univ-lss-lg.jpg",
+      "https://i.ibb.co/0ynj94hk/2014326-univ-lss-lg.jpg",
+      "https://i.ibb.co/5gxVmG5h/1102013264-univ-lss-lg.jpg",
+      "https://i.ibb.co/MygHjZdZ/1102013263-univ-lss-lg.jpg",
+      "https://i.ibb.co/TDXj8vqf/1102013262-univ-lss-lg.jpg",
+      "https://i.ibb.co/N6gHT4G6/1102013261-univ-lss-lg.jpg",
+      "https://i.ibb.co/twkH4SwP/1102013260-univ-lss-lg.jpg",
+      "https://i.ibb.co/zV7G19M2/1102013259-univ-lss-lg.jpg",
+      "https://i.ibb.co/pNJpKCs/502018120-univ-lss-lg.jpg",
+      "https://i.ibb.co/9mY7zqJs/2014086-univ-lss-lg.jpg",
+      "https://i.ibb.co/MzJFfGg/1102013258-univ-lss-lg.jpg",
+      "https://i.ibb.co/67Lwkqcd/1102013257-univ-lss-lg.jpg",
+      "https://i.ibb.co/Jwxt4QvC/1102013256-univ-lss-lg.jpg",
+      "https://i.ibb.co/0RnGcdDt/1102013255-univ-lss-lg.jpg",
+      "https://i.ibb.co/Ndmxxzr5/502018361-univ-lss-lg.jpg",
+      "https://i.ibb.co/BHSDzJ5S/2016327-univ-lss-lg.jpg",
+      "https://i.ibb.co/sdXnwvVC/502018360-univ-lss-lg.jpg",
+      "https://i.ibb.co/DggW4MTj/1102013254-univ-lss-lg.jpg",
+      "https://i.ibb.co/hxy2WtvT/1102013253-univ-lss-lg.jpg",
+      "https://i.ibb.co/WpyG9pJR/1102013252-univ-lss-lg.jpg",
+      "https://i.ibb.co/5xSSGW1C/1102013251-univ-lss-lg.jpg",
+      "https://i.ibb.co/TB8zLzQ9/1102013250-univ-lss-lg.jpg",
+      "https://i.ibb.co/JRL5XJKY/2015566-univ-lss-lg.jpg",
+      "https://i.ibb.co/tPQdNLHP/2013809-univ-lss-lg.jpg",
+      "https://i.ibb.co/RprZ1nXN/501500100-univ-lss-lg.jpg",
+      "https://i.ibb.co/TB5RFdH8/502019376-univ-lss-lg.jpg",
+      "https://i.ibb.co/dwzL3x9b/502019375-univ-lss-lg.jpg",
+      "https://i.ibb.co/20Wy864g/2015327-univ-lss-lg.jpg",
+      "https://i.ibb.co/tPHPsMwx/2015086-univ-lss-lg.jpg",
+      "https://i.ibb.co/DfZHP3pG/2014807-univ-lss-lg.jpg",
+      "https://i.ibb.co/zHD0S3LH/2014568-univ-lss-lg.jpg",
+      "https://i.ibb.co/wZBTt02K/2016091-univ-lss-lg.jpg",
+      "https://i.ibb.co/m5QN1bZP/2017172-univ-lss-lg.jpg"
     ];
 
     const DEFAULT_BG_IMAGES = {
@@ -982,7 +993,6 @@
         state.username = usernameInput.value.trim() || "Jugador Teocrático";
         saveState();
         updateLeaderboardWithCurrent();
-        updateLeaderboardView();
       });
 
       // Botón Compartir
@@ -1068,7 +1078,7 @@
 
       // Renderización final
       renderBoard(totalCards);
-      updateLeaderboardView();
+      renderLeaderboard();
       populateAdminPanel();
     }
 
@@ -1319,34 +1329,73 @@
       feedbackOverlay.style.display = "block";
     }
 
-    // --- SIMULACIÓN Y ACTUALIZACIÓN DEL TOP 10 ---
-    function updateLeaderboardView() {
-      leaderboardBody.innerHTML = "";
-      
-      // Ordenar por puntaje descendente
-      state.leaderboard.sort((a, b) => b.score - a.score);
+    // --- RENDERIZADO ASÍNCRONO DEL TOP 10 GLOBAL ---
+    async function renderLeaderboard() {
+      try {
+        // Obtenemos los puntajes ordenados desde Supabase
+        const { data, error } = await supabaseClient
+          .from('memorice_leaderboard')
+          .select('*')
+          .order('score', { ascending: false })
+          .limit(10);
 
-      state.leaderboard.slice(0, 10).forEach((user, idx) => {
-        const row = document.createElement("tr");
-        const isCurrentUser = (user.name === state.username);
+        if (error) throw error;
+
+        // Limpiar el contenedor actual
+        leaderboardBody.innerHTML = "";
         
-        if (isCurrentUser) {
-          row.style.fontWeight = "bold";
-          row.style.color = "var(--accent-color)";
-          row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
-        }
+        if (data && data.length > 0) {
+          data.forEach((user, idx) => {
+            const row = document.createElement("tr");
+            const isCurrentUser = (user.username === state.username);
+            
+            if (isCurrentUser) {
+              row.style.fontWeight = "bold";
+              row.style.color = "var(--accent-color)";
+              row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+            }
 
-        row.innerHTML = `
-          <td class="rank">#${idx + 1}</td>
-          <td>${user.name}</td>
-          <td class="score">${user.score}</td>
-        `;
-        leaderboardBody.appendChild(row);
-      });
+            row.innerHTML = `
+              <td class="rank">#${idx + 1}</td>
+              <td>${user.username}</td>
+              <td class="score">${user.score}</td>
+            `;
+            leaderboardBody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.warn("Modo offline o error de Supabase detectado. Usando Fallback de LocalStorage.", err);
+        
+        // --- FALLBACK MODO OFFLINE ---
+        leaderboardBody.innerHTML = "";
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        
+        state.leaderboard.slice(0, 10).forEach((user, idx) => {
+          const row = document.createElement("tr");
+          // Soporta propiedad original name o username dependiendo de si es local o red
+          const uName = user.username || user.name;
+          const isCurrentUser = (uName === state.username);
+          
+          if (isCurrentUser) {
+            row.style.fontWeight = "bold";
+            row.style.color = "var(--accent-color)";
+            row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+          }
+
+          row.innerHTML = `
+            <td class="rank">#${idx + 1}</td>
+            <td>${uName}</td>
+            <td class="score">${user.score}</td>
+          `;
+          leaderboardBody.appendChild(row);
+        });
+      }
     }
 
-    function updateLeaderboardWithCurrent() {
-      const idx = state.leaderboard.findIndex(u => u.name === state.username);
+    // --- ENVÍO DE RÉCORD AUTOMÁTICO (UPSERT) ---
+    async function updateLeaderboardWithCurrent() {
+      // 1. Mantenemos el Fallback en LocalStorage por si hay desconexión
+      const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
       if (idx !== -1) {
         if (state.score > state.leaderboard[idx].score) {
           state.leaderboard[idx].score = state.score;
@@ -1356,13 +1405,42 @@
       }
 
       state.leaderboard.sort((a, b) => b.score - a.score);
-      
-      // Mantener solo un top 10 real
       if (state.leaderboard.length > 10) {
         state.leaderboard = state.leaderboard.slice(0, 10);
       }
-
       saveState();
+
+      // 2. Operación asíncrona hacia Supabase
+      try {
+        // Consultamos primero la nube para asegurarnos de que no pisaremos un récord mayor del mismo usuario
+        const { data: existingData, error: fetchError } = await supabaseClient
+          .from('memorice_leaderboard')
+          .select('score')
+          .eq('username', state.username)
+          .maybeSingle();
+
+        let shouldUpsert = true;
+        if (existingData && existingData.score >= state.score) {
+          shouldUpsert = false; // Ya tiene un récord igual o superior almacenado en Supabase
+        }
+
+        if (shouldUpsert) {
+          // Si es mayor o un usuario nuevo, procedemos a insertar/actualizar
+          const { error } = await supabaseClient
+            .from('memorice_leaderboard')
+            .upsert(
+              { username: state.username, score: state.score },
+              { onConflict: 'username' }
+            );
+
+          if (error) throw error;
+        }
+      } catch (err) {
+        console.error("Fallo de sincronización automática del récord en Supabase.", err);
+      }
+
+      // 3. Renderizamos la nueva tabla reflejando los cambios
+      renderLeaderboard();
     }
 
     // --- COMPARTIR PUNTOS (CLIPBOARD) ---
