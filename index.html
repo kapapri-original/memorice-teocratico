@@ -939,10 +939,11 @@
          
          <button id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Confirmar Registro</button>
          
-         <div class="auth-toggle-text">
-             <span id="authToggleTextLabel">¿Ya posees un usuario registrado?</span> 
-             <span id="authToggleLink" class="auth-toggle-link">Iniciar Sesión</span>
-         </div>
+     <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+    <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
+    <span id="authToggleLink" class="auth-toggle-link" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block;">Crear Cuenta</span>
+</div>
+
      </div>
  </div>
 
@@ -1180,33 +1181,42 @@
     const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
 
     // Estado local extendido para el flujo de autenticación
-    let authMode = "REGISTER"; // "REGISTER" o "LOGIN"
+    let authMode = "LOGIN"; // "REGISTER" o "LOGIN"
 
 
         // --- COMPROBACIÓN DE SESIÓN ACTIVA AL CARGAR EL JUEGO ---
     // Modifica o complementa la lógica de arranque verificando si hay un usuario en la nube
-    async function verificarSesionExistente() {
-      const usuarioGuardado = localStorage.getItem("mt_logged_user");
-      if (usuarioGuardado) {
-        try {
-          const { data: dbUser, error } = await supabaseClient
-            .from("memorice_users")
-            .select("*")
-            .eq('username', usuarioGuardado)
-            .maybeSingle();
+  async function verificarSesionExistente() {
+  const usuarioGuardado = localStorage.getItem("mt_logged_user");
+  if (usuarioGuardado) {
+    try {
+      const { data: dbUser, error } = await supabaseClient
+        .from("memorice_users")
+        .select("*")
+        .eq('username', usuarioGuardado)
+        .maybeSingle();
 
-          if (dbUser && !error) {
-            // El usuario ya estaba logueado, entramos directo sin mostrar el Login
-            ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
-            return;
-          }
-        } catch (e) {
-          console.error("Error verificando sesión persistente:", e);
-        }
+      if (dbUser && !error) {
+        ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+        return;
       }
-      // Si no hay sesión válida, forzamos que se vea el muro de autenticación
-      if (authOverlay) authOverlay.style.display = "flex";
+    } catch (e) {
+      console.error("Error verificando sesión persistente:", e);
     }
+  }
+  
+  // Forzar visualmente el modo LOGIN si no hay sesión guardada
+  if (authOverlay) {
+    authMode = "LOGIN";
+    authTitle.textContent = "Iniciar Sesión";
+    authSubtitle.textContent = "Ingresa tus credenciales para continuar tu progreso teocrático.";
+    btnSubmitAuth.textContent = "Ingresar a la Partida";
+    authToggleTextLabel.textContent = "¿No tienes una cuenta aún?";
+    authToggleLink.textContent = "Crear Cuenta";
+    authOverlay.style.display = "flex";
+  }
+}
+
 
     // --- LANZAR UN NUEVO DUELO AL LOBBY DE ESPERA ---
     if (btnLaunchNewDuel) {
