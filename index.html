@@ -940,10 +940,11 @@
          
          <button id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Ingresar a la Partida</button>
          
-         <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
-             <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
-             <span id="authToggleLink" class="auth-toggle-link" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block;">Crear Cuenta</span>
-         </div>
+             <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+         <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
+         <span id="authToggleLink" class="auth-toggle-link" role="button" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block; user-select: none;">Crear Cuenta</span>
+     </div>
+
      </div>
  </div>
 
@@ -1204,6 +1205,14 @@
       console.error("Error verificando sesión persistente:", e);
     }
   }
+  
+  // Si no hay sesión, forzamos el estado de LOGIN e inicializamos la vista
+  if (authOverlay) {
+    authMode = "REGISTER"; // Truco técnico para que al alternar se configure en LOGIN de forma limpia
+    alternarFormularioAutenticacion();
+    authOverlay.style.display = "flex";
+  }
+}
   
   // Forzar visualmente el modo LOGIN si no hay sesión guardada
   if (authOverlay) {
@@ -1484,26 +1493,33 @@
       });
     }
 
-     // Intercambiar visualmente entre el modo Registro e Inicio de Sesión
+       // --- INTERRUPTOR DE ACCESO REFORZADO (LOGIN / REGISTRO) ---
+    function alternarFormularioAutenticacion() {
+      if (authMode === "REGISTER") {
+        authMode = "LOGIN";
+        authTitle.textContent = "Iniciar Sesión";
+        authSubtitle.textContent = "Ingresa tus credenciales para continuar tu progreso teocrático.";
+        btnSubmitAuth.textContent = "Ingresar a la Partida";
+        authToggleTextLabel.textContent = "¿No tienes una cuenta aún?";
+        authToggleLink.textContent = "Crear Cuenta";
+      } else {
+        authMode = "REGISTER";
+        authTitle.textContent = "Crear Cuenta";
+        authSubtitle.textContent = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
+        btnSubmitAuth.textContent = "Confirmar Registro";
+        authToggleTextLabel.textContent = "¿Ya posees un usuario registrado?";
+        authToggleLink.textContent = "Iniciar Sesión";
+      }
+      authUsername.value = "";
+      authPassword.value = "";
+    }
+
+    // Inyectamos el evento asegurando que limpie cualquier comportamiento nativo del navegador
     if (authToggleLink) {
-      authToggleLink.addEventListener("click", () => {
-        if (authMode === "REGISTER") {
-          authMode = "LOGIN";
-          authTitle.textContent = "Iniciar Sesión";
-          authSubtitle.textContent = "Ingresa tus credenciales para continuar tu progreso teocrático.";
-          btnSubmitAuth.textContent = "Ingresar a la Partida";
-          authToggleTextLabel.textContent = "¿No tienes una cuenta aún?";
-          authToggleLink.textContent = "Crear Cuenta";
-        } else {
-          authMode = "REGISTER";
-          authTitle.textContent = "Crear Cuenta";
-          authSubtitle.textContent = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
-          btnSubmitAuth.textContent = "Confirmar Registro";
-          authToggleTextLabel.textContent = "¿Ya posees un usuario registrado?";
-          authToggleLink.textContent = "Iniciar Sesión";
-        }
-        authUsername.value = "";
-        authPassword.value = "";
+      authToggleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        alternarFormularioAutenticacion();
       });
     }
 
