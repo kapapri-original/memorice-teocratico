@@ -574,6 +574,183 @@
       border-top: 1px solid var(--glass-border);
       backdrop-filter: blur(8px);
     }
+/* --- ESTILOS COMPLEMENTARIOS PARA LOGIN Y DUELOS --- */
+.auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 24, 0.98);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+}
+.auth-box {
+    background: linear-gradient(145deg, #162235, #0d1522);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    text-align: center;
+}
+.auth-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+.auth-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+.auth-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    margin-bottom: 20px;
+}
+.auth-form-group label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.auth-input {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.auth-input:focus {
+    border-color: var(--primary-light);
+}
+.auth-toggle-text {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.auth-toggle-link {
+    color: var(--accent-color);
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* --- INTERFAZ DEL LOBBY DE DUELOS --- */
+.duels-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+.duels-panel.active {
+    display: flex;
+}
+.duels-tabs {
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 12px;
+}
+.duel-tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.duel-tab-btn.active {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+.duels-content-section {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+}
+.duels-content-section.active {
+    display: flex;
+}
+.duel-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.duel-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 18px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+.duel-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+.duel-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.duel-player-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+.duel-meta-tag {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.btn-sm {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+.user-trophies-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: 700;
+    background: rgba(212, 175, 55, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 4px;
+}
+
+    
   </style>
 </head>
 <body>
@@ -587,12 +764,31 @@
         <span>Estímulo & Concentración</span>
       </div>
       <!-- Perfil / Nombre -->
-      <div class="user-profile">
-        <label for="usernameInput">Nombre del Jugador</label>
-        <div class="username-input-container">
-          <input type="text" id="usernameInput" class="username-input" value="Jugador" maxlength="15">
-        </div>
-      </div>
+   <!-- Perfil / Nombre de Usuario Sincronizado -->
+ <div class="user-profile">
+     <label>Usuario Activo</label>
+     <div class="username-input-container">
+         <input type="text" id="usernameInput" class="username-input" value="Jugador" disabled>
+     </div>
+     <div id="userTrophies" class="user-trophies-badge">
+         🏆 <span id="displayTrophies">0</span> Copas ganadas
+     </div>
+ </div>
+ <!-- Botones Principales Extendidos -->
+ <div style="display: flex; flex-direction: column; gap: 10px;">
+     <button id="btnOpenDuelsLobby" class="btn btn-primary" style="background: linear-gradient(135deg, #b45309, #d97706);">
+         ⚔️ Modo Duelos En Vivo
+     </button>
+     <button id="btnShare" class="btn btn-secondary">
+         Compartir Puntos
+     </button>
+     <button id="btnToggleAdmin" class="btn btn-secondary">
+         Panel de Administración
+     </button>
+     <button id="btnLogOut" class="btn btn-secondary" style="color: #f87171; border-color: rgba(248, 113, 113, 0.15)">
+         Cerrar Sesión
+     </button>
+ </div>
       <!-- Estadísticas -->
       <div class="stats-container">
         <div class="stat-card">
@@ -726,7 +922,80 @@
   <footer>
     <p>Memorice Teocrático — Concentración, memoria y agilidad mental.</p>
   </footer>
-  
+  <!-- COMPONENTE DE ACCESO SEGURO (CONTRASENAS BLINDADAS) -->
+ <div id="authOverlay" class="auth-overlay">
+     <div class="auth-box">
+         <div id="authTitle" class="auth-title">Crear Cuenta</div>
+         <div id="authSubtitle" class="auth-subtitle">Regístrate de forma segura para resguardar tu récord y jugar duelos.</div>
+         
+         <div class="auth-form-group">
+             <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
+             <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" autocomplete="off">
+         </div>
+         <div class="auth-form-group">
+             <label for="authPassword">Contraseña Secreta</label>
+             <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" autocomplete="off">
+         </div>
+         
+         <button id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Confirmar Registro</button>
+         
+         <div class="auth-toggle-text">
+             <span id="authToggleTextLabel">¿Ya posees un usuario registrado?</span> 
+             <span id="authToggleLink" class="auth-toggle-link">Iniciar Sesión</span>
+         </div>
+     </div>
+ </div>
+
+ <!-- LOBBY CENTRALIZADO DE DUELOS MULTIJUGADOR -->
+ <section id="duelsPanel" class="duels-panel">
+     <div class="admin-title">
+         <h2>⚔️ Sala de Duelos Teocráticos</h2>
+         <button id="btnCloseDuels" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
+     </div>
+     
+     <div class="duels-tabs">
+         <button id="tabLobby" class="duel-tab-btn active">Buscar Desafíos</button>
+         <button id="tabMyDuels" class="duel-tab-btn">Mis Duelos Activos</button>
+         <button id="tabCreateDuel" class="duel-tab-btn" style="color: var(--accent-color);">+ Crear Nuevo Duelo</button>
+     </div>
+
+     <!-- SECCIÓN A: TABLERO DE ESPERA (LOBBY PUBLICO) -->
+     <div id="secLobby" class="duels-content-section active">
+         <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la lista para iniciar el duelo inmediatamente. El jugador desaparecerá de esta lista.</p>
+         <div id="lobbyDuelsList" class="duel-list-container">
+             <!-- Inyecciones dinámicas desde Supabase en Tiempo Real -->
+         </div>
+     </div>
+
+     <!-- SECCIÓN B: MIS DUELOS EN PARALELO (PARA REANUDAR) -->
+     <div id="secMyDuels" class="duels-content-section">
+         <p style="font-size: 0.9rem; color: var(--text-muted);">Listado de tus duelos activos en curso. Puedes alternar entre ellos para continuar tus turnos.</p>
+         <div id="myActiveDuelsList" class="duel-list-container">
+             <!-- Inyecciones dinámicas desde Supabase -->
+         </div>
+     </div>
+
+     <!-- SECCIÓN C: CONFIGURAR DESAFÍO -->
+     <div id="secCreateDuel" class="duels-content-section">
+         <div class="admin-box" style="margin: 0;">
+             <h3>Establecer Dificultad del Duelo</h3>
+             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Escoge el nivel del tablero para el contrincante que acepte tu invitación desde el Lobby central.</p>
+             <div class="bg-setting-row">
+                 <label>Nivel del Tablero</label>
+                 <select id="selectDuelLevel" class="admin-input" style="background: #0d1522;">
+                     <option value="1">Nivel 1 (4 Cartas / 2 Pares)</option>
+                     <option value="2">Nivel 2 (8 Cartas / 4 Pares)</option>
+                     <option value="3">Nivel 3 (16 Cartas / 8 Pares)</option>
+                     <option value="4">Nivel 4 (20 Cartas / 10 Pares)</option>
+                     <option value="5">Nivel 5 (24 Cartas / 12 Pares)</option>
+                     <option value="6">Nivel 6 (30 Cartas / 15 Pares)</option>
+                     <option value="7">Nivel 7 (40 Cartas / 20 Pares)</option>
+                 </select>
+             </div>
+             <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 10px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
+         </div>
+     </div>
+ </section>
   <script>
 
     // --- CREDENCIALES E INICIALIZACIÓN DE SUPABASE ---
@@ -882,13 +1151,487 @@
     const btnSaveBgs = document.getElementById("btnSaveBgs");
     const btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
 
-    // --- INICIALIZACIÓN ---
-    document.addEventListener("DOMContentLoaded", () => {
-      loadState();
-      setupEvents();
-      conectarTiempoReal(); // Encendemos la escucha en vivo desde que abre el juego
+ // --- NUEVAS REFERENCIAS DOM PARA AUTENTICACIÓN Y DUELOS ---
+    const authOverlay = document.getElementById("authOverlay");
+    const authTitle = document.getElementById("authTitle");
+    const authSubtitle = document.getElementById("authSubtitle");
+    const authUsername = document.getElementById("authUsername");
+    const authPassword = document.getElementById("authPassword");
+    const btnSubmitAuth = document.getElementById("btnSubmitAuth");
+    const authToggleLink = document.getElementById("authToggleLink");
+    const authToggleTextLabel = document.getElementById("authToggleTextLabel");
+    
+    const duelsPanel = document.getElementById("duelsPanel");
+    const btnOpenDuelsLobby = document.getElementById("btnOpenDuelsLobby");
+    const btnCloseDuels = document.getElementById("btnCloseDuels");
+    const btnLogOut = document.getElementById("btnLogOut");
+    const displayTrophies = document.getElementById("displayTrophies");
+    
+    const tabLobby = document.getElementById("tabLobby");
+    const tabMyDuels = document.getElementById("tabMyDuels");
+    const tabCreateDuel = document.getElementById("tabCreateDuel");
+    const secLobby = document.getElementById("secLobby");
+    const secMyDuels = document.getElementById("secMyDuels");
+    const secCreateDuel = document.getElementById("secCreateDuel");
+    
+    const lobbyDuelsList = document.getElementById("lobbyDuelsList");
+    const myActiveDuelsList = document.getElementById("myActiveDuelsList");
+    const selectDuelLevel = document.getElementById("selectDuelLevel");
+    const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
+
+    // Estado local extendido para el flujo de autenticación
+    let authMode = "REGISTER"; // "REGISTER" o "LOGIN"
+
+
+        // --- COMPROBACIÓN DE SESIÓN ACTIVA AL CARGAR EL JUEGO ---
+    // Modifica o complementa la lógica de arranque verificando si hay un usuario en la nube
+    async function verificarSesionExistente() {
+      const usuarioGuardado = localStorage.getItem("mt_logged_user");
+      if (usuarioGuardado) {
+        try {
+          const { data: dbUser, error } = await supabaseClient
+            .from("memorice_users")
+            .select("*")
+            .eq('username', usuarioGuardado)
+            .maybeSingle();
+
+          if (dbUser && !error) {
+            // El usuario ya estaba logueado, entramos directo sin mostrar el Login
+            ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+            return;
+          }
+        } catch (e) {
+          console.error("Error verificando sesión persistente:", e);
+        }
+      }
+      // Si no hay sesión válida, forzamos que se vea el muro de autenticación
+      if (authOverlay) authOverlay.style.display = "flex";
+    }
+
+    // --- LANZAR UN NUEVO DUELO AL LOBBY DE ESPERA ---
+    if (btnLaunchNewDuel) {
+      btnLaunchNewDuel.addEventListener("click", async () => {
+        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 1;
+        
+        try {
+          // Creamos la fila del duelo en Supabase mapeando las columnas correctas
+          const { error } = await supabaseClient
+            .from("memorice_duels")
+            .insert([{
+              challenger: state.username,
+              duel_level: nivelSeleccionado,
+              status: "WAITING",
+              current_turn: "CHALLENGER",
+              challenger_score: 0,
+              opponent_score: 0
+            }]);
+
+          if (error) throw error;
+
+          alert("¡Desafío publicado con éxito en el Lobby! Esperando a que un contrincante lo acepte.");
+          
+          // Cambiamos a la pestaña del Lobby para ver el movimiento
+          switchDuelTab(tabLobby, secLobby);
+          await actualizarListasDeDuelos();
+          
+        } catch (err) {
+          console.error("Error al publicar el duelo:", err);
+          alert("No se pudo publicar el duelo en internet. Intenta nuevamente.");
+        }
+      });
+    }
+
+    // --- DESCARGAR Y RENDERIZAR LISTAS DE DUELOS (LOBBY Y PARALELOS) ---
+    async function actualizarListasDeDuelos() {
+      if (!duelsPanel.classList.contains("active")) return; // No consumir datos si el panel está cerrado
+
+      try {
+        // 1. Descargamos desafíos en espera (Lobby público) donde nosotros no seamos el creador
+        const { data: lobbyData, error: errLobby } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("status", "WAITING")
+          .not("challenger", "eq", state.username)
+          .order("created_at", { ascending: false });
+
+        if (errLobby) throw errLobby;
+
+        // 2. Descargamos nuestros duelos activos (Donde somos retador o rival y el juego sigue en curso)
+        const { data: misDuelosData, error: errMisDuelos } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("status", "PLAYING")
+          .or(`challenger.eq.${state.username},opponent.eq.${state.username}`)
+          .order("created_at", { ascending: false });
+
+        if (errMisDuelos) throw errMisDuelos;
+
+        // --- PINTAR SECCIÓN A: BUSCAR DESAFÍOS ---
+        lobbyDuelsList.innerHTML = "";
+        if (lobbyData && lobbyData.length > 0) {
+          lobbyData.forEach(duel => {
+            const item = document.createElement("div");
+            item.className = "duel-item";
+            item.innerHTML = `
+              <div class="duel-item-info">
+                <span class="duel-player-title">⚔️ Desafío de: ${duel.challenger}</span>
+                <span class="duel-meta-tag">Tablero de Nivel: ${duel.duel_level}</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
+            `;
+            lobbyDuelsList.appendChild(item);
+          });
+        } else {
+          lobbyDuelsList.innerHTML = `<p style="text-align:center; font-size:0.85rem; color:var(--text-muted); padding:10px;">No hay jugadores esperando duelo en este momento.</p>`;
+        }
+
+        // --- PINTAR SECCIÓN B: MIS DUELOS ACTIVOS ---
+        myActiveDuelsList.innerHTML = "";
+        if (misDuelosData && misDuelosData.length > 0) {
+          misDuelosData.forEach(duel => {
+            const esMiTurno = (duel.current_turn === "CHALLENGER" && duel.challenger === state.username) || 
+                              (duel.current_turn === "OPPONENT" && duel.opponent === state.username);
+            
+            const rival = duel.challenger === state.username ? duel.opponent : duel.challenger;
+            
+            const item = document.createElement("div");
+            item.className = "duel-item";
+            item.innerHTML = `
+              <div class="duel-item-info">
+                <span class="duel-player-title">Rival: ${rival}</span>
+                <span class="duel-meta-tag">Nivel: ${duel.duel_level} | ${esMiTurno ? '🟢 ¡TU TURNO!' : '🔴 Esperando rival...'}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="cargarPartidaDeDuelo('${duel.id}')">Continuar</button>
+            `;
+            myActiveDuelsList.appendChild(item);
+          });
+        } else {
+          myActiveDuelsList.innerHTML = `<p style="text-align:center; font-size:0.85rem; color:var(--text-muted); padding:10px;">No tienes duelos activos en este momento.</p>`;
+        }
+
+      } catch (err) {
+        console.error("Error actualizando el Lobby de duelos:", err);
+      }
+    }
+
+    // --- ACEPTAR UN DUELO DISPONIBLE EN EL LOBBY ---
+    // Esta función global será ejecutada al presionar el botón "Aceptar" de la lista
+    window.aceptarDueloDelLobby = async function(duelId) {
+      try {
+        // Modificamos el estado del duelo asignando nuestro nombre como oponente
+        const { error } = await supabaseClient
+          .from("memorice_duels")
+          .update({
+            opponent: state.username,
+            status: "PLAYING",
+            current_turn: "CHALLENGER" // Inicia siempre el retador original
+          })
+          .eq("id", duelId);
+
+        if (error) throw error;
+
+        alert("¡Has aceptado el desafío! El duelo ha pasado a tu sección de 'Mis Duelos Activos'.");
+        
+        // Movemos al jugador a su panel de partidas en curso para que elija cuándo continuarlo
+        switchDuelTab(tabMyDuels, secMyDuels);
+        await actualizarListasDeDuelos();
+
+      } catch (err) {
+        console.error("Error al aceptar el duelo del lobby:", err);
+        alert("El desafío ya no se encuentra disponible o fue tomado por otro jugador.");
+      }
+    };
+
+    // --- CARGAR Y MONTAR LA PARTIDA SELECCIONADA EN EL TABLERO ---
+    window.cargarPartidaDeDuelo = async function(duelId) {
+      try {
+        const { data: duel, error } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("id", duelId)
+          .maybeSingle();
+
+        if (error || !duel) throw error || new Error("Partida no encontrada");
+
+        // Almacenamos el ID del duelo en curso dentro del estado del juego
+        state.activeDuelId = duel.id;
+        state.isDuelMode = true;
+        
+        // Detenemos los temporizadores del modo solitario
+        clearInterval(state.timerInterval);
+        resetTimerUI();
+        feedbackOverlay.style.display = "none";
+        
+        // Sincronizamos las variables del juego con los datos del duelo
+        state.level = duel.duel_level;
+        state.score = duel.challenger === state.username ? duel.challenger_score : duel.opponent_score;
+        state.scoreAtLevelStart = state.score; // Para la regla de puntos reversibles
+        
+        displayLevel.textContent = `Duelo (Niv ${state.level})`;
+        displayScore.textContent = state.score;
+        
+        // Cerramos visualmente el panel de la sala para liberar la pantalla
+        duelsPanel.classList.remove("active");
+
+        // Si la mezcla de cartas aún no se ha generado para este duelo, el creador la inicializa
+        if (!duel.board_state) {
+          const totalCards = getCardCountForLevel(state.level);
+          const pairsCount = totalCards / 2;
+          let imagePool = [...state.cardImages];
+          shuffleArray(imagePool);
+          let selectedImages = [];
+          for (let i = 0; i < pairsCount; i++) {
+            const img = imagePool[i % imagePool.length];
+            selectedImages.push(img, img);
+          }
+          shuffleArray(selectedImages);
+          
+          const nuevoTablero = selectedImages.map((img, idx) => ({
+            id: idx,
+            img: img,
+            matched: false,
+            colorBorder: "" // Controlará los bordes rojos o verdes del duelo
+          }));
+
+          // Guardamos el tablero en internet para que ambos equipos jueguen con el mismo
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ board_state: nuevoTablero })
+            .eq("id", duel.id);
+            
+          state.boardCards = nuevoTablero;
+        } else {
+          state.boardCards = duel.board_state;
+        }
+
+        // Renderizamos el tablero de juego compartido
+        renderBoard(getCardCountForLevel(state.level));
+        alert("¡Tablero de duelo cargado con éxito! Se aplicarán las reglas de turnos.");
+
+      } catch (err) {
+        console.error("Error al cargar la partida de duelo:", err);
+        alert("No se pudo conectar con el tablero del duelo seleccionado.");
+      }
+    };
+
+    // --- CONECTAR TIEMPO REAL GLOBAL PARA EL LOBBY ---
+    // Complementa tu función conectarTiempoReal existente o añade esta antena receptora
+    function encenderAntenaLobby() {
+      supabaseClient
+        .channel('cambios-lobby-duelos')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'memorice_duels' },
+          async () => {
+            // Si el jugador tiene abierta la ventana de duelos, las listas se refrescan solas en vivo
+            if (duelsPanel.classList.contains("active")) {
+              await actualizarListasDeDuelos();
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    
+    // --- PROTECCIÓN CONTRA INYECCIONES Y SANEAMIENTO ---
+    // Esta función rechaza caracteres peligrosos que comúnmente se usan en ataques
+    function esCadenaSegura(texto) {
+      const caracteresProhibidos = /['";=\-\-\/\*<>]/g;
+      return !caracteresProhibidos.test(texto);
+    }
+
+    // Filtra el nombre de usuario en tiempo real impidiendo espacios o símbolos raros
+    if (authUsername) {
+      authUsername.addEventListener("input", () => {
+        authUsername.value = authUsername.value.replace(/[^a-zA-Z0-9_]/g, "");
+      });
+    }
+
+    // --- MANEJO DE PESTAÑAS DEL LOBBY ---
+    function switchDuelTab(tabActive, sectionActive) {
+      [tabLobby, tabMyDuels, tabCreateDuel].forEach(t => t.classList.remove("active"));
+      [secLobby, secMyDuels, secCreateDuel].forEach(s => s.classList.remove("active"));
+      
+      tabActive.classList.add("active");
+      sectionActive.classList.add("active");
+    }
+
+    if (tabLobby) tabLobby.addEventListener("click", () => switchDuelTab(tabLobby, secLobby));
+    if (tabMyDuels) tabMyDuels.addEventListener("click", () => switchDuelTab(tabMyDuels, secMyDuels));
+    if (tabCreateDuel) tabCreateDuel.addEventListener("click", () => switchDuelTab(tabCreateDuel, secCreateDuel));
+
+    // Mostrar / Ocultar Panel de Duelos
+    if (btnOpenDuelsLobby) {
+      btnOpenDuelsLobby.addEventListener("click", () => {
+        duelsPanel.classList.add("active");
+        duelsPanel.scrollIntoView({ behavior: "smooth" });
+        // Aquí refrescaremos las listas más adelante
+      });
+    }
+    if (btnCloseDuels) {
+      btnCloseDuels.addEventListener("click", () => {
+        duelsPanel.classList.remove("active");
+      });
+    }
+
+     // Intercambiar visualmente entre el modo Registro e Inicio de Sesión
+    if (authToggleLink) {
+      authToggleLink.addEventListener("click", () => {
+        if (authMode === "REGISTER") {
+          authMode = "LOGIN";
+          authTitle.textContent = "Iniciar Sesión";
+          authSubtitle.textContent = "Ingresa tus credenciales para continuar tu progreso teocrático.";
+          btnSubmitAuth.textContent = "Ingresar a la Partida";
+          authToggleTextLabel.textContent = "¿No tienes una cuenta aún?";
+          authToggleLink.textContent = "Crear Cuenta";
+        } else {
+          authMode = "REGISTER";
+          authTitle.textContent = "Crear Cuenta";
+          authSubtitle.textContent = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
+          btnSubmitAuth.textContent = "Confirmar Registro";
+          authToggleTextLabel.textContent = "¿Ya posees un usuario registrado?";
+          authToggleLink.textContent = "Iniciar Sesión";
+        }
+        authUsername.value = "";
+        authPassword.value = "";
+      });
+    }
+
+    // --- MOTOR CRIPTOGRÁFICO DE SEGURIDAD (HASH SHA-256) ---
+    // Convierte la contraseña en un código hash irreversible antes de enviarla a Supabase
+    async function generarHashContrasena(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    // --- PROCESAMIENTO SEGURO DE REGISTRO E INICIO DE SESIÓN ---
+    if (btnSubmitAuth) {
+      btnSubmitAuth.addEventListener("click", async () => {
+        const user = authUsername.value.trim();
+        const pass = authPassword.value;
+
+        // 1. Validaciones estrictas en el cliente
+        if (!user || !pass) {
+          alert("Por favor, completa todos los campos requeridos.");
+          return;
+        }
+        if (user.length < 3) {
+          alert("El nombre de usuario debe contener al menos 3 caracteres.");
+          return;
+        }
+        if (pass.length < 6) {
+          alert("La contraseña debe contener al menos 6 caracteres por seguridad.");
+          return;
+        }
+        if (!esCadenaSegura(user) || !esCadenaSegura(pass)) {
+          alert("Caracteres no válidos detectados. Por motivos de seguridad, evita usar comillas, guiones dobles o símbolos matemáticos.");
+          return;
+        }
+
+        // Generamos el hash seguro de la contraseña
+        const hash = await generarHashContrasena(pass);
+
+        try {
+          if (authMode === "REGISTER") {
+            // --- REGISTRO DE NUEVA CUENTA ---
+            // Primero verificamos si el usuario ya fue tomado de manera segura
+            const { data: existe, error: errCheck } = await supabaseClient
+              .from("memorice_users")
+              .select("username")
+              .eq("username", user)
+              .maybeSingle();
+
+            if (errCheck) throw errCheck;
+            if (existe) {
+              alert("Lo sentimos, este nombre de usuario ya está registrado. Por favor, intenta con uno diferente.");
+              return;
+            }
+
+            // Insertamos el nuevo usuario mapeando de forma paramétrica contra inyecciones SQL
+            const { error: errInsert } = await supabaseClient
+              .from("memorice_users")
+              .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
+
+            if (errInsert) throw errInsert;
+
+            alert("¡Cuenta creada con éxito! Bienvenido al juego.");
+            ingresarUsuarioAlSistema(user, 1, 0, 0);
+
+          } else {
+            // --- INICIO DE SESIÓN ---
+            const { data: dbUser, error: errFetch } = await supabaseClient
+              .from("memorice_users")
+              .select("*")
+              .eq("username", user)
+              .maybeSingle();
+
+            if (errFetch) throw errFetch;
+            
+            // Validamos las credenciales comparando el hash almacenado
+            if (!dbUser || dbUser.password_hash !== hash) {
+              alert("Nombre de usuario o contraseña incorrectos. Verifica tus datos.");
+              return;
+            }
+
+            alert(`¡Bienvenido de vuelta, ${dbUser.username}! Cargando tu progreso...`);
+            ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+          }
+        } catch (err) {
+          console.error("Error crítico durante el proceso de autenticación:", err);
+          alert("Ocurrió un inconveniente de comunicación con el servidor de seguridad. Por favor, reintenta.");
+        }
+      });
+    }
+
+    // Inicializa el entorno local del juego con los datos resguardados en Supabase
+    function ingresarUsuarioAlSistema(username, level, score, trophies) {
+      state.username = username;
+      state.level = parseInt(level) || 1;
+      state.score = parseInt(score) || 0;
+      state.record = parseInt(score) || 0;
+      
+      // Actualizamos los contadores visuales
+      if (usernameInput) usernameInput.value = username;
+      if (displayTrophies) displayTrophies.textContent = trophies || 0;
+      
+      // Guardamos la sesión en LocalStorage de la computadora para evitar re-logueos fastidiosos
+      localStorage.setItem("mt_logged_user", username);
+      
+      saveState();
+      
+      // Ocultamos la capa flotante de autenticación
+      if (authOverlay) authOverlay.style.display = "none";
+      
+      // Arrancamos el nivel recuperado de Supabase
       startLevel(state.level);
-    });
+    }
+
+    // --- CIERRE DE SESIÓN SEGURO ---
+    if (btnLogOut) {
+      btnLogOut.addEventListener("click", () => {
+        if (confirm("¿Estás seguro de que deseas cerrar tu sesión en este dispositivo?")) {
+          localStorage.removeItem("mt_logged_user");
+          localStorage.clear(); // Limpia registros temporales locales
+          window.location.reload(); // Recarga la aplicación para forzar el muro de Login
+        }
+      });
+    }
+
+    
+
+    
+    // --- INICIALIZACIÓN ---
+ // --- INICIALIZACIÓN ---
+ document.addEventListener("DOMContentLoaded", async () => {
+   loadState();
+   setupEvents();
+   conectarTiempoReal(); // Tu antena del Top 10 solitario
+   encenderAntenaLobby(); // <-- AGREGA ESTA LÍNEA AQUÍ (Antena del Lobby multijugador)
+   await verificarSesionExistente(); // <-- AGREGA ESTA LÍNEA AQUÍ (Muro de Login Seguro)
+ });
 
     function setupEvents() {
       // Nombre de usuario editable
@@ -920,7 +1663,16 @@
       btnRestoreDefaults.addEventListener("click", restoreDefaults);
       
       // Controles de Nivel
-      document.getElementById("btnRestartLevel").addEventListener("click", () => startLevel(state.level));
+document.getElementById("btnRestartLevel").addEventListener("click", () => {
+  // Le devolvemos el puntaje que tenía al iniciar el nivel, eliminando lo acumulado en este intento
+  state.score = state.scoreAtLevelStart; 
+  saveState();
+  startLevel(state.level);
+});
+
+
+
+      
       document.getElementById("btnResetGame").addEventListener("click", resetAllGame);
     }
 
@@ -937,6 +1689,7 @@
 
     function startLevel(level) {
       // Detener loops anteriores
+      state.scoreAtLevelStart = state.score;
       clearInterval(state.timerInterval);
       resetTimerUI();
       feedbackOverlay.style.display = "none";
@@ -1222,41 +1975,39 @@
     }
 
     // --- RENDERIZADO ASÍNCRONO DEL TOP 10 GLOBAL (CONEXIÓN A SUPABASE) ---
-    async function renderLeaderboard() {
-      try {
-        // Descargamos los 10 mejores puntajes históricos usando tu columna real: Score
-        const { data, error } = await supabaseClient
-          .from('memorice_leaderboard')
-          .select('username, Score')
-          .order('Score', { ascending: false })
-          .limit(10);
-          
-        if (error) throw error;
+   async function renderLeaderboard() {
+  try {
+    // Consultamos la vista optimizada del Top 10 único
+    const { data, error } = await supabaseClient
+      .from('view_top_ten_leaderboard')
+      .select('*');
+       
+    if (error) throw error;
+    
+    leaderboardBody.innerHTML = "";
+    
+    if (data && data.length > 0) {
+      data.forEach((user, idx) => {
+        const row = document.createElement("tr");
+        const isCurrentUser = (user.username === state.username);
         
-        // Limpiar el contenedor visual actual
-        leaderboardBody.innerHTML = "";
-        
-        if (data && data.length > 0) {
-          data.forEach((user, idx) => {
-            const row = document.createElement("tr");
-            const isCurrentUser = (user.username === state.username);
-            
-            if (isCurrentUser) {
-              row.style.fontWeight = "bold";
-              row.style.color = "var(--accent-color)";
-              row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
-            }
-            row.innerHTML = `
-              <td class="rank">#${idx + 1}</td>
-              <td>${user.username}</td>
-              <td class="score">${user.Score}</td>
-            `;
-            leaderboardBody.appendChild(row);
-          });
+        if (isCurrentUser) {
+          row.style.fontWeight = "bold";
+          row.style.color = "var(--accent-color)";
+          row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
         }
-      } catch (err) {
-        console.warn("Modo offline o error de Supabase detectado. Usando Fallback de LocalStorage.", err);
-        
+        row.innerHTML = `
+          <td class="rank">#${idx + 1}</td>
+          <td>${user.username}</td>
+          <td class="score">${user.highest_score}</td>
+        `;
+        leaderboardBody.appendChild(row);
+      });
+    }
+  } catch (err) {
+    console.error("Error al renderizar el tablero de líderes unificado:", err);
+  }
+}
         // --- FALLBACK MODO OFFLINE ---
         leaderboardBody.innerHTML = "";
         state.leaderboard.sort((a, b) => b.score - a.score);
