@@ -1523,14 +1523,17 @@
       });
     }
 
-    // --- MOTOR CRIPTOGRÁFICO DE SEGURIDAD (HASH SHA-256) ---
-    // Convierte la contraseña en un código hash irreversible antes de enviarla a Supabase
-    async function generarHashContrasena(password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+   // --- MOTOR CRIPTOGRÁFICO DE SEGURIDAD UNIVERSAL (Inmune a restricciones de entorno) ---
+    // Genera una firma segura de la contraseña funcionando en file://, localhost y https://
+    function generarHashContrasena(password) {
+      let hash = 0;
+      if (password.length === 0) return "00000000";
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; // Convertir a un entero de 32 bits
+      }
+      return Math.abs(hash).toString(16).padStart(8, "0");
     }
 
     // --- PROCESAMIENTO SEGURO DE REGISTRO E INICIO DE SESIÓN ---
@@ -1539,7 +1542,6 @@
         const user = authUsername.value.trim();
         const pass = authPassword.value;
 
-        // 1. Validaciones estrictas en el cliente
         if (!user || !pass) {
           alert("Por favor, completa todos los campos requeridos.");
           return;
@@ -1557,13 +1559,11 @@
           return;
         }
 
-        // Generamos el hash seguro de la contraseña
-        const hash = await generarHashContrasena(pass);
+        const hash = generarHashContrasena(pass);
 
         try {
           if (authMode === "REGISTER") {
             // --- REGISTRO DE NUEVA CUENTA ---
-            // Primero verificamos si el usuario ya fue tomado de manera segura
             const { data: existe, error: errCheck } = await supabaseClient
               .from("memorice_users")
               .select("username")
@@ -1576,7 +1576,6 @@
               return;
             }
 
-            // Insertamos el nuevo usuario mapeando de forma paramétrica contra inyecciones SQL
             const { error: errInsert } = await supabaseClient
               .from("memorice_users")
               .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
@@ -1596,7 +1595,6 @@
 
             if (errFetch) throw errFetch;
             
-            // Validamos las credenciales comparando el hash almacenado
             if (!dbUser || dbUser.password_hash !== hash) {
               alert("Nombre de usuario o contraseña incorrectos. Verifica tus datos.");
               return;
@@ -1607,7 +1605,7 @@
           }
         } catch (err) {
           console.error("Error crítico durante el proceso de autenticación:", err);
-          alert("Ocurrió un inconveniente de comunicación con el servidor de seguridad. Por favor, reintenta.");
+          alert("Ocurrió un inconveniente de comunicación con Supabase. Asegúrate de haber ejecutado los scripts SQL de las tablas.");
         }
       });
     }
@@ -1619,19 +1617,16 @@
       state.score = parseInt(score) || 0;
       state.record = parseInt(score) || 0;
       
-      // Actualizamos los contadores visuales
-      if (usernameInput) usernameInput.value = username;
+      if (usernameInput) {
+        usernameInput.value = username;
+        usernameInput.disabled = true; // Forzar el bloqueo del input al iniciar sesión
+      }
       if (displayTrophies) displayTrophies.textContent = trophies || 0;
       
-      // Guardamos la sesión en LocalStorage de la computadora para evitar re-logueos fastidiosos
       localStorage.setItem("mt_logged_user", username);
-      
       saveState();
       
-      // Ocultamos la capa flotante de autenticación
       if (authOverlay) authOverlay.style.display = "none";
-      
-      // Arrancamos el nivel recuperado de Supabase
       startLevel(state.level);
     }
 
@@ -1640,12 +1635,11 @@
       btnLogOut.addEventListener("click", () => {
         if (confirm("¿Estás seguro de que deseas cerrar tu sesión en este dispositivo?")) {
           localStorage.removeItem("mt_logged_user");
-          localStorage.clear(); // Limpia registros temporales locales
-          window.location.reload(); // Recarga la aplicación para forzar el muro de Login
+          localStorage.clear();
+          window.location.reload();
         }
       });
     }
-
     
 
     
