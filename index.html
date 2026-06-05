@@ -1733,221 +1733,391 @@ document.getElementById("btnRestartLevel").addEventListener("click", () => {
       populateAdminPanel();
     }
 
-    function renderBoard(totalCards) {
-      gameBoard.className = `game-board grid-${totalCards}`;
-      gameBoard.innerHTML = "";
-      state.boardCards.forEach((cardData) => {
-        const cardContainer = document.createElement("div");
-        cardContainer.className = "card";
-        cardContainer.dataset.id = cardData.id;
-        
-        const cardInner = document.createElement("div");
-        cardInner.className = "card-inner";
-        
-        const cardBack = document.createElement("div");
-        cardBack.className = "card-back";
-        
-        const cardFront = document.createElement("div");
-        cardFront.className = "card-front";
-        
-        const img = document.createElement("img");
-        img.src = cardData.img;
-        img.alt = "Memory Front";
-        img.loading = "lazy";
-        
-        cardFront.appendChild(img);
-        cardInner.appendChild(cardBack);
-        cardInner.appendChild(cardFront);
-        cardContainer.appendChild(cardInner);
-        
-        cardContainer.addEventListener("click", () => handleCardClick(cardContainer, cardData));
-        gameBoard.appendChild(cardContainer);
-      });
-    }
+  function renderBoard(totalCards) {
+  gameBoard.className = `game-board grid-${totalCards}`;
+  gameBoard.innerHTML = "";
+  
+  const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
 
-    // --- MANEJO DEL TURNO DEL JUEGO ---
-    function handleCardClick(cardElement, cardData) {
-      if (state.isProcessing) return;
-      if (cardData.matched) return;
-      if (cardElement.classList.contains("flipped")) return;
-       // BLOQUEO: Desactiva el cuadro de texto del nombre al iniciar a jugar
-   if (usernameInput) {
-     usernameInput.disabled = true;
-   }
-      cardElement.classList.add("flipped");
-      
-      if (!state.firstCardElement) {
-        // Primera tarjeta volteada
-        state.firstCardElement = cardElement;
-        state.firstCardData = cardData;
-        // Registrar si esta carta ya fue vista antes
-        state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
-        // Iniciar cuenta regresiva exacta de 10s
-        startTimer();
-      } else {
-        // Segunda tarjeta volteada
-        state.secondCardElement = cardElement;
-        state.secondCardData = cardData;
-        // Detener temporizador de inmediato al voltear
-        stopTimer();
-        state.isProcessing = true;
-        
-        const secondCardWasSeen = state.seenCardsIndices.has(cardData.id);
-        if (state.firstCardData.img === state.secondCardData.img) {
-          // ¡HAY COINCIDENCIA!
-          handleMatch(state.firstCardWasSeen, secondCardWasSeen);
+  state.boardCards.forEach((cardData) => {
+    const cardContainer = document.createElement("div");
+    cardContainer.className = "card";
+    cardContainer.dataset.id = cardData.id;
+    
+    const cardInner = document.createElement("div");
+    cardInner.className = "card-inner";
+    
+    const cardBack = document.createElement("div");
+    cardBack.className = "card-back";
+    
+    const cardFront = document.createElement("div");
+    cardFront.className = "card-front";
+    
+    // Si la carta ya está emparejada, aplicamos los estilos de bordes del duelo
+    if (cardData.matched) {
+      cardContainer.classList.add("flipped", "matched");
+      if (state.isDuelMode && cardData.claimedBy) {
+        if (cardData.claimedBy === miRol) {
+          cardFront.style.border = "3px solid #4ade80"; // Verde: ¡Lo ganaste tú!
+          cardFront.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
         } else {
-          // NO COINCIDEN
-          handleMismatch();
+          cardFront.style.border = "3px solid #f87171"; // Rojo: Lo ganó tu rival
+          cardFront.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.4)";
         }
       }
     }
+    
+    const img = document.createElement("img");
+    img.src = cardData.img;
+    img.alt = "Memory Front";
+    img.loading = "lazy";
+    
+    cardFront.appendChild(img);
+    cardInner.appendChild(cardBack);
+    cardInner.appendChild(cardFront);
+    cardContainer.appendChild(cardInner);
+    
+    cardContainer.addEventListener("click", () => handleCardClick(cardContainer, cardData));
+    gameBoard.appendChild(cardContainer);
+  });
+}
 
-    // --- CÁLCULO ESTRICTO DE REGLAS DE PUNTUACIÓN ---
-    function handleMatch(firstSeen, secondSeen) {
-      state.firstCardData.matched = true;
-      state.secondCardData.matched = true;
-      state.firstCardElement.classList.add("matched");
-      state.secondCardElement.classList.add("matched");
-      
-      let pointsGained = 0;
-      let isPerfect = false;
-      
-      // REGLA 1: Condición de Memoria Perfecta
-      if (!firstSeen && !secondSeen) {
-        pointsGained = 100; // Fijo sin importar el tiempo
-        isPerfect = true;
-      } else {
-        // REGLA 2: Condición con Tarjetas ya Vistas (Inversamente proporcional al tiempo)
-        const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
-        let secondsCeil = Math.ceil(elapsedSeconds);
-        if (secondsCeil < 1) secondsCeil = 1;
-        pointsGained = 100 - (secondsCeil * 10);
+// --- ANTENA DE SEGUIMIENTO EN TIEMPO REAL PARA PARTIDAS EN CURSO ---
+function conectarCanalDePartidaEnVivo(duelId) {
+  // Cerramos cualquier suscripción de canal activa previa para no duplicar procesos
+  if (window.activeDuelChannel) {
+    window.activeDuelChannel.unsubscribe();
+  }
+
+  console.log("Antena encendida para el duelo en vivo:", duelId);
+
+  window.activeDuelChannel = supabaseClient
+    .channel(`partida-en-vivo-${duelId}`)
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'memorice_duels', filter: `id=eq.${duelId}` },
+      async (payload) => {
+        const datosActualizados = payload.new;
+        console.log("📡 Movimiento detectado del rival en internet:", datosActualizados.last_move);
         
-        // Puntuación mínima si lo hace en segundo 9, 10 o al límite
-        if (pointsGained < 10) {
-          pointsGained = 10;
+        // Sincronizamos las variables de turno y marcadores
+        state.duelCurrentTurn = datosActualizados.current_turn;
+        state.boardCards = datosActualizados.board_state || state.boardCards;
+        
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        state.score = miRol === "CHALLENGER" ? datosActualizados.challenger_score : datosActualizados.opponent_score;
+        displayScore.textContent = state.score;
+
+        // Procesar visualmente el último movimiento realizado por el rival en nuestra pantalla
+        const move = datosActualizados.last_move;
+        if (move && move.player !== miRol) {
+          const el1 = gameBoard.querySelector(`[data-id="${move.card1}"]`);
+          const el2 = move.card2 !== null ? gameBoard.querySelector(`[data-id="${move.card2}"]`) : null;
+
+          if (move.result === "MATCH") {
+            // Si el rival acertó, volteamos las cartas con animación y las dejamos fijas
+            if (el1) el1.classList.add("flipped", "matched");
+            if (el2) el2.classList.add("flipped", "matched");
+            createScoreToast(el1, "¡Rival Acertó Par! 😮");
+          } else if (move.result === "MISMATCH") {
+            // Si el rival falló, las mostramos brevemente y las volvemos a tapar
+            state.isProcessing = true;
+            if (el1) el1.classList.add("flipped");
+            if (el2) el2.classList.add("flipped");
+            
+            setTimeout(() => {
+              if (el1) el1.classList.remove("flipped");
+              if (el2) el2.classList.remove("flipped");
+              state.isProcessing = false;
+            }, 1500); // 1.5 segundos para memorizar el fallo del oponente
+          } else if (move.result === "TIMEOUT") {
+            if (el1) el1.classList.add("flipped");
+            createScoreToast(el1, "⏱️ Rival agotó tiempo");
+            setTimeout(() => {
+              if (el1) el1.classList.remove("flipped");
+            }, 1000);
+          }
         }
+
+        // Recalcular conteo de pares para la barra inferior
+        state.myPairs = 0;
+        state.rivalPairs = 0;
+        state.boardCards.forEach(c => {
+          if (c.matched) {
+            if (c.claimedBy === miRol) state.myPairs += 0.5;
+            else state.rivalPairs += 0.5;
+          }
+        });
+        
+        document.getElementById("myPairsCount").textContent = Math.floor(state.myPairs);
+        document.getElementById("rivalPairsCount").textContent = Math.floor(state.rivalPairs);
+
+        // Actualizamos los textos de la interfaz y evaluamos fin del duelo
+        actualizarVisualizacionDeTurno();
+        renderBoard(getCardCountForLevel(state.level));
+        evaluarFinDelDuelo();
       }
-      
-      // Marcar de forma efectiva en el historial de vistas
-      state.seenCardsIndices.add(state.firstCardData.id);
-      state.seenCardsIndices.add(state.secondCardData.id);
-      
-      // Guardar Score
-      state.score += pointsGained;
-      if (state.score > state.record) {
-        state.record = state.score;
-      }
-      saveState();
-      
-      // Desplegar feedback numérico sobre la tarjeta coincidente
-      createScoreToast(state.secondCardElement, `+${pointsGained} Pts ${isPerfect ? '¡Memoria Perfecta!' : ''}`);
-      
-      // Actualizar UI
-      displayScore.textContent = state.score;
-      displayRecord.textContent = state.record;
-      updateLeaderboardWithCurrent(); // Gatilla el guardado dinámico de Supabase
-      resetTurnState();
-      checkLevelCompletion();
-    }
+    )
+    .subscribe();
+}
 
-    function handleMismatch() {
-      // Registrar en el conjunto de tarjetas vistas para penalizar en futuros intentos
-      state.seenCardsIndices.add(state.firstCardData.id);
-      state.seenCardsIndices.add(state.secondCardData.id);
-      
-      // Dejar volteadas un segundo antes de volverlas boca abajo
-      setTimeout(() => {
-        if (state.firstCardElement && state.secondCardElement) {
-          state.firstCardElement.classList.remove("flipped");
-          state.secondCardElement.classList.remove("flipped");
-        }
-        resetTurnState();
-      }, 1000);
-    }
 
-    function resetTurnState() {
-      state.firstCardElement = null;
-      state.firstCardData = null;
-      state.secondCardElement = null;
-      state.secondCardData = null;
-      state.isProcessing = false;
-      resetTimerUI();
-    }
+  // --- MANEJO DEL TURNO DEL JUEGO (ADAPTADO A MODO DUELO) ---
+function handleCardClick(cardElement, cardData) {
+  if (state.isProcessing) return;
+  if (cardData.matched) return;
+  if (cardElement.classList.contains("flipped")) return;
 
-    // --- TEMPORIZADOR EXACTO ---
-    function startTimer() {
-      state.timeLeft = 10;
-      state.turnStartTime = Date.now();
+  // REGLA MULTIJUGADOR: Bloquear clics si estás en un duelo y NO es tu turno
+  if (state.isDuelMode) {
+    const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+    if (state.duelCurrentTurn !== miRol) {
+      alert("⚠️ No es tu turno. Espera a que tu rival realice su jugada.");
+      return;
+    }
+  }
+
+  if (usernameInput) usernameInput.disabled = true;
+  cardElement.classList.add("flipped");
+  
+  if (!state.firstCardElement) {
+    state.firstCardElement = cardElement;
+    state.firstCardData = cardData;
+    state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
+    startTimer();
+  } else {
+    state.secondCardElement = cardElement;
+    state.secondCardData = cardData;
+    stopTimer();
+    state.isProcessing = true;
+    
+    if (state.firstCardData.img === state.secondCardData.img) {
+      handleMatch(state.firstCardWasSeen, state.seenCardsIndices.has(cardData.id));
+    } else {
+      handleMismatch();
+    }
+  }
+}
+
+// --- CÁLCULO ESTRICTO DE COINCIDENCIAS Y TURNOS ---
+async function handleMatch(firstSeen, secondSeen) {
+  state.firstCardData.matched = true;
+  state.secondCardData.matched = true;
+  state.firstCardElement.classList.add("matched");
+  state.secondCardElement.classList.add("matched");
+  
+  let pointsGained = 100;
+  if (firstSeen || secondSeen) {
+    const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
+    pointsGained = Math.max(10, 100 - (Math.ceil(elapsedSeconds) * 10));
+  }
+  
+  state.seenCardsIndices.add(state.firstCardData.id);
+  state.seenCardsIndices.add(state.secondCardData.id);
+  state.score += pointsGained;
+  if (state.score > state.record) state.record = state.score;
+  saveState();
+  
+  createScoreToast(state.secondCardElement, `+${pointsGained} Pts`);
+  displayScore.textContent = state.score;
+  displayRecord.textContent = state.record;
+
+  // LÓGICA DE ACTUALIZACIÓN EN LA NUBE PARA DUELOS
+  if (state.isDuelMode) {
+    const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+    
+    // Asignamos la autoría del par en la memoria local de la carta
+    state.boardCards[state.firstCardData.id].matched = true;
+    state.boardCards[state.firstCardData.id].claimedBy = miRol;
+    state.boardCards[state.secondCardData.id].matched = true;
+    state.boardCards[state.secondCardData.id].claimedBy = miRol;
+
+    // Sumamos el par visual inmediato
+    state.myPairs += 1;
+    document.getElementById("myPairsCount").textContent = state.myPairs;
+
+    try {
+      // Mandamos el movimiento y mantenemos el tablero actualizado en Supabase (El turno se mantiene al acertar)
+      await supabaseClient
+        .from("memorice_duels")
+        .update({ 
+          board_state: state.boardCards,
+          last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MATCH", player: miRol },
+          challenger_score: miRol === "CHALLENGER" ? state.score : undefined,
+          opponent_score: miRol === "OPPONENT" ? state.score : undefined
+        })
+        .eq("id", state.activeDuelId);
+    } catch (e) { console.error("Error sincronizando acierto:", e); }
+    
+    resetTurnState();
+    checkLevelCompletion();
+  } else {
+    updateLeaderboardWithCurrent();
+    resetTurnState();
+    checkLevelCompletion();
+  }
+}
+
+async function handleMismatch() {
+  state.seenCardsIndices.add(state.firstCardData.id);
+  state.seenCardsIndices.add(state.secondCardData.id);
+  
+  if (state.isDuelMode) {
+    const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+    const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+    
+    try {
+      // Enviamos el fallo e inmediatamente le entregamos el control de la partida al rival en Supabase
+      await supabaseClient
+        .from("memorice_duels")
+        .update({ 
+          current_turn: siguienteTurno,
+          last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MISMATCH", player: miRol }
+        })
+        .eq("id", state.activeDuelId);
+    } catch(e) { console.error("Error sincronizando fallo:", e); }
+  }
+
+  setTimeout(() => {
+    if (state.firstCardElement && state.secondCardElement) {
+      state.firstCardElement.classList.remove("flipped");
+      state.secondCardElement.classList.remove("flipped");
+    }
+    resetTurnState();
+  }, 1000);
+}
+
+function resetTurnState() {
+  state.firstCardElement = null;
+  state.firstCardData = null;
+  state.secondCardElement = null;
+  state.secondCardData = null;
+  state.isProcessing = false;
+  resetTimerUI();
+}
+
+function startTimer() {
+  state.timeLeft = 10;
+  state.turnStartTime = Date.now();
+  updateTimerUI();
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timeLeft = 10 - ((Date.now() - state.turnStartTime) / 1000);
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      state.timeLeft = 0;
       updateTimerUI();
-      clearInterval(state.timerInterval);
-      state.timerInterval = setInterval(() => {
-        const elapsed = (Date.now() - state.turnStartTime) / 1000;
-        state.timeLeft = 10 - elapsed;
-        if (state.timeLeft <= 0) {
-          clearInterval(state.timerInterval);
-          state.timeLeft = 0;
-          updateTimerUI();
-          handleTimeout();
-        } else {
-          updateTimerUI();
-        }
-      }, 50); // Comprobaciones fluidas cada 50ms
+      handleTimeout();
+    } else {
+      updateTimerUI();
     }
+  }, 50);
+}
 
-    function stopTimer() {
-      clearInterval(state.timerInterval);
-    }
+function stopTimer() { clearInterval(state.timerInterval); }
+function updateTimerUI() {
+  timerText.textContent = `${Math.max(0, Math.ceil(state.timeLeft))}s`;
+  timerBar.style.width = `${(state.timeLeft / 10) * 100}%`;
+}
+function resetTimerUI() { timerBar.style.width = "100%"; timerText.textContent = "10s"; }
 
-    function updateTimerUI() {
-      const displaySec = Math.max(0, Math.ceil(state.timeLeft));
-      timerText.textContent = `${displaySec}s`;
-      const percentage = (state.timeLeft / 10) * 100;
-      timerBar.style.width = `${percentage}%`;
-    }
+async function handleTimeout() {
+  state.isProcessing = true;
+  if (state.firstCardData) state.seenCardsIndices.add(state.firstCardData.id);
+  createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
+  
+  if (state.isDuelMode) {
+    const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+    const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+    try {
+      await supabaseClient
+        .from("memorice_duels")
+        .update({ 
+          current_turn: siguienteTurno,
+          last_move: { card1: state.firstCardData.id, card2: null, result: "TIMEOUT", player: miRol }
+        })
+        .eq("id", state.activeDuelId);
+    } catch(e) { console.error(e); }
+  }
 
-    function resetTimerUI() {
-      timerBar.style.width = "100%";
-      timerText.textContent = "10s";
-    }
+  setTimeout(() => {
+    if (state.firstCardElement) state.firstCardElement.classList.remove("flipped");
+    resetTurnState();
+  }, 1000);
+}
 
-    function handleTimeout() {
-      state.isProcessing = true;
-      
-      // Registrar en el historial de vistas al agotarse el tiempo
-      if (state.firstCardData) {
-        state.seenCardsIndices.add(state.firstCardData.id);
-      }
-      createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
-      setTimeout(() => {
-        if (state.firstCardElement) {
-          state.firstCardElement.classList.remove("flipped");
-        }
-        resetTurnState();
-      }, 1000);
-    }
+function createScoreToast(element, text) {
+  if (!element) return;
+  const rect = element.getBoundingClientRect();
+  const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
+  const toast = document.createElement("div");
+  toast.className = "score-toast";
+  toast.textContent = text;
+  toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
+  toast.style.top = `${rect.top - boardRect.top}px`;
+  document.getElementById("boardWrapper").appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 1400);
+}
+// --- EVALUACIÓN RESTRUCTURADA DE GANADOR DE DUELOS ---
+async function evaluarFinDelDuelo() {
+  const tableroCompleto = state.boardCards.every(card => card.matched);
+  if (!tableroCompleto) return; // Si quedan cartas boca abajo, el juego continúa
 
-    // --- INDICADOR FLOTANTE DE PUNTUACIÓN (TOAST) ---
-    function createScoreToast(element, text) {
-      if (!element) return;
-      const rect = element.getBoundingClientRect();
-      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
-      
-      const toast = document.createElement("div");
-      toast.className = "score-toast";
-      toast.textContent = text;
-      
-      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
-      toast.style.top = `${rect.top - boardRect.top}px`;
-      
-      document.getElementById("boardWrapper").appendChild(toast);
-      
-      setTimeout(() => {
-        toast.remove();
-      }, 1400);
-    }
+  state.isProcessing = true;
+  clearInterval(state.timerInterval);
 
+  let tituloFinal = "";
+  let subtituloFinal = "";
+  const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+  // Comparamos los marcadores de pares acumulados
+  if (state.myPairs > state.rivalPairs) {
+    tituloFinal = "🏆 ¡VICTORIA ABSOLUTA!";
+    subtituloFinal = `Has ganado el duelo con un total de ${Math.floor(state.myPairs)} pares frente a ${Math.floor(state.rivalPairs)} de tu rival.`;
+    
+    try {
+      // Descargamos copas actuales
+      const { data: userDb } = await supabaseClient
+        .from("memorice_users")
+        .select("trophies_count, highest_score")
+        .eq("username", state.username)
+        .maybeSingle();
+
+      const nuevasCopas = (userDb?.trophies_count || 0) + 1;
+      const nuevoRecordMax = Math.max(userDb?.highest_score || 0, state.score);
+
+      // Otorgamos la copa en la base de datos de usuarios
+      await supabaseClient
+        .from("memorice_users")
+        .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
+        .eq("username", state.username);
+
+      // Marcamos el duelo en internet como terminado para archivar las listas
+      await supabaseClient
+        .from("memorice_duels")
+        .update({ status: "FINISHED" })
+        .eq("id", state.activeDuelId);
+
+      if (displayTrophies) displayTrophies.textContent = nuevasCopas;
+    } catch(e) { console.error(e); }
+
+  } else if (state.myPairs < state.rivalPairs) {
+    tituloFinal = "😢 DERROTA EN DUELO";
+    subtituloFinal = `Tu rival ha conseguido ${Math.floor(state.rivalPairs)} pares superando tus ${Math.floor(state.myPairs)} combinaciones. ¡Sigue practicando tu memoria!`;
+  } else {
+    tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+    subtituloFinal = `Ambos jugadores consiguieron exactamente la misma cantidad de pares (${Math.floor(state.myPairs)}). Ha sido una partida muy reñida.`;
+  }
+
+  // Modificamos el cartel flotante nativo para mostrar el podio multijugador
+  feedbackTitle.textContent = tituloFinal;
+  feedbackSubtitle.textContent = subtituloFinal;
+  btnFeedbackAction.textContent = "Volver al Lobby";
+  btnFeedbackAction.onclick = () => {
+    window.location.reload(); // Recarga limpia para regresar a la central
+  };
+  feedbackOverlay.style.display = "block";
+}
     // --- REVISIÓN DE FIN DE NIVEL ---
     function checkLevelCompletion() {
       const isLevelComplete = state.boardCards.every(card => card.matched);
