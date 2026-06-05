@@ -855,10 +855,19 @@
         </div>
       </div>
       <!-- Botones de Control de Partida -->
-      <div style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
-        <button id="btnRestartLevel" class="btn btn-secondary" style="width: auto; min-width: 140px;">Reiniciar Nivel</button>
-        <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
-      </div>
+      <!-- Botones de Control de Partida (Contenedor con ID para ocultar en duelos) -->
+ <div id="soloGameControls" style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
+     <button id="btnRestartLevel" class="btn btn-secondary" style="width: auto; min-width: 140px;">Reiniciar Nivel</button>
+     <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
+ </div>
+
+ <!-- NUEVO MARCADOR DE PARES PARA EL MODO DUELO (Inicialmente oculto) -->
+ <div id="duelPairsScoreboard" style="display: none; justify-content: space-around; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); font-weight: bold; text-align: center;">
+     <div style="color: #4ade80;">🟢 Mis Pares: <span id="myPairsCount">0</span></div>
+     <div style="color: #f87171;">🔴 Pares Rival: <span id="rivalPairsCount">0</span></div>
+     <div id="duelTurnIndicator" style="color: var(--accent-color); width: 100%; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">Cargando turno...</div>
+ </div>
+
       <!-- PANEL DE ADMINISTRACIÓN -->
       <section id="adminPanel" class="admin-panel">
         <div class="admin-title">
@@ -1100,6 +1109,17 @@
       timeLeft: 10,
       timerInterval: null,
       turnStartTime: null
+
+      // Variables añadidas para el control estricto del Modo Duelo
+      activeDuelId: null,
+      isDuelMode: false,
+      duelChallenger: "",
+      duelOpponent: "",
+      duelCurrentTurn: "",
+      myPairs: 0,
+      rivalPairs: 0
+
+      
     };
 
     // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
@@ -1478,27 +1498,38 @@ window.aceptarDueloDelLobby = async function(duelId) {
 
 window.cargarPartidaDeDuelo = async function(duelId) {
   try {
-    const { data: duel } = await supabaseClient
+    const { data: duel, error } = await supabaseClient
       .from("memorice_duels")
       .select("*")
       .eq("id", duelId)
       .maybeSingle();
 
-    if (!duel) return;
+    if (error || !duel) return;
+    
+    // Configuración del Estado Multijugador
     state.activeDuelId = duel.id;
     state.isDuelMode = true;
+    state.duelChallenger = duel.challenger;
+    state.duelOpponent = duel.opponent;
+    state.duelCurrentTurn = duel.current_turn;
+    
     clearInterval(state.timerInterval);
     resetTimerUI();
     feedbackOverlay.style.display = "none";
     
+    // Configurar Interfaz de Duelos (Ocultar botones solitarios, mostrar marcadores)
+    document.getElementById("soloGameControls").style.display = "none";
+    document.getElementById("duelPairsScoreboard").style.display = "flex";
+    
     state.level = duel.duel_level;
     state.score = duel.challenger === state.username ? duel.challenger_score : duel.opponent_score;
-    state.scoreAtLevelStart = state.score; // REGRESIÓN DE PUNTOS GARANTIZADA
+    state.scoreAtLevelStart = state.score; 
     
-    displayLevel.textContent = `Duelo (Niv ${state.level})`;
+    displayLevel.textContent = `Duelo vs ${duel.challenger === state.username ? duel.opponent : duel.challenger}`;
     displayScore.textContent = state.score;
     duelsPanel.classList.remove("active");
 
+    // Sincronizar Tablero Compartido
     if (!duel.board_state) {
       const totalCards = getCardCountForLevel(state.level);
       const pairsCount = totalCards / 2;
@@ -1514,8 +1545,9 @@ window.cargarPartidaDeDuelo = async function(duelId) {
         id: idx,
         img: img,
         matched: false,
-        colorBorder: ""
+        claimedBy: "" // Almacenará quién ganó esta carta: 'CHALLENGER' o 'OPPONENT'
       }));
+      
       await supabaseClient
         .from("memorice_duels")
         .update({ board_state: nuevoTablero })
@@ -1524,11 +1556,51 @@ window.cargarPartidaDeDuelo = async function(duelId) {
     } else {
       state.boardCards = duel.board_state;
     }
+    
+    // Calcular cuántos pares lleva cada uno a partir del tablero descargado
+    state.myPairs = 0;
+    state.rivalPairs = 0;
+    const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+    
+    state.boardCards.forEach(c => {
+      if (c.matched) {
+        if (c.claimedBy === miRol) state.myPairs += 0.5; // 0.5 por cada carta del par
+        else state.rivalPairs += 0.5;
+      }
+    });
+    
+    document.getElementById("myPairsCount").textContent = Math.floor(state.myPairs);
+    document.getElementById("rivalPairsCount").textContent = Math.floor(state.rivalPairs);
+
+    // Evaluar de quién es el turno
+    actualizarVisualizacionDeTurno();
     renderBoard(getCardCountForLevel(state.level));
+    
+    // Suscribir esta pantalla al canal en tiempo real de esta partida específica
+    conectarCanalDePartidaEnVivo(duel.id);
+
   } catch (err) {
+    console.error(err);
     alert("Error al conectar al duelo.");
   }
 };
+
+// Función auxiliar para pintar en pantalla de quién es el control
+function actualizarVisualizacionDeTurno() {
+  const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+  const indicador = document.getElementById("duelTurnIndicator");
+  if (!indicador) return;
+  
+  if (state.duelCurrentTurn === miRol) {
+    indicador.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
+    indicador.style.color = "#4ade80";
+  } else {
+    const nombreRival = miRol === "CHALLENGER" ? state.duelOpponent : state.duelChallenger;
+    indicador.innerHTML = `🔴 Turno de su rival: <strong>${nombreRival}</strong>. Esperando jugada...`;
+    indicador.style.color = "#f87171";
+  }
+}
+
 
 
     
