@@ -1287,18 +1287,22 @@ function generarHashContrasena(password) {
   return Math.abs(hash).toString(16).padStart(8, "0");
 }
 
-// --- PROCESAMIENTO DE ACCESO SEGURO ---
+// --- PROCESAMIENTO DE ACCESO SEGURO (CON ALERTAS EXPLICITAS) ---
 if (btnSubmitAuth) {
   btnSubmitAuth.addEventListener("click", async () => {
     const user = authUsername.value.trim();
     const pass = authPassword.value;
 
-    if (!user || !pass || user.length < 3 || pass.length < 6) {
-      alert("Por favor verifica los campos. Nombre mínimo 3 letras, clave mínimo 6 caracteres.");
+    if (!user || !pass) {
+      alert("⚠️ Por favor, completa tanto el usuario como la contraseña.");
+      return;
+    }
+    if (user.length < 3 || pass.length < 6) {
+      alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
       return;
     }
     if (!esCadenaSegura(user) || !esCadenaSegura(pass)) {
-      alert("Caracteres prohibidos detectados. Evita usar comillas o guiones.");
+      alert("⚠️ Caracteres prohibidos detectados. Evita usar comillas o guiones.");
       return;
     }
 
@@ -1306,42 +1310,61 @@ if (btnSubmitAuth) {
 
     try {
       if (authMode === "REGISTER") {
-        const { data: existe } = await supabaseClient
+        // --- PROCESO DE REGISTRO ---
+        const { data: existe, error: errCheck } = await supabaseClient
           .from("memorice_users")
           .select("username")
           .eq("username", user)
           .maybeSingle();
 
+        if (errCheck) {
+          alert("❌ Error de lectura en Supabase: " + errCheck.message);
+          return;
+        }
         if (existe) {
-          alert("El nombre de usuario ya está registrado.");
+          alert("❌ Este nombre de usuario ya está registrado en la base de datos. Elige otro.");
           return;
         }
 
-        const { error } = await supabaseClient
+        const { error: errInsert } = await supabaseClient
           .from("memorice_users")
           .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
 
-        if (error) throw error;
-        alert("¡Cuenta creada con éxito!");
+        if (errInsert) {
+          alert("❌ No se pudo guardar el registro en internet: " + errInsert.message);
+          return;
+        }
+
+        alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
         ingresarUsuarioAlSistema(user, 1, 0, 0);
+
       } else {
-        const { data: dbUser } = await supabaseClient
+        // --- PROCESO DE INICIO DE SESIÓN ---
+        const { data: dbUser, error: errFetch } = await supabaseClient
           .from("memorice_users")
           .select("*")
           .eq("username", user)
           .maybeSingle();
 
-        if (!dbUser || dbUser.password_hash !== hash) {
-          alert("Credenciales incorrectas.");
+        if (errFetch) {
+          alert("❌ Error al conectar con Supabase: " + errFetch.message);
+          return;
+        }
+        if (!dbUser) {
+          alert("❌ El nombre de usuario no existe en la base de datos. Haz clic en 'Crear Cuenta' si eres nuevo.");
+          return;
+        }
+        if (dbUser.password_hash !== hash) {
+          alert("❌ La contraseña ingresada es incorrecta. Verifica mayúsculas y minúsculas.");
           return;
         }
 
-        alert(`¡Bienvenido, ${dbUser.username}!`);
+        alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}! Cargando tu progreso...`);
         ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
       }
     } catch (err) {
       console.error(err);
-      alert("Error de comunicación con Supabase.");
+      alert("❌ Ocurrió un error crítico inesperado en el sistema.");
     }
   });
 }
@@ -1354,7 +1377,7 @@ function ingresarUsuarioAlSistema(username, level, score, trophies) {
   
   if (usernameInput) {
     usernameInput.value = username;
-    usernameInput.disabled = true; // Bloquea el campo de texto al iniciar
+    usernameInput.disabled = true; 
   }
   if (displayTrophies) displayTrophies.textContent = trophies || 0;
   
@@ -1364,14 +1387,6 @@ function ingresarUsuarioAlSistema(username, level, score, trophies) {
   startLevel(state.level);
 }
 
-
-if (btnLogOut) {
-  btnLogOut.addEventListener("click", () => {
-    localStorage.removeItem("mt_logged_user");
-    localStorage.clear();
-    window.location.reload();
-  });
-}
 
 
     // --- MANEJO DE PESTAÑAS DEL LOBBY (PARTE 2) ---
