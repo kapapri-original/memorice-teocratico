@@ -597,6 +597,8 @@
         max-width: 440px;
         box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         text-align: center;
+        max-height: 95vh;
+        overflow-y: auto;
     }
     .auth-title {
         font-size: 2rem;
@@ -607,14 +609,14 @@
     .auth-subtitle {
         font-size: 0.9rem;
         color: var(--text-muted);
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
     .auth-form-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
         text-align: left;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     .auth-form-group label {
         font-size: 0.75rem;
@@ -627,9 +629,9 @@
         background: rgba(0,0,0,0.4);
         border: 1px solid var(--glass-border);
         color: #ffffff;
-        padding: 14px;
+        padding: 12px;
         border-radius: 12px;
-        font-size: 1rem;
+        font-size: 0.95rem;
         outline: none;
         transition: border-color 0.2s;
     }
@@ -637,8 +639,8 @@
         border-color: var(--primary-light);
     }
     .auth-toggle-text {
-        margin-top: 20px;
-        font-size: 0.9rem;
+        margin-top: 15px;
+        font-size: 0.85rem;
         color: var(--text-muted);
     }
     .auth-toggle-link {
@@ -858,7 +860,7 @@
           <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
       </div>
 
-      <!-- NUEVO MARCADOR DE PARES PARA EL MOTO DUELO -->
+      <!-- NUEVO MARCADOR DE PARES PARA EL MODO DUELO -->
       <div id="duelPairsScoreboard" style="display: none; justify-content: space-around; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); font-weight: bold; text-align: center;">
           <div style="color: #4ade80;">🟢 Mis Pares: <span id="myPairsCount">0</span></div>
           <div style="color: #f87171;">🔴 Pares Rival: <span id="rivalPairsCount">0</span></div>
@@ -936,20 +938,80 @@
           <div id="authTitle" class="auth-title">Iniciar Sesión</div>
           <div id="authSubtitle" class="auth-subtitle">Ingresa tus credenciales para continuar tu progreso teocrático.</div>
           
-          <div class="auth-form-group">
-              <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
-              <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
+          <!-- CONTENEDOR CAMPOS GENERALES (LOGIN Y REGISTRO) -->
+          <div id="authMainFields">
+              <div class="auth-form-group">
+                  <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
+                  <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
+              </div>
+
+              <!-- NUEVO CAMPO CORREO (Visible solo en Registro) -->
+              <div class="auth-form-group" id="regEmailField" style="display: none;">
+                  <label for="authEmail">Correo de Recuperación</label>
+                  <input type="email" id="authEmail" class="auth-input" placeholder="correo@ejemplo.com" autocomplete="email">
+              </div>
+
+              <div class="auth-form-group" id="authPasswordFieldGroup">
+                  <label for="authPassword">Contraseña Secreta</label>
+                  <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+
+              <!-- NUEVOS CAMPOS DE PREGUNTA DE SEGURIDAD (Visible solo en Registro) -->
+              <div id="regSecurityFields" style="display: none;">
+                  <div class="auth-form-group">
+                      <label for="authSecQuestion">Pregunta de Seguridad</label>
+                      <select id="authSecQuestion" class="auth-input" style="background: rgba(0,0,0,0.4); color: white;">
+                          <option value="¿Cuál es tu personaje bíblico preferido?">¿Cuál es tu personaje bíblico preferido?</option>
+                          <option value="¿En qué año te bautizaste?">¿En qué año te bautizaste?</option>
+                          <option value="¿Cuál es el nombre de tu primera congregación?">¿Cuál es el nombre de tu primera congregación?</option>
+                          <option value="¿Cuál es tu texto bíblico preferido?">¿Cuál es tu texto bíblico preferido?</option>
+                      </select>
+                  </div>
+                  <div class="auth-form-group">
+                      <label for="authSecAnswer">Respuesta Secreta</label>
+                      <input type="text" id="authSecAnswer" class="auth-input" placeholder="Escribe tu respuesta de seguridad" autocomplete="off">
+                  </div>
+              </div>
           </div>
-          <div class="auth-form-group">
-              <label for="authPassword">Contraseña Secreta</label>
-              <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
+
+          <!-- CONTENEDOR RECUPERACIÓN DE CONTRASEÑA -->
+          <div id="authRecoveryFields" style="display: none;">
+              <div class="auth-form-group">
+                  <label for="recoverUsername">Nombre de Usuario</label>
+                  <input type="text" id="recoverUsername" class="auth-input" placeholder="Escribe tu usuario a recuperar" autocomplete="username">
+              </div>
+              <div class="auth-form-group" id="recoverEmailGroup">
+                  <label for="recoverEmail">Correo Registrado</label>
+                  <input type="email" id="recoverEmail" class="auth-input" placeholder="Escribe tu correo registrado" autocomplete="email">
+              </div>
+              <!-- Se despliega dinámicamente si el correo y usuario coinciden -->
+              <div id="recoverVerificationStep" style="display: none;">
+                  <div class="auth-form-group" style="background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; border: 1px dashed var(--accent-color);">
+                      <label style="color: var(--accent-color); font-weight: bold;">Pregunta de Seguridad:</label>
+                      <p id="displayRecoveryQuestion" style="font-size: 0.95rem; margin-top: 4px; color: #ffffff;"></p>
+                  </div>
+                  <div class="auth-form-group">
+                      <label for="recoverSecAnswer">Tu Respuesta</label>
+                      <input type="text" id="recoverSecAnswer" class="auth-input" placeholder="Escribe la respuesta exacta" autocomplete="off">
+                  </div>
+              </div>
+              <!-- Paso Final: Configurar nueva clave -->
+              <div id="recoverNewPasswordStep" style="display: none;">
+                  <div class="auth-form-group">
+                      <label for="recoverNewPassword">Nueva Contraseña Secreta</label>
+                      <input type="password" id="recoverNewPassword" class="auth-input" placeholder="••••••••" autocomplete="new-password">
+                  </div>
+              </div>
           </div>
           
           <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Ingresar a la Partida</button>
           
-          <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+          <div class="auth-toggle-text">
               <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
-              <span id="authToggleLink" class="auth-toggle-link" role="button" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block; user-select: none;">Crear Cuenta</span>
+              <span id="authToggleLink" class="auth-toggle-link" role="button">Crear Cuenta</span>
+              <div style="margin-top: 10px;" id="forgotPasswordContainer">
+                  <span id="btnGoToRecovery" class="auth-toggle-link" role="button" style="color: var(--text-muted); font-size: 0.85rem;">¿Olvidaste tu contraseña?</span>
+              </div>
           </div>
       </form>
   </div>
@@ -1100,7 +1162,7 @@
       // Temporizador
       timeLeft: 10,
       timerInterval: null,
-      turnStartTime: null, // Coma corregida para evitar fallos de sintaxis en el navegador
+      turnStartTime: null,
 
       // Variables del Modo Duelo
       activeDuelId: null,
@@ -1170,6 +1232,24 @@
     const authToggleLink = document.getElementById("authToggleLink");
     const authToggleTextLabel = document.getElementById("authToggleTextLabel");
 
+    // Nuevas referencias para recuperación
+    const regEmailField = document.getElementById("regEmailField");
+    const regSecurityFields = document.getElementById("regSecurityFields");
+    const authMainFields = document.getElementById("authMainFields");
+    const authRecoveryFields = document.getElementById("authRecoveryFields");
+    const btnGoToRecovery = document.getElementById("btnGoToRecovery");
+    const authSecQuestion = document.getElementById("authSecQuestion");
+    const authSecAnswer = document.getElementById("authSecAnswer");
+    const authEmail = document.getElementById("authEmail");
+    
+    const recoverUsername = document.getElementById("recoverUsername");
+    const recoverEmail = document.getElementById("recoverEmail");
+    const recoverVerificationStep = document.getElementById("recoverVerificationStep");
+    const displayRecoveryQuestion = document.getElementById("displayRecoveryQuestion");
+    const recoverSecAnswer = document.getElementById("recoverSecAnswer");
+    const recoverNewPasswordStep = document.getElementById("recoverNewPasswordStep");
+    const recoverNewPassword = document.getElementById("recoverNewPassword");
+
     const duelsPanel = document.getElementById("duelsPanel");
     const btnOpenDuelsLobby = document.getElementById("btnOpenDuelsLobby");
     const btnCloseDuels = document.getElementById("btnCloseDuels");
@@ -1189,6 +1269,8 @@
     const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
 
     let authMode = "LOGIN"; 
+    let recoveryStateStep = 1; // 1: Datos iniciales, 2: Responder pregunta, 3: Establecer nueva clave
+    let userToRecoverData = null;
 
     // --- SANEAMIENTO CONTRA INYECCIONES ---
     function esCadenaSegura(texto) {
@@ -1203,7 +1285,14 @@
     }
 
     // --- INTERRUPTOR DE ACCESO ---
-    function alternarFormularioAutenticacion() {
+    function alternarFormularioAutenticacion(forceMode = null) {
+      if (forceMode) authMode = forceMode;
+
+      // Ocultar siempre la sección de recuperación cuando alternamos
+      authMainFields.style.display = "block";
+      authRecoveryFields.style.display = "none";
+      document.getElementById("forgotPasswordContainer").style.display = "block";
+
       if (authMode === "REGISTER") {
         authMode = "LOGIN";
         if(authTitle) authTitle.innerText = "Iniciar Sesión";
@@ -1211,6 +1300,10 @@
         if(btnSubmitAuth) btnSubmitAuth.innerText = "Ingresar a la Partida";
         if(authToggleTextLabel) authToggleTextLabel.innerText = "¿No tienes una cuenta aún?";
         if(authToggleLink) authToggleLink.innerText = "Crear Cuenta";
+        
+        regEmailField.style.display = "none";
+        regSecurityFields.style.display = "none";
+        document.getElementById("authPasswordFieldGroup").style.display = "block";
       } else {
         authMode = "REGISTER";
         if(authTitle) authTitle.innerText = "Crear Cuenta";
@@ -1218,9 +1311,24 @@
         if(btnSubmitAuth) btnSubmitAuth.innerText = "Confirmar Registro";
         if(authToggleTextLabel) authToggleTextLabel.innerText = "¿Ya posees un usuario registrado?";
         if(authToggleLink) authToggleLink.innerText = "Iniciar Sesión";
+        
+        regEmailField.style.display = "block";
+        regSecurityFields.style.display = "block";
+        document.getElementById("authPasswordFieldGroup").style.display = "block";
       }
+      limpiarCamposAuth();
+    }
+
+    function limpiarCamposAuth() {
       if(authUsername) authUsername.value = "";
       if(authPassword) authPassword.value = "";
+      if(authEmail) authEmail.value = "";
+      if(authSecAnswer) authSecAnswer.value = "";
+      if(recoverUsername) recoverUsername.value = "";
+      if(recoverEmail) recoverEmail.value = "";
+      if(recoverSecAnswer) recoverSecAnswer.value = "";
+      if(recoverNewPassword) recoverNewPassword.value = "";
+      userToRecoverData = null;
     }
 
     if (authToggleLink) {
@@ -1228,6 +1336,32 @@
         e.preventDefault();
         e.stopPropagation(); 
         alternarFormularioAutenticacion();
+      });
+    }
+
+    // Navegación hacia recuperación de contraseña
+    if (btnGoToRecovery) {
+      btnGoToRecovery.addEventListener("click", () => {
+        authMode = "RECOVERY";
+        authMainFields.style.display = "none";
+        authRecoveryFields.style.display = "block";
+        document.getElementById("forgotPasswordContainer").style.display = "none";
+        
+        if(authTitle) authTitle.innerText = "Recuperar Acceso";
+        if(authSubtitle) authSubtitle.innerText = "Escribe tus datos de usuario para verificar tu identidad.";
+        if(btnSubmitAuth) btnSubmitAuth.innerText = "Verificar Datos";
+        if(authToggleTextLabel) authToggleTextLabel.innerText = "Volver a la pantalla de";
+        if(authToggleLink) authToggleLink.innerText = "Iniciar Sesión";
+        
+        // Resetear visibilidad de pasos de recuperación
+        document.getElementById("recoverEmailGroup").style.display = "block";
+        recoverUsername.disabled = false;
+        recoverEmail.disabled = false;
+        recoverVerificationStep.style.display = "none";
+        recoverNewPasswordStep.style.display = "none";
+        
+        recoveryStateStep = 1;
+        limpiarCamposAuth();
       });
     }
 
@@ -1270,84 +1404,200 @@
       return Math.abs(hash).toString(16).padStart(8, "0");
     }
 
-    // --- PROCESAMIENTO DE ACCESO ---
+    // --- PROCESAMIENTO DE ACCESO (LOGIN, REGISTRO, RECUPERACIÓN) ---
     const authForm = document.getElementById("authForm");
 
     async function procesarFormularioAutenticacion() {
-      const user = authUsername ? authUsername.value.trim() : "";
-      const pass = authPassword ? authPassword.value : "";
+      if (authMode === "LOGIN" || authMode === "REGISTER") {
+        const user = authUsername ? authUsername.value.trim() : "";
+        const pass = authPassword ? authPassword.value : "";
+        const emailVal = authEmail ? authEmail.value.trim() : "";
+        const secQ = authSecQuestion ? authSecQuestion.value : "";
+        const secA = authSecAnswer ? authSecAnswer.value.trim().toLowerCase() : "";
 
-      if (!user || !pass) {
-        alert("⚠️ Por favor, completa tanto el usuario como la contraseña para poder ingresar.");
-        return;
-      }
-      if (user.length < 3 || pass.length < 6) {
-        alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
-        return;
-      }
-      if (!esCadenaSegura(user)) {
-        alert("⚠️ Caracteres prohibidos detectados en el usuario. Evita usar comillas o guiones.");
-        return;
-      }
-
-      // No se valida la contraseña con regex restrictivos porque es hasheada localmente
-      const hash = generarHashContrasena(pass);
-
-      try {
-        if (authMode === "REGISTER") {
-          const { data: existe, error: errCheck } = await supabaseClient
-            .from("memorice_users")
-            .select("username")
-            .eq("username", user)
-            .maybeSingle();
-
-          if (errCheck) {
-            alert("❌ Error de lectura en Supabase: " + errCheck.message);
-            return;
-          }
-          if (existe) {
-            alert("❌ Este nombre de usuario ya está registrado. Elige otro.");
-            return;
-          }
-
-          const { error: errInsert } = await supabaseClient
-            .from("memorice_users")
-            .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
-
-          if (errInsert) {
-            alert("❌ No se pudo guardar el progreso: " + errInsert.message);
-            return;
-          }
-
-          alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
-          ingresarUsuarioAlSistema(user, 1, 0, 0);
-
-        } else {
-          const { data: dbUser, error: errFetch } = await supabaseClient
-            .from("memorice_users")
-            .select("*")
-            .eq("username", user)
-            .maybeSingle();
-
-          if (errFetch) {
-            alert("❌ Error al conectar con el servidor: " + errFetch.message);
-            return;
-          }
-          if (!dbUser) {
-            alert("❌ El nombre de usuario no existe. Haz clic en 'Crear Cuenta' si eres nuevo.");
-            return;
-          }
-          if (dbUser.password_hash !== hash) {
-            alert("❌ La contraseña ingresada es incorrecta.");
-            return;
-          }
-
-          alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}!`);
-          ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+        if (!user || !pass) {
+          alert("⚠️ Por favor, completa tanto el usuario como la contraseña para poder ingresar.");
+          return;
         }
-      } catch (err) {
-        console.error(err);
-        alert("❌ Ocurrió un error inesperado al autenticar.");
+        if (user.length < 3 || pass.length < 6) {
+          alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
+          return;
+        }
+        if (!esCadenaSegura(user)) {
+          alert("⚠️ Caracteres prohibidos detectados en el usuario. Evita usar comillas o guiones.");
+          return;
+        }
+
+        const hash = generarHashContrasena(pass);
+
+        try {
+          if (authMode === "REGISTER") {
+            if (!emailVal || !secA) {
+              alert("⚠️ Para registrarte, debes ingresar un correo de recuperación y la respuesta secreta.");
+              return;
+            }
+
+            const { data: existe, error: errCheck } = await supabaseClient
+              .from("memorice_users")
+              .select("username")
+              .eq("username", user)
+              .maybeSingle();
+
+            if (errCheck) {
+              alert("❌ Error de lectura en la base de datos: " + errCheck.message);
+              return;
+            }
+            if (existe) {
+              alert("❌ Este nombre de usuario ya está registrado. Elige otro.");
+              return;
+            }
+
+            const hashSecAnswer = generarHashContrasena(secA);
+
+            const { error: errInsert } = await supabaseClient
+              .from("memorice_users")
+              .insert([{ 
+                username: user, 
+                password_hash: hash, 
+                current_level: 1, 
+                highest_score: 0, 
+                trophies_count: 0,
+                email: emailVal,
+                security_question: secQ,
+                security_answer_hash: hashSecAnswer
+              }]);
+
+            if (errInsert) {
+              alert("❌ No se pudo guardar el progreso: " + errInsert.message);
+              return;
+            }
+
+            alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
+            ingresarUsuarioAlSistema(user, 1, 0, 0);
+
+          } else {
+            const { data: dbUser, error: errFetch } = await supabaseClient
+              .from("memorice_users")
+              .select("*")
+              .eq("username", user)
+              .maybeSingle();
+
+            if (errFetch) {
+              alert("❌ Error al conectar con el servidor: " + errFetch.message);
+              return;
+            }
+            if (!dbUser) {
+              alert("❌ El nombre de usuario no existe. Haz clic en 'Crear Cuenta' si eres nuevo.");
+              return;
+            }
+            if (dbUser.password_hash !== hash) {
+              alert("❌ La contraseña ingresada es incorrecta.");
+              return;
+            }
+
+            alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}!`);
+            ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("❌ Ocurrió un error inesperado al autenticar.");
+        }
+      } else if (authMode === "RECOVERY") {
+        // --- PROCESO DE RECUPERACIÓN DE CONTRASEÑA EN PASOS ---
+        if (recoveryStateStep === 1) {
+          const userVal = recoverUsername.value.trim();
+          const emailVal = recoverEmail.value.trim();
+
+          if (!userVal || !emailVal) {
+            alert("⚠️ Por favor ingresa el nombre de usuario y el correo para continuar.");
+            return;
+          }
+
+          try {
+            const { data: dbUser, error } = await supabaseClient
+              .from("memorice_users")
+              .select("*")
+              .eq("username", userVal)
+              .maybeSingle();
+
+            if (error || !dbUser) {
+              alert("❌ El usuario no existe o los datos de conexión fallaron.");
+              return;
+            }
+
+            if (!dbUser.email || dbUser.email.toLowerCase() !== emailVal.toLowerCase()) {
+              alert("❌ Los datos ingresados no coinciden con nuestros registros.");
+              return;
+            }
+
+            if (!dbUser.security_question || !dbUser.security_answer_hash) {
+              alert("❌ Tu cuenta no tiene configurados los parámetros de recuperación autogestionada.");
+              return;
+            }
+
+            // Datos verificados, pasamos al paso 2: Pregunta secreta
+            userToRecoverData = dbUser;
+            displayRecoveryQuestion.innerText = dbUser.security_question;
+            
+            recoverUsername.disabled = true;
+            recoverEmail.disabled = true;
+            document.getElementById("recoverEmailGroup").style.display = "none";
+            recoverVerificationStep.style.display = "block";
+            
+            btnSubmitAuth.innerText = "Validar Respuesta";
+            recoveryStateStep = 2;
+
+          } catch (e) {
+            console.error(e);
+            alert("Ocurrió un error al procesar la solicitud.");
+          }
+        } else if (recoveryStateStep === 2) {
+          const ansVal = recoverSecAnswer.value.trim().toLowerCase();
+          if (!ansVal) {
+            alert("⚠️ Por favor, ingresa tu respuesta.");
+            return;
+          }
+
+          const hashAns = generarHashContrasena(ansVal);
+          if (userToRecoverData.security_answer_hash !== hashAns) {
+            alert("❌ Respuesta incorrecta. Vuelve a intentarlo.");
+            return;
+          }
+
+          // Respuesta correcta. Pasamos al paso 3: Nueva contraseña
+          recoverVerificationStep.style.display = "none";
+          recoverNewPasswordStep.style.display = "block";
+          
+          btnSubmitAuth.innerText = "Establecer Nueva Contraseña";
+          recoveryStateStep = 3;
+        } else if (recoveryStateStep === 3) {
+          const newPass = recoverNewPassword.value;
+          if (!newPass || newPass.length < 6) {
+            alert("⚠️ La nueva contraseña debe tener al menos 6 caracteres.");
+            return;
+          }
+
+          const newHash = generarHashContrasena(newPass);
+
+          try {
+            const { error } = await supabaseClient
+              .from("memorice_users")
+              .update({ password_hash: newHash })
+              .eq("username", userToRecoverData.username);
+
+            if (error) {
+              alert("❌ No se pudo actualizar la contraseña.");
+              return;
+            }
+
+            alert("🎉 ¡Contraseña restablecida de forma segura! Ahora puedes iniciar sesión.");
+            alternarFormularioAutenticacion("LOGIN");
+
+          } catch (e) {
+            console.error(e);
+            alert("Fallo al actualizar las credenciales.");
+          }
+        }
       }
     }
 
@@ -1592,8 +1842,8 @@
       if (!indicador) return;
       
       if (state.duelCurrentTurn === miRol) {
-        indicador.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
-        indicador.style.color = "#4ade80";
+        indicator.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
+        indicator.style.color = "#4ade80";
       } else {
         const nombreRival = miRol === "CHALLENGER" ? state.duelOpponent : state.duelChallenger;
         indicador.innerHTML = `🔴 Turno de su rival: <strong>${nombreRival}</strong>. Esperando jugada...`;
@@ -2200,6 +2450,7 @@
       renderLeaderboard();
     }
 
+    // --- CANALES EN TIEMPO REAL ---
     // --- CANALES EN TIEMPO REAL ---
     function conectarTiempoReal() {
       supabaseClient
