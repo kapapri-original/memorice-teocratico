@@ -933,29 +933,32 @@
   </footer>
   <!-- COMPONENTE DE ACCESO SEGURO (CONTRASENAS BLINDADAS) -->
 <!-- COMPONENTE DE ACCESO SEGURO (CORREGIDO PARA INICIAR SESIÓN) -->
+ <!-- COMPONENTE DE ACCESO SEGURO AUTOCOMPLETABLE (PARTE 1) -->
  <div id="authOverlay" class="auth-overlay">
-     <div class="auth-box">
+     <!-- Convertimos el contenedor en un formulario nativo para que reaccione al llavero de Google -->
+     <form id="authForm" class="auth-box" onsubmit="return false;">
          <div id="authTitle" class="auth-title">Iniciar Sesión</div>
          <div id="authSubtitle" class="auth-subtitle">Ingresa tus credenciales para continuar tu progreso teocrático.</div>
          
          <div class="auth-form-group">
              <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
-             <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" autocomplete="off">
+             <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
          </div>
          <div class="auth-form-group">
              <label for="authPassword">Contraseña Secreta</label>
-             <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" autocomplete="off">
+             <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
          </div>
          
-         <button id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Ingresar a la Partida</button>
+         <!-- Cambiamos a tipo submit para capturar la pulsación de la tecla Enter nativa -->
+         <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Ingresar a la Partida</button>
          
-             <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
-         <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
-         <span id="authToggleLink" class="auth-toggle-link" role="button" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block; user-select: none;">Crear Cuenta</span>
-     </div>
-
-     </div>
+         <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+             <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
+             <span id="authToggleLink" class="auth-toggle-link" role="button" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block; user-select: none;">Crear Cuenta</span>
+         </div>
+     </form>
  </div>
+
 
  <!-- LOBBY CENTRALIZADO DE DUELOS MULTIJUGADOR -->
  <section id="duelsPanel" class="duels-panel">
@@ -1287,85 +1290,103 @@ function generarHashContrasena(password) {
   return Math.abs(hash).toString(16).padStart(8, "0");
 }
 
-// --- PROCESAMIENTO DE ACCESO SEGURO (CON ALERTAS EXPLICITAS) ---
-if (btnSubmitAuth) {
-  btnSubmitAuth.addEventListener("click", async () => {
-    const user = authUsername.value.trim();
-    const pass = authPassword.value;
+// --- PROCESAMIENTO DE ACCESO SEGURO AUTOMÁTICO (PARTE 2 - CORREGIDO) ---
+const authForm = document.getElementById("authForm");
 
-    if (!user || !pass) {
-      alert("⚠️ Por favor, completa tanto el usuario como la contraseña.");
-      return;
-    }
-    if (user.length < 3 || pass.length < 6) {
-      alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
-      return;
-    }
-    if (!esCadenaSegura(user) || !esCadenaSegura(pass)) {
-      alert("⚠️ Caracteres prohibidos detectados. Evita usar comillas o guiones.");
-      return;
-    }
+async function procesarFormularioAutenticacion() {
+  // Extracción forzada en tiempo de ejecución para capturar el llavero de Google
+  const inputUser = document.getElementById("authUsername");
+  const inputPass = document.getElementById("authPassword");
+  
+  const user = inputUser ? inputUser.value.trim() : "";
+  const pass = inputPass ? inputPass.value : "";
 
-    const hash = generarHashContrasena(pass);
+  if (!user || !pass) {
+    alert("⚠️ Por favor, completa tanto el usuario como la contraseña para poder ingresar.");
+    return;
+  }
+  if (user.length < 3 || pass.length < 6) {
+    alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
+    return;
+  }
+  if (!esCadenaSegura(user) || !esCadenaSegura(pass)) {
+    alert("⚠️ Caracteres prohibidos detectados. Evita usar comillas o guiones.");
+    return;
+  }
 
-    try {
-      if (authMode === "REGISTER") {
-        // --- PROCESO DE REGISTRO ---
-        const { data: existe, error: errCheck } = await supabaseClient
-          .from("memorice_users")
-          .select("username")
-          .eq("username", user)
-          .maybeSingle();
+  const hash = generarHashContrasena(pass);
 
-        if (errCheck) {
-          alert("❌ Error de lectura en Supabase: " + errCheck.message);
-          return;
-        }
-        if (existe) {
-          alert("❌ Este nombre de usuario ya está registrado en la base de datos. Elige otro.");
-          return;
-        }
+  try {
+    if (authMode === "REGISTER") {
+      // --- PROCESO DE REGISTRO ---
+      const { data: existe, error: errCheck } = await supabaseClient
+        .from("memorice_users")
+        .select("username")
+        .eq("username", user)
+        .maybeSingle();
 
-        const { error: errInsert } = await supabaseClient
-          .from("memorice_users")
-          .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
-
-        if (errInsert) {
-          alert("❌ No se pudo guardar el registro en internet: " + errInsert.message);
-          return;
-        }
-
-        alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
-        ingresarUsuarioAlSistema(user, 1, 0, 0);
-
-      } else {
-        // --- PROCESO DE INICIO DE SESIÓN ---
-        const { data: dbUser, error: errFetch } = await supabaseClient
-          .from("memorice_users")
-          .select("*")
-          .eq("username", user)
-          .maybeSingle();
-
-        if (errFetch) {
-          alert("❌ Error al conectar con Supabase: " + errFetch.message);
-          return;
-        }
-        if (!dbUser) {
-          alert("❌ El nombre de usuario no existe en la base de datos. Haz clic en 'Crear Cuenta' si eres nuevo.");
-          return;
-        }
-        if (dbUser.password_hash !== hash) {
-          alert("❌ La contraseña ingresada es incorrecta. Verifica mayúsculas y minúsculas.");
-          return;
-        }
-
-        alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}! Cargando tu progreso...`);
-        ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+      if (errCheck) {
+        alert("❌ Error de lectura en Supabase: " + errCheck.message);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      alert("❌ Ocurrió un error crítico inesperado en el sistema.");
+      if (existe) {
+        alert("❌ Este nombre de usuario ya está registrado en la base de datos. Elige otro.");
+        return;
+      }
+
+      const { error: errInsert } = await supabaseClient
+        .from("memorice_users")
+        .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
+
+      if (errInsert) {
+        alert("❌ No se pudo guardar el progreso en internet: " + errInsert.message);
+        return;
+      }
+
+      alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
+      ingresarUsuarioAlSistema(user, 1, 0, 0);
+
+    } else {
+      // --- PROCESO DE INICIO DE SESIÓN ---
+      const { data: dbUser, error: errFetch } = await supabaseClient
+        .from("memorice_users")
+        .select("*")
+        .eq("username", user)
+        .maybeSingle();
+
+      if (errFetch) {
+        alert("❌ Error al conectar con Supabase: " + errFetch.message);
+        return;
+      }
+      if (!dbUser) {
+        alert("❌ El nombre de usuario no existe en la base de datos. Haz clic en 'Crear Cuenta' si eres un jugador nuevo.");
+        return;
+      }
+      if (dbUser.password_hash !== hash) {
+        alert("❌ La contraseña ingresada es incorrecta. Verifica mayúsculas y minúsculas.");
+        return;
+      }
+
+      alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}! Cargando tu progreso...`);
+      ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
     }
+  } catch (err) {
+    console.error(err);
+    alert("❌ Ocurrió un error crítico inesperado al autenticar.");
+  }
+}
+
+// Escuchar tanto clics en el botón como pulsaciones de la tecla Enter
+if (authForm) {
+  authForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    procesarFormularioAutenticacion();
+  });
+}
+if (btnSubmitAuth && btnSubmitAuth.type !== "submit") {
+  btnSubmitAuth.addEventListener("click", (e) => {
+    e.preventDefault();
+    procesarFormularioAutenticacion();
   });
 }
 
@@ -1386,8 +1407,6 @@ function ingresarUsuarioAlSistema(username, level, score, trophies) {
   if (authOverlay) authOverlay.style.display = "none";
   startLevel(state.level);
 }
-
-
 
     // --- MANEJO DE PESTAÑAS DEL LOBBY (PARTE 2) ---
 function switchDuelTab(tabActive, sectionActive) {
