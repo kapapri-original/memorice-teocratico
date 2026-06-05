@@ -903,4 +903,1446 @@
                 <label>Nivel 4</label>
                 <input type="url" id="bgLvl4" class="admin-input bg-lvl-input" data-level="4">
               </div>
-              <div class="
+              <div class="bg-setting-row">
+                <label>Nivel 5</label>
+                <input type="url" id="bgLvl5" class="admin-input bg-lvl-input" data-level="5">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 6</label>
+                <input type="url" id="bgLvl6" class="admin-input bg-lvl-input" data-level="6">
+              </div>
+              <div class="bg-setting-row">
+                <label>Nivel 7+</label>
+                <input type="url" id="bgLvl7" class="admin-input bg-lvl-input" data-level="7">
+              </div>
+            </div>
+            <button id="btnSaveBgs" class="btn btn-primary" style="margin-top: 14px;">Guardar Fondos</button>
+          </div>
+        </div>
+        <div style="text-align: right; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+          <button id="btnRestoreDefaults" class="btn btn-secondary" style="width: auto; display: inline-flex;">Restaurar Valores por Defecto</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <footer>
+    <p>Memorice Teocrático — Concentración, memoria y agilidad mental.</p>
+  </footer>
+
+  <!-- COMPONENTE DE ACCESO SEGURO AUTOCOMPLETABLE -->
+  <div id="authOverlay" class="auth-overlay">
+      <form id="authForm" class="auth-box" onsubmit="return false;">
+          <div id="authTitle" class="auth-title">Iniciar Sesión</div>
+          <div id="authSubtitle" class="auth-subtitle">Ingresa tus credenciales para continuar tu progreso teocrático.</div>
+          
+          <div class="auth-form-group">
+              <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
+              <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
+          </div>
+          <div class="auth-form-group">
+              <label for="authPassword">Contraseña Secreta</label>
+              <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          
+          <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="margin-top: 10px;">Ingresar a la Partida</button>
+          
+          <div class="auth-toggle-text" style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+              <span id="authToggleTextLabel">¿No tienes una cuenta aún?</span> 
+              <span id="authToggleLink" class="auth-toggle-link" role="button" style="color: var(--accent-color); cursor: pointer; font-weight: 600; text-decoration: underline; display: inline-block; user-select: none;">Crear Cuenta</span>
+          </div>
+      </form>
+  </div>
+
+  <!-- LOBBY MULTIJUGADOR -->
+  <section id="duelsPanel" class="duels-panel">
+      <div class="admin-title">
+          <h2>⚔️ Sala de Duelos Teocráticos</h2>
+          <button id="btnCloseDuels" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
+      </div>
+      
+      <div class="duels-tabs">
+          <button id="tabLobby" class="duel-tab-btn active">Buscar Desafíos</button>
+          <button id="tabMyDuels" class="duel-tab-btn">Mis Duelos Activos</button>
+          <button id="tabCreateDuel" class="duel-tab-btn" style="color: var(--accent-color);">+ Crear Nuevo Duelo</button>
+      </div>
+
+      <!-- SECCIÓN A: TABLERO DE ESPERA -->
+      <div id="secLobby" class="duels-content-section active">
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la lista para iniciar el duelo inmediatamente. El jugador desaparecerá de esta lista.</p>
+          <div id="lobbyDuelsList" class="duel-list-container"></div>
+      </div>
+
+      <!-- SECCIÓN B: MIS DUELOS ACTIVOS -->
+      <div id="secMyDuels" class="duels-content-section">
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Listado de tus duelos activos en curso. Puedes alternar entre ellos para continuar tus turnos.</p>
+          <div id="myActiveDuelsList" class="duel-list-container"></div>
+      </div>
+
+      <!-- SECCIÓN C: CONFIGURAR DESAFÍO -->
+      <div id="secCreateDuel" class="duels-content-section">
+          <div class="admin-box" style="margin: 0;">
+              <h3>Establecer Dificultad del Duelo</h3>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Escoge el nivel del tablero para el contrincante que acepte tu invitación desde el Lobby central.</p>
+              <div class="bg-setting-row">
+                  <label>Nivel del Tablero</label>
+                  <select id="selectDuelLevel" class="admin-input" style="background: #0d1522;">
+                      <option value="5">24 Cartas / 12 Pares</option>
+                      <option value="6">30 Cartas / 15 Pares</option>
+                      <option value="7">40 Cartas / 20 Pares</option>
+                  </select>
+              </div>
+              <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 10px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
+          </div>
+      </div>
+  </section>
+
+  <script>
+    // --- CREDENCIALES E INICIALIZACIÓN DE SUPABASE ---
+    const SUPABASE_URL = "https://wvgarzantccdfhrzmpho.supabase.co"; 
+    const SUPABASE_KEY = "sb_publishable_hSg8GIq6OlwB5hiVmHTkBQ_prRYfl2N";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- ARREGLOS DE DATOS POR DEFECTO ---
+    const DEFAULT_CARD_IMAGES = [
+      "https://i.ibb.co/Xxbqj3n4/2017089-univ-lss-lg.jpg",
+      "https://i.ibb.co/fzhYGgLJ/1102013273-univ-lss-lg.jpg",
+      "https://i.ibb.co/4R83yTPX/2013566-univ-lss-lg.jpg",
+      "https://i.ibb.co/DyT2V2F/1102013272-univ-lss-lg.jpg",
+      "https://i.ibb.co/B2ZcNLvr/2017010-univ-lss-lg.jpg",
+      "https://i.ibb.co/vxnX4Fxs/1102013271-univ-lss-lg.jpg",
+      "https://i.ibb.co/jPHwFQJY/2015809-univ-lss-lg.jpg",
+      "https://i.ibb.co/27yZ5DvK/1102013269-univ-lss-lg.jpg",
+      "https://i.ibb.co/cch9NRsV/1102013268-univ-lss-lg.jpg",
+      "https://i.ibb.co/BVq1cGqb/1102013267-univ-lss-lg.jpg",
+      "https://i.ibb.co/HLskvtqq/502019377-univ-lss-lg.jpg",
+      "https://i.ibb.co/qMdmHV6b/1102013266-univ-lss-lg.jpg",
+      "https://i.ibb.co/FRXdWTw/1102013265-univ-lss-lg.jpg",
+      "https://i.ibb.co/0ynj94hk/2014326-univ-lss-lg.jpg",
+      "https://i.ibb.co/5gxVmG5h/1102013264-univ-lss-lg.jpg",
+      "https://i.ibb.co/MygHjZdZ/1102013263-univ-lss-lg.jpg",
+      "https://i.ibb.co/TDXj8vqf/1102013262-univ-lss-lg.jpg",
+      "https://i.ibb.co/N6gHT4G6/1102013261-univ-lss-lg.jpg",
+      "https://i.ibb.co/twkH4SwP/1102013260-univ-lss-lg.jpg",
+      "https://i.ibb.co/zV7G19M2/1102013259-univ-lss-lg.jpg",
+      "https://i.ibb.co/pNJpKCs/502018120-univ-lss-lg.jpg",
+      "https://i.ibb.co/9mY7zqJs/2014086-univ-lss-lg.jpg",
+      "https://i.ibb.co/MzJFfGg/1102013258-univ-lss-lg.jpg",
+      "https://i.ibb.co/67Lwkqcd/1102013257-univ-lss-lg.jpg",
+      "https://i.ibb.co/Jwxt4QvC/1102013256-univ-lss-lg.jpg",
+      "https://i.ibb.co/0RnGcdDt/1102013255-univ-lss-lg.jpg",
+      "https://i.ibb.co/Ndmxxzr5/502018361-univ-lss-lg.jpg",
+      "https://i.ibb.co/BHSDzJ5S/2016327-univ-lss-lg.jpg",
+      "https://i.ibb.co/sdXnwvVC/502018360-univ-lss-lg.jpg",
+      "https://i.ibb.co/DggW4MTj/1102013254-univ-lss-lg.jpg",
+      "https://i.ibb.co/hxy2WtvT/1102013253-univ-lss-lg.jpg",
+      "https://i.ibb.co/WpyG9pJR/1102013252-univ-lss-lg.jpg",
+      "https://i.ibb.co/5xSSGW1C/1102013251-univ-lss-lg.jpg",
+      "https://i.ibb.co/TB8zLzQ9/1102013250-univ-lss-lg.jpg",
+      "https://i.ibb.co/JRL5XJKY/2015566-univ-lss-lg.jpg",
+      "https://i.ibb.co/tPQdNLHP/2013809-univ-lss-lg.jpg",
+      "https://i.ibb.co/RprZ1nXN/501500100-univ-lss-lg.jpg",
+      "https://i.ibb.co/TB5RFdH8/502019376-univ-lss-lg.jpg",
+      "https://i.ibb.co/dwzL3x9b/502019375-univ-lss-lg.jpg",
+      "https://i.ibb.co/20Wy864g/2015327-univ-lss-lg.jpg",
+      "https://i.ibb.co/tPHPsMwx/2015086-univ-lss-lg.jpg",
+      "https://i.ibb.co/DfZHP3pG/2014807-univ-lss-lg.jpg",
+      "https://i.ibb.co/zHD0S3LH/2014568-univ-lss-lg.jpg",
+      "https://i.ibb.co/wZBTt02K/2016091-univ-lss-lg.jpg",
+      "https://i.ibb.co/m5QN1bZP/2017172-univ-lss-lg.jpg"
+    ];
+
+    const DEFAULT_BG_IMAGES = {
+      1: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1200&q=80",
+      2: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+      3: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+      4: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      5: "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1200&q=80",
+      6: "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=1200&q=80",
+      7: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
+    };
+
+    const DEFAULT_LEADERBOARD = [
+      { name: "Noé", score: 3200 },
+      { name: "Daniel", score: 2800 },
+      { name: "Ester", score: 2500 },
+      { name: "Ruth", score: 2200 },
+      { name: "David", score: 1900 },
+      { name: "Lidia", score: 1700 },
+      { name: "Samuel", score: 1500 },
+      { name: "Sara", score: 1200 },
+      { name: "Enoc", score: 950 },
+      { name: "Job", score: 800 }
+    ];
+
+    // --- ESTADO GENERAL ---
+    let state = {
+      username: "Jugador Teocrático",
+      level: 1,
+      score: 0,
+      record: 0,
+      leaderboard: [],
+      cardImages: [],
+      bgImages: {},
+      
+      // Control de Turnos
+      boardCards: [], 
+      firstCardElement: null,
+      firstCardData: null,
+      secondCardElement: null,
+      secondCardData: null,
+      isProcessing: false,
+      
+      // Control de Memoria
+      seenCardsIndices: new Set(), 
+      firstCardWasSeen: false,
+      
+      // Temporizador
+      timeLeft: 10,
+      timerInterval: null,
+      turnStartTime: null, // Coma corregida para evitar fallos de sintaxis en el navegador
+
+      // Variables del Modo Duelo
+      activeDuelId: null,
+      isDuelMode: false,
+      duelChallenger: "",
+      duelOpponent: "",
+      duelCurrentTurn: "",
+      myPairs: 0,
+      rivalPairs: 0
+    };
+
+    // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
+    function loadState() {
+      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
+      state.level = parseInt(localStorage.getItem("mt_level")) || 1;
+      state.score = parseInt(localStorage.getItem("mt_score")) || 0;
+      state.record = parseInt(localStorage.getItem("mt_record")) || 0;
+      
+      const savedLeaderboard = localStorage.getItem("mt_leaderboard");
+      state.leaderboard = savedLeaderboard ? JSON.parse(savedLeaderboard) : [...DEFAULT_LEADERBOARD];
+      const savedCards = localStorage.getItem("mt_card_images");
+      state.cardImages = savedCards ? JSON.parse(savedCards) : [...DEFAULT_CARD_IMAGES];
+      const savedBgs = localStorage.getItem("mt_bg_images");
+      state.bgImages = savedBgs ? JSON.parse(savedBgs) : {...DEFAULT_BG_IMAGES};
+    }
+
+    function saveState() {
+      localStorage.setItem("mt_username", state.username);
+      localStorage.setItem("mt_level", state.level);
+      localStorage.setItem("mt_score", state.score);
+      localStorage.setItem("mt_record", state.record);
+      localStorage.setItem("mt_leaderboard", JSON.stringify(state.leaderboard));
+      localStorage.setItem("mt_card_images", JSON.stringify(state.cardImages));
+      localStorage.setItem("mt_bg_images", JSON.stringify(state.bgImages));
+    }
+
+    // --- REFERENCIAS ELEMENTOS DOM ---
+    const usernameInput = document.getElementById("usernameInput");
+    const displayLevel = document.getElementById("displayLevel");
+    const displayRecord = document.getElementById("displayRecord");
+    const displayScore = document.getElementById("displayScore");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const timerBar = document.getElementById("timerBar");
+    const timerText = document.getElementById("timerText");
+    const gameBoard = document.getElementById("gameBoard");
+    
+    const feedbackOverlay = document.getElementById("feedbackOverlay");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackSubtitle = document.getElementById("feedbackSubtitle");
+    const btnFeedbackAction = document.getElementById("btnFeedbackAction");
+    const adminPanel = document.getElementById("adminPanel");
+    const btnToggleAdmin = document.getElementById("btnToggleAdmin");
+    const btnCloseAdmin = document.getElementById("btnCloseAdmin");
+    const adminCardImagesList = document.getElementById("adminCardImagesList");
+    const inputNewCardImg = document.getElementById("inputNewCardImg");
+    const btnAddCardImg = document.getElementById("btnAddCardImg");
+    const btnSaveBgs = document.getElementById("btnSaveBgs");
+    const btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
+
+    // --- REFERENCIAS DOM DE AUTENTICACIÓN Y DUELOS ---
+    const authOverlay = document.getElementById("authOverlay");
+    const authTitle = document.getElementById("authTitle");
+    const authSubtitle = document.getElementById("authSubtitle");
+    const authUsername = document.getElementById("authUsername");
+    const authPassword = document.getElementById("authPassword");
+    const btnSubmitAuth = document.getElementById("btnSubmitAuth");
+    const authToggleLink = document.getElementById("authToggleLink");
+    const authToggleTextLabel = document.getElementById("authToggleTextLabel");
+
+    const duelsPanel = document.getElementById("duelsPanel");
+    const btnOpenDuelsLobby = document.getElementById("btnOpenDuelsLobby");
+    const btnCloseDuels = document.getElementById("btnCloseDuels");
+    const btnLogOut = document.getElementById("btnLogOut");
+    const displayTrophies = document.getElementById("displayTrophies");
+
+    const tabLobby = document.getElementById("tabLobby");
+    const tabMyDuels = document.getElementById("tabMyDuels");
+    const tabCreateDuel = document.getElementById("tabCreateDuel");
+    const secLobby = document.getElementById("secLobby");
+    const secMyDuels = document.getElementById("secMyDuels");
+    const secCreateDuel = document.getElementById("secCreateDuel");
+
+    const lobbyDuelsList = document.getElementById("lobbyDuelsList");
+    const myActiveDuelsList = document.getElementById("myActiveDuelsList");
+    const selectDuelLevel = document.getElementById("selectDuelLevel");
+    const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
+
+    let authMode = "LOGIN"; 
+
+    // --- SANEAMIENTO CONTRA INYECCIONES ---
+    function esCadenaSegura(texto) {
+      const caracteresProhibidos = /['";=\-\-\/\*<>]/g;
+      return !caracteresProhibidos.test(texto); 
+    }
+
+    if (authUsername) {
+      authUsername.addEventListener("input", () => {
+        authUsername.value = authUsername.value.replace(/[^a-zA-Z0-9_]/g, "");
+      });
+    }
+
+    // --- INTERRUPTOR DE ACCESO ---
+    function alternarFormularioAutenticacion() {
+      if (authMode === "REGISTER") {
+        authMode = "LOGIN";
+        if(authTitle) authTitle.innerText = "Iniciar Sesión";
+        if(authSubtitle) authSubtitle.innerText = "Ingresa tus credenciales para continuar tu progreso teocrático.";
+        if(btnSubmitAuth) btnSubmitAuth.innerText = "Ingresar a la Partida";
+        if(authToggleTextLabel) authToggleTextLabel.innerText = "¿No tienes una cuenta aún?";
+        if(authToggleLink) authToggleLink.innerText = "Crear Cuenta";
+      } else {
+        authMode = "REGISTER";
+        if(authTitle) authTitle.innerText = "Crear Cuenta";
+        if(authSubtitle) authSubtitle.innerText = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
+        if(btnSubmitAuth) btnSubmitAuth.innerText = "Confirmar Registro";
+        if(authToggleTextLabel) authToggleTextLabel.innerText = "¿Ya posees un usuario registrado?";
+        if(authToggleLink) authToggleLink.innerText = "Iniciar Sesión";
+      }
+      if(authUsername) authUsername.value = "";
+      if(authPassword) authPassword.value = "";
+    }
+
+    if (authToggleLink) {
+      authToggleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); 
+        alternarFormularioAutenticacion();
+      });
+    }
+
+    // --- COMPROBACIÓN DE SESIÓN ACTIVA ---
+    async function verificarSesionExistente() {
+      const usuarioGuardado = localStorage.getItem("mt_logged_user");
+      if (usuarioGuardado) {
+        try {
+          const { data: dbUser, error } = await supabaseClient
+            .from("memorice_users")
+            .select("*")
+            .eq('username', usuarioGuardado)
+            .maybeSingle();
+
+          if (dbUser && !error) {
+            ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+            return;
+          }
+        } catch (e) {
+          console.error("Error verificando sesión persistente:", e);
+        }
+      }
+      
+      if (authOverlay) {
+        authMode = "REGISTER"; 
+        alternarFormularioAutenticacion(); 
+        authOverlay.style.display = "flex";
+      }
+    }
+
+    // --- HASH DE SEGURIDAD UNIVERSAL ---
+    function generarHashContrasena(password) {
+      let hash = 0;
+      if (password.length === 0) return "00000000";
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; 
+      }
+      return Math.abs(hash).toString(16).padStart(8, "0");
+    }
+
+    // --- PROCESAMIENTO DE ACCESO ---
+    const authForm = document.getElementById("authForm");
+
+    async function procesarFormularioAutenticacion() {
+      const user = authUsername ? authUsername.value.trim() : "";
+      const pass = authPassword ? authPassword.value : "";
+
+      if (!user || !pass) {
+        alert("⚠️ Por favor, completa tanto el usuario como la contraseña para poder ingresar.");
+        return;
+      }
+      if (user.length < 3 || pass.length < 6) {
+        alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
+        return;
+      }
+      if (!esCadenaSegura(user)) {
+        alert("⚠️ Caracteres prohibidos detectados en el usuario. Evita usar comillas o guiones.");
+        return;
+      }
+
+      // No se valida la contraseña con regex restrictivos porque es hasheada localmente
+      const hash = generarHashContrasena(pass);
+
+      try {
+        if (authMode === "REGISTER") {
+          const { data: existe, error: errCheck } = await supabaseClient
+            .from("memorice_users")
+            .select("username")
+            .eq("username", user)
+            .maybeSingle();
+
+          if (errCheck) {
+            alert("❌ Error de lectura en Supabase: " + errCheck.message);
+            return;
+          }
+          if (existe) {
+            alert("❌ Este nombre de usuario ya está registrado. Elige otro.");
+            return;
+          }
+
+          const { error: errInsert } = await supabaseClient
+            .from("memorice_users")
+            .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
+
+          if (errInsert) {
+            alert("❌ No se pudo guardar el progreso: " + errInsert.message);
+            return;
+          }
+
+          alert("🎉 ¡Cuenta creada con éxito! Iniciando sesión...");
+          ingresarUsuarioAlSistema(user, 1, 0, 0);
+
+        } else {
+          const { data: dbUser, error: errFetch } = await supabaseClient
+            .from("memorice_users")
+            .select("*")
+            .eq("username", user)
+            .maybeSingle();
+
+          if (errFetch) {
+            alert("❌ Error al conectar con el servidor: " + errFetch.message);
+            return;
+          }
+          if (!dbUser) {
+            alert("❌ El nombre de usuario no existe. Haz clic en 'Crear Cuenta' si eres nuevo.");
+            return;
+          }
+          if (dbUser.password_hash !== hash) {
+            alert("❌ La contraseña ingresada es incorrecta.");
+            return;
+          }
+
+          alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}!`);
+          ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Ocurrió un error inesperado al autenticar.");
+      }
+    }
+
+    if (authForm) {
+      authForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        procesarFormularioAutenticacion();
+      });
+    }
+    if (btnSubmitAuth) {
+      btnSubmitAuth.addEventListener("click", (e) => {
+        e.preventDefault();
+        procesarFormularioAutenticacion();
+      });
+    }
+
+    function ingresarUsuarioAlSistema(username, level, score, trophies) {
+      state.username = username;
+      state.level = parseInt(level) || 1;
+      state.score = parseInt(score) || 0;
+      state.record = parseInt(score) || 0;
+      
+      if (usernameInput) {
+        usernameInput.value = username;
+        usernameInput.disabled = true; 
+      }
+      if (displayTrophies) displayTrophies.textContent = trophies || 0;
+      
+      localStorage.setItem("mt_logged_user", username);
+      saveState();
+      if (authOverlay) authOverlay.style.display = "none";
+      startLevel(state.level);
+    }
+
+    // --- MANEJO DE PESTAÑAS DEL LOBBY ---
+    function switchDuelTab(tabActive, sectionActive) {
+      [tabLobby, tabMyDuels, tabCreateDuel].forEach(t => t.classList.remove("active"));
+      [secLobby, secMyDuels, secCreateDuel].forEach(s => s.classList.remove("active"));
+      tabActive.classList.add("active");
+      sectionActive.classList.add("active");
+    }
+
+    if (tabLobby) tabLobby.addEventListener("click", () => switchDuelTab(tabLobby, secLobby));
+    if (tabMyDuels) tabMyDuels.addEventListener("click", () => switchDuelTab(tabMyDuels, secMyDuels));
+    if (tabCreateDuel) tabCreateDuel.addEventListener("click", () => switchDuelTab(tabCreateDuel, secCreateDuel));
+
+    if (btnOpenDuelsLobby) {
+      btnOpenDuelsLobby.addEventListener("click", () => {
+        duelsPanel.classList.add("active");
+        duelsPanel.scrollIntoView({ behavior: "smooth" });
+        actualizarListasDeDuelos();
+      });
+    }
+    if (btnCloseDuels) {
+      btnCloseDuels.addEventListener("click", () => duelsPanel.classList.remove("active"));
+    }
+
+    // --- LANZAR UN NUEVO DUELO ---
+    if (btnLaunchNewDuel) {
+      btnLaunchNewDuel.addEventListener("click", async () => {
+        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 1;
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .insert([{
+              challenger: state.username,
+              duel_level: nivelSeleccionado,
+              status: "WAITING",
+              current_turn: "CHALLENGER",
+              challenger_score: 0,
+              opponent_score: 0
+            }]);
+          alert("¡Desafío publicado!");
+          switchDuelTab(tabLobby, secLobby);
+          await actualizarListasDeDuelos();
+        } catch (err) {
+          alert("Error al publicar desafío.");
+        }
+      });
+    }
+
+    // --- DESCARGAR Y RENDERIZAR LISTAS DE DUELOS ---
+    async function actualizarListasDeDuelos() {
+      if (!duelsPanel.classList.contains("active")) return;
+      try {
+        const { data: lobbyData } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("status", "WAITING")
+          .not("challenger", "eq", state.username)
+          .order("created_at", { ascending: false });
+
+        const { data: misDuelosData } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("status", "PLAYING")
+          .or(`challenger.eq.${state.username},opponent.eq.${state.username}`)
+          .order("created_at", { ascending: false });
+
+        lobbyDuelsList.innerHTML = "";
+        if (lobbyData && lobbyData.length > 0) {
+          lobbyData.forEach(duel => {
+            const item = document.createElement("div");
+            item.className = "duel-item";
+            item.innerHTML = `
+              <div class="duel-item-info">
+                <span class="duel-player-title">⚔️ Desafío de: ${duel.challenger}</span>
+                <span class="duel-meta-tag">Tablero de Nivel: ${duel.duel_level}</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
+            `;
+            lobbyDuelsList.appendChild(item);
+          });
+        } else {
+          lobbyDuelsList.innerHTML = `<p style="text-align:center; font-size:0.85rem; color:var(--text-muted); padding: 10px;">No hay jugadores esperando duelo.</p>`;
+        }
+
+        myActiveDuelsList.innerHTML = "";
+        if (misDuelosData && misDuelosData.length > 0) {
+          misDuelosData.forEach(duel => {
+            const esMiTurno = (duel.current_turn === "CHALLENGER" && duel.challenger === state.username) || 
+                              (duel.current_turn === "OPPONENT" && duel.opponent === state.username);
+            const rival = duel.challenger === state.username ? duel.opponent : duel.challenger;
+            const item = document.createElement("div");
+            item.className = "duel-item";
+            item.innerHTML = `
+              <div class="duel-item-info">
+                <span class="duel-player-title">Rival: ${rival}</span>
+                <span class="duel-meta-tag">Nivel: ${duel.duel_level} | ${esMiTurno ? '🟢 ¡TU TURNO!' : '🔴 Esperando...'}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="cargarPartidaDeDuelo('${duel.id}')">Continuar</button>
+            `;
+            myActiveDuelsList.appendChild(item);
+          });
+        } else {
+          myActiveDuelsList.innerHTML = `<p style="text-align:center; font-size:0.85rem; color:var(--text-muted); padding:10px;">No tienes duelos activos.</p>`;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.aceptarDueloDelLobby = async function(duelId) {
+      try {
+        await supabaseClient
+          .from("memorice_duels")
+          .update({ opponent: state.username, status: "PLAYING", current_turn: "CHALLENGER" })
+          .eq("id", duelId);
+        alert("¡Duelo aceptado!");
+        switchDuelTab(tabMyDuels, secMyDuels);
+        await actualizarListasDeDuelos();
+      } catch (err) {
+        alert("El desafío ya no está disponible.");
+      }
+    };
+
+    window.cargarPartidaDeDuelo = async function(duelId) {
+      try {
+        const { data: duel, error } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("id", duelId)
+          .maybeSingle();
+
+        if (error || !duel) return;
+        
+        state.activeDuelId = duel.id;
+        state.isDuelMode = true;
+        state.duelChallenger = duel.challenger;
+        state.duelOpponent = duel.opponent;
+        state.duelCurrentTurn = duel.current_turn;
+        
+        clearInterval(state.timerInterval);
+        resetTimerUI();
+        feedbackOverlay.style.display = "none";
+        
+        document.getElementById("soloGameControls").style.display = "none";
+        document.getElementById("duelPairsScoreboard").style.display = "flex";
+        
+        state.level = duel.duel_level;
+        state.score = duel.challenger === state.username ? duel.challenger_score : duel.opponent_score;
+        state.scoreAtLevelStart = state.score; 
+        
+        displayLevel.textContent = `Duelo vs ${duel.challenger === state.username ? duel.opponent : duel.challenger}`;
+        displayScore.textContent = state.score;
+        duelsPanel.classList.remove("active");
+
+        if (!duel.board_state) {
+          const totalCards = getCardCountForLevel(state.level);
+          const pairsCount = totalCards / 2;
+          let imagePool = [...state.cardImages];
+          shuffleArray(imagePool);
+          let selectedImages = [];
+          for (let i = 0; i < pairsCount; i++) {
+            const img = imagePool[i % imagePool.length];
+            selectedImages.push(img, img);
+          }
+          shuffleArray(selectedImages);
+          const nuevoTablero = selectedImages.map((img, idx) => ({
+            id: idx,
+            img: img,
+            matched: false,
+            claimedBy: "" 
+          }));
+          
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ board_state: nuevoTablero })
+            .eq("id", duel.id);
+          state.boardCards = nuevoTablero;
+        } else {
+          state.boardCards = duel.board_state;
+        }
+        
+        state.myPairs = 0;
+        state.rivalPairs = 0;
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        
+        state.boardCards.forEach(c => {
+          if (c.matched) {
+            if (c.claimedBy === miRol) state.myPairs += 0.5; 
+            else state.rivalPairs += 0.5;
+          }
+        });
+        
+        document.getElementById("myPairsCount").textContent = Math.floor(state.myPairs);
+        document.getElementById("rivalPairsCount").textContent = Math.floor(state.rivalPairs);
+
+        actualizarVisualizacionDeTurno();
+        renderBoard(getCardCountForLevel(state.level));
+        conectarCanalDePartidaEnVivo(duel.id);
+
+      } catch (err) {
+        console.error(err);
+        alert("Error al conectar al duelo.");
+      }
+    };
+
+    function actualizarVisualizacionDeTurno() {
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+      const indicador = document.getElementById("duelTurnIndicator");
+      if (!indicador) return;
+      
+      if (state.duelCurrentTurn === miRol) {
+        indicador.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
+        indicador.style.color = "#4ade80";
+      } else {
+        const nombreRival = miRol === "CHALLENGER" ? state.duelOpponent : state.duelChallenger;
+        indicador.innerHTML = `🔴 Turno de su rival: <strong>${nombreRival}</strong>. Esperando jugada...`;
+        indicador.style.color = "#f87171";
+      }
+    }
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      loadState();
+      setupEvents();
+      conectarTiempoReal(); 
+      encenderAntenaLobby(); 
+      await verificarSesionExistente(); 
+    });
+
+    function setupEvents() {
+      usernameInput.value = state.username;
+      usernameInput.addEventListener("change", () => {
+        state.username = usernameInput.value.trim() || "Jugador Teocrático";
+        saveState();
+        updateLeaderboardWithCurrent();
+      });
+      
+      document.getElementById("btnShare").addEventListener("click", shareScore);
+      
+      btnToggleAdmin.addEventListener("click", () => {
+        adminPanel.classList.toggle("active");
+        if (adminPanel.classList.contains("active")) {
+          adminPanel.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+      
+      btnCloseAdmin.addEventListener("click", () => {
+        adminPanel.classList.remove("active");
+      });
+      
+      // Control de Cierre de Sesión Enlazado
+      if (btnLogOut) {
+        btnLogOut.addEventListener("click", () => {
+          localStorage.removeItem("mt_logged_user");
+          localStorage.removeItem("mt_username");
+          localStorage.removeItem("mt_level");
+          localStorage.removeItem("mt_score");
+          localStorage.removeItem("mt_record");
+          location.reload();
+        });
+      }
+      
+      btnAddCardImg.addEventListener("click", addNewCardImage);
+      btnSaveBgs.addEventListener("click", saveCustomBackgrounds);
+      btnRestoreDefaults.addEventListener("click", restoreDefaults);
+      
+      document.getElementById("btnRestartLevel").addEventListener("click", () => {
+        state.score = state.scoreAtLevelStart; 
+        saveState();
+        startLevel(state.level);
+      });
+      
+      document.getElementById("btnResetGame").addEventListener("click", resetAllGame);
+    }
+
+    // --- LÓGICA DE DIFICULTAD Y NIVELES ---
+    function getCardCountForLevel(level) {
+      if (level === 1) return 4;
+      if (level === 2) return 8;
+      if (level === 3) return 16;
+      if (level === 4) return 20;
+      if (level === 5) return 24;
+      if (level === 6) return 30;
+      return 40; 
+    }
+
+    function startLevel(level) {
+      state.scoreAtLevelStart = state.score;
+      clearInterval(state.timerInterval);
+      resetTimerUI();
+      feedbackOverlay.style.display = "none";
+      
+      state.level = level;
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      state.seenCardsIndices.clear();
+      
+      displayLevel.textContent = state.level;
+      displayScore.textContent = state.score;
+      displayRecord.textContent = state.record;
+      
+      const bgIndex = Math.min(level, 7);
+      const bgUrl = state.bgImages[bgIndex] || state.bgImages[7];
+      document.body.style.backgroundImage = `url('${bgUrl}')`;
+      
+      const totalCards = getCardCountForLevel(level);
+      const pairsCount = totalCards / 2;
+      
+      let imagePool = [...state.cardImages];
+      shuffleArray(imagePool);
+      let selectedImages = [];
+      for (let i = 0; i < pairsCount; i++) {
+        const img = imagePool[i % imagePool.length];
+        selectedImages.push(img, img); 
+      }
+      shuffleArray(selectedImages);
+      state.boardCards = selectedImages.map((img, idx) => ({
+        id: idx,
+        img: img,
+        matched: false
+      }));
+      
+      renderBoard(totalCards);
+      renderLeaderboard(); 
+      populateAdminPanel();
+    }
+
+    function renderBoard(totalCards) {
+      gameBoard.className = `game-board grid-${totalCards}`;
+      gameBoard.innerHTML = "";
+      
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+      state.boardCards.forEach((cardData) => {
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "card";
+        cardContainer.dataset.id = cardData.id;
+        
+        const cardInner = document.createElement("div");
+        cardInner.className = "card-inner";
+        
+        const cardBack = document.createElement("div");
+        cardBack.className = "card-back";
+        
+        const cardFront = document.createElement("div");
+        cardFront.className = "card-front";
+        
+        if (cardData.matched) {
+          cardContainer.classList.add("flipped", "matched");
+          if (state.isDuelMode && cardData.claimedBy) {
+            if (cardData.claimedBy === miRol) {
+              cardFront.style.border = "3px solid #4ade80"; 
+              cardFront.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
+            } else {
+              cardFront.style.border = "3px solid #f87171"; 
+              cardFront.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.4)";
+            }
+          }
+        }
+        
+        const img = document.createElement("img");
+        img.src = cardData.img;
+        img.alt = "Memory Front";
+        img.loading = "lazy";
+        
+        cardFront.appendChild(img);
+        cardInner.appendChild(cardBack);
+        cardInner.appendChild(cardFront);
+        cardContainer.appendChild(cardInner);
+        
+        cardContainer.addEventListener("click", () => handleCardClick(cardContainer, cardData));
+        gameBoard.appendChild(cardContainer);
+      });
+    }
+
+    // --- ANTENA DE SEGUIMIENTO EN TIEMPO REAL PARA PARTIDAS EN CURSO ---
+    function conectarCanalDePartidaEnVivo(duelId) {
+      if (window.activeDuelChannel) {
+        window.activeDuelChannel.unsubscribe();
+      }
+
+      console.log("Antena encendida para el duelo en vivo:", duelId);
+
+      window.activeDuelChannel = supabaseClient
+        .channel(`partida-en-vivo-${duelId}`)
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'memorice_duels', filter: `id=eq.${duelId}` },
+          async (payload) => {
+            const datosActualizados = payload.new;
+            
+            state.duelCurrentTurn = datosActualizados.current_turn;
+            state.boardCards = datosActualizados.board_state || state.boardCards;
+            
+            const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+            state.score = miRol === "CHALLENGER" ? datosActualizados.challenger_score : datosActualizados.opponent_score;
+            displayScore.textContent = state.score;
+
+            const move = datosActualizados.last_move;
+            if (move && move.player !== miRol) {
+              const el1 = gameBoard.querySelector(`[data-id="${move.card1}"]`);
+              const el2 = move.card2 !== null ? gameBoard.querySelector(`[data-id="${move.card2}"]`) : null;
+
+              if (move.result === "MATCH") {
+                if (el1) el1.classList.add("flipped", "matched");
+                if (el2) el2.classList.add("flipped", "matched");
+                createScoreToast(el1, "¡Rival Acertó Par! 😮");
+              } else if (move.result === "MISMATCH") {
+                state.isProcessing = true;
+                if (el1) el1.classList.add("flipped");
+                if (el2) el2.classList.add("flipped");
+                
+                setTimeout(() => {
+                  if (el1) el1.classList.remove("flipped");
+                  if (el2) el2.classList.remove("flipped");
+                  state.isProcessing = false;
+                }, 1500); 
+              } else if (move.result === "TIMEOUT") {
+                if (el1) el1.classList.add("flipped");
+                createScoreToast(el1, "⏱️ Rival agotó tiempo");
+                setTimeout(() => {
+                  if (el1) el1.classList.remove("flipped");
+                }, 1000);
+              }
+            }
+
+            state.myPairs = 0;
+            state.rivalPairs = 0;
+            state.boardCards.forEach(c => {
+              if (c.matched) {
+                if (c.claimedBy === miRol) state.myPairs += 0.5;
+                else state.rivalPairs += 0.5;
+              }
+            });
+            
+            document.getElementById("myPairsCount").textContent = Math.floor(state.myPairs);
+            document.getElementById("rivalPairsCount").textContent = Math.floor(state.rivalPairs);
+
+            actualizarVisualizacionDeTurno();
+            renderBoard(getCardCountForLevel(state.level));
+            evaluarFinDelDuelo();
+          }
+        )
+        .subscribe();
+    }
+
+    // --- MANEJO DEL TURNO DEL JUEGO ---
+    function handleCardClick(cardElement, cardData) {
+      if (state.isProcessing) return;
+      if (cardData.matched) return;
+      if (cardElement.classList.contains("flipped")) return;
+
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        if (state.duelCurrentTurn !== miRol) {
+          alert("⚠️ No es tu turno. Espera a que tu rival realice su jugada.");
+          return;
+        }
+      }
+
+      cardElement.classList.add("flipped");
+      
+      if (!state.firstCardElement) {
+        state.firstCardElement = cardElement;
+        state.firstCardData = cardData;
+        state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
+        startTimer();
+      } else {
+        state.secondCardElement = cardElement;
+        state.secondCardData = cardData;
+        stopTimer();
+        state.isProcessing = true;
+        
+        if (state.firstCardData.img === state.secondCardData.img) {
+          handleMatch(state.firstCardWasSeen, state.seenCardsIndices.has(cardData.id));
+        } else {
+          handleMismatch();
+        }
+      }
+    }
+
+    // --- REGLAS DE PUNTUACIÓN Y TURNOS ---
+    async function handleMatch(firstSeen, secondSeen) {
+      state.firstCardData.matched = true;
+      state.secondCardData.matched = true;
+      state.firstCardElement.classList.add("matched");
+      state.secondCardElement.classList.add("matched");
+      
+      let pointsGained = 100;
+      if (firstSeen || secondSeen) {
+        const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
+        pointsGained = Math.max(10, 100 - (Math.ceil(elapsedSeconds) * 10));
+      }
+      
+      state.seenCardsIndices.add(state.firstCardData.id);
+      state.seenCardsIndices.add(state.secondCardData.id);
+      state.score += pointsGained;
+      if (state.score > state.record) state.record = state.score;
+      saveState();
+      
+      createScoreToast(state.secondCardElement, `+${pointsGained} Pts`);
+      displayScore.textContent = state.score;
+      displayRecord.textContent = state.record;
+
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        
+        state.boardCards[state.firstCardData.id].matched = true;
+        state.boardCards[state.firstCardData.id].claimedBy = miRol;
+        state.boardCards[state.secondCardData.id].matched = true;
+        state.boardCards[state.secondCardData.id].claimedBy = miRol;
+
+        state.myPairs += 1;
+        document.getElementById("myPairsCount").textContent = state.myPairs;
+
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ 
+              board_state: state.boardCards,
+              last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MATCH", player: miRol },
+              challenger_score: miRol === "CHALLENGER" ? state.score : undefined,
+              opponent_score: miRol === "OPPONENT" ? state.score : undefined
+            })
+            .eq("id", state.activeDuelId);
+        } catch (e) { console.error("Error sincronizando acierto:", e); }
+        
+        resetTurnState();
+        checkLevelCompletion();
+      } else {
+        updateLeaderboardWithCurrent();
+        resetTurnState();
+        checkLevelCompletion();
+      }
+    }
+
+    async function handleMismatch() {
+      state.seenCardsIndices.add(state.firstCardData.id);
+      state.seenCardsIndices.add(state.secondCardData.id);
+      
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+        
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ 
+              current_turn: siguienteTurno,
+              last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MISMATCH", player: miRol }
+            })
+            .eq("id", state.activeDuelId);
+        } catch(e) { console.error("Error sincronizando fallo:", e); }
+      }
+
+      setTimeout(() => {
+        if (state.firstCardElement && state.secondCardElement) {
+          state.firstCardElement.classList.remove("flipped");
+          state.secondCardElement.classList.remove("flipped");
+        }
+        resetTurnState();
+      }, 1000);
+    }
+
+    function resetTurnState() {
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      resetTimerUI();
+    }
+
+    function startTimer() {
+      state.timeLeft = 10;
+      state.turnStartTime = Date.now();
+      updateTimerUI();
+      clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timeLeft = 10 - ((Date.now() - state.turnStartTime) / 1000);
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          state.timeLeft = 0;
+          updateTimerUI();
+          handleTimeout();
+        } else {
+          updateTimerUI();
+        }
+      }, 50);
+    }
+
+    function stopTimer() { clearInterval(state.timerInterval); }
+    function updateTimerUI() {
+      timerText.textContent = `${Math.max(0, Math.ceil(state.timeLeft))}s`;
+      timerBar.style.width = `${(state.timeLeft / 10) * 100}%`;
+    }
+    function resetTimerUI() { timerBar.style.width = "100%"; timerText.textContent = "10s"; }
+
+    async function handleTimeout() {
+      state.isProcessing = true;
+      if (state.firstCardData) state.seenCardsIndices.add(state.firstCardData.id);
+      createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
+      
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ 
+              current_turn: siguienteTurno,
+              last_move: { card1: state.firstCardData.id, card2: null, result: "TIMEOUT", player: miRol }
+            })
+            .eq("id", state.activeDuelId);
+        } catch(e) { console.error(e); }
+      }
+
+      setTimeout(() => {
+        if (state.firstCardElement) state.firstCardElement.classList.remove("flipped");
+        resetTurnState();
+      }, 1000);
+    }
+
+    function createScoreToast(element, text) {
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
+      const toast = document.createElement("div");
+      toast.className = "score-toast";
+      toast.textContent = text;
+      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
+      toast.style.top = `${rect.top - boardRect.top}px`;
+      document.getElementById("boardWrapper").appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 1400);
+    }
+
+    // --- EVALUACIÓN DE GANADOR DE DUELOS ---
+    async function evaluarFinDelDuelo() {
+      const tableroCompleto = state.boardCards.every(card => card.matched);
+      if (!tableroCompleto) return; 
+
+      state.isProcessing = true;
+      clearInterval(state.timerInterval);
+
+      let tituloFinal = "";
+      let subtituloFinal = "";
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+      if (state.myPairs > state.rivalPairs) {
+        tituloFinal = "🏆 ¡VICTORIA ABSOLUTA!";
+        subtituloFinal = `Has ganado el duelo con un total de ${Math.floor(state.myPairs)} pares frente a ${Math.floor(state.rivalPairs)} de tu rival.`;
+        
+        try {
+          const { data: userDb } = await supabaseClient
+            .from("memorice_users")
+            .select("trophies_count, highest_score")
+            .eq("username", state.username)
+            .maybeSingle();
+
+          const nuevasCopas = (userDb?.trophies_count || 0) + 1;
+          const nuevoRecordMax = Math.max(userDb?.highest_score || 0, state.score);
+
+          await supabaseClient
+            .from("memorice_users")
+            .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
+            .eq("username", state.username);
+
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ status: "FINISHED" })
+            .eq("id", state.activeDuelId);
+
+          if (displayTrophies) displayTrophies.textContent = nuevasCopas;
+        } catch(e) { console.error(e); }
+
+      } else if (state.myPairs < state.rivalPairs) {
+        tituloFinal = "😢 DERROTA EN DUELO";
+        subtituloFinal = `Tu rival ha conseguido ${Math.floor(state.rivalPairs)} pares superando tus ${Math.floor(state.myPairs)} combinaciones.`;
+      } else {
+        tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+        subtituloFinal = `Ambos jugadores consiguieron exactamente la misma cantidad de pares (${Math.floor(state.myPairs)}).`;
+      }
+
+      feedbackTitle.textContent = tituloFinal;
+      feedbackSubtitle.textContent = subtituloFinal;
+      btnFeedbackAction.textContent = "Volver al Lobby";
+      btnFeedbackAction.onclick = () => {
+        window.location.reload(); 
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- REVISIÓN DE FIN DE NIVEL ---
+    function checkLevelCompletion() {
+      const isLevelComplete = state.boardCards.every(card => card.matched);
+      if (isLevelComplete) {
+        setTimeout(() => {
+          showLevelCompleteModal();
+        }, 800);
+      }
+    }
+
+    function showLevelCompleteModal() {
+      feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
+      feedbackSubtitle.textContent = `Has emparejado todas las tarjetas con éxito. Tu puntaje actual es de ${state.score} puntos. Prepárate para el siguiente desafío.`;
+      btnFeedbackAction.textContent = "Continuar";
+      
+      btnFeedbackAction.onclick = () => {
+        feedbackOverlay.style.display = "none";
+        startLevel(state.level + 1);
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- RENDERIZADO DEL TOP 10 GLOBAL ---
+    async function renderLeaderboard() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('view_top_ten_leaderboard')
+          .select('*');
+        
+        if (error) throw error;
+        
+        leaderboardBody.innerHTML = "";
+        
+        if (data && data.length > 0) {
+          data.forEach((user, idx) => {
+            const row = document.createElement("tr");
+            const isCurrentUser = (user.username === state.username);
+            
+            if (isCurrentUser) {
+              row.style.fontWeight = "bold";
+              row.style.color = "var(--accent-color)";
+              row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+            }
+            row.innerHTML = `
+              <td class="rank">#${idx + 1}</td>
+              <td>${user.username}</td>
+              <td class="score">${user.highest_score}</td>
+            `;
+            leaderboardBody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.warn("Usando Fallback de LocalStorage debido a inconvenientes de red local.", err);
+        
+        leaderboardBody.innerHTML = "";
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        
+        state.leaderboard.slice(0, 10).forEach((user, idx) => {
+          const row = document.createElement("tr");
+          const uName = user.username || user.name;
+          const isCurrentUser = (uName === state.username);
+          
+          if (isCurrentUser) {
+            row.style.fontWeight = "bold";
+            row.style.color = "var(--accent-color)";
+            row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+          }
+          row.innerHTML = `
+            <td class="rank">#${idx + 1}</td>
+            <td>${uName}</td>
+            <td class="score">${user.score}</td>
+          `;
+          leaderboardBody.appendChild(row);
+        });
+      }
+    }
+
+    // --- ENVÍO DE RÉCORD ---
+    async function updateLeaderboardWithCurrent() {
+      if (state.score <= 0) {
+        await renderLeaderboard();
+        return;
+      }
+
+      const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
+      if (idx !== -1) {
+        if (state.score > state.leaderboard[idx].score) {
+          state.leaderboard[idx].score = state.score;
+        }
+      } else {
+        state.leaderboard.push({ name: state.username, score: state.score });
+      }
+      state.leaderboard.sort((a, b) => b.score - a.score);
+      if (state.leaderboard.length > 10) {
+        state.leaderboard = state.leaderboard.slice(0, 10);
+      }
+      saveState();
+
+      try {
+        const { data: usuarioExistente, error: errorFetch } = await supabaseClient
+          .from('memorice_leaderboard')
+          .select('Score')
+          .eq('username', state.username)
+          .maybeSingle();
+
+        if (errorFetch) throw errorFetch;
+
+        if (!usuarioExistente || state.score > usuarioExistente.Score) {
+          const { error: errorUpsert } = await supabaseClient
+            .from('memorice_leaderboard')
+            .upsert(
+              { username: state.username, Score: state.score },
+              { onConflict: 'username' }
+            );
+
+          if (errorUpsert) throw errorUpsert;
+        }
+      } catch (err) {
+        console.error("Fallo de sincronización en Supabase.", err);
+      }
+      
+      renderLeaderboard();
+    }
+
+    // --- CANALES EN TIEMPO REAL ---
+    function conectarTiempoReal() {
+      supabaseClient
+        .channel('cambios-leaderboard')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'memorice_leaderboard' },
+          async () => {
+            await renderLeaderboard();
+          }
+        )
+        .subscribe();
+    }
+
+    function encenderAntenaLobby() {
+      supabaseClient
+        .channel('cambios-lobby-duelos')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'memorice_duels' },
+          async () => {
+            if (duelsPanel.classList.contains("active")) {
+              await actualizarListasDeDuelos();
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    // --- COMPARTIR PUNTOS ---
+    function shareScore() {
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también y pon a prueba tu agilidad mental: ${window.location.href}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert("¡Enlace e invitación de puntaje copiados al portapapeles con éxito!");
+      }).catch(err => {
+        console.error("Fallo al copiar enlace: ", err);
+      });
+    }
+
+    // --- REINICIOS ---
+    function resetAllGame() {
+      if (confirm("¿Estás completamente seguro de querer reiniciar toda tu partida? Se restablecerá tu nivel y puntaje a cero.")) {
+        state.score = 0;
+        state.level = 1;
+        state.seenCardsIndices.clear();
+        saveState();
+        startLevel(1);
+      }
+    }
+
+    // --- CONTROL DEL PANEL DE ADMINISTRACIÓN ---
+    function populateAdminPanel() {
+      adminCardImagesList.innerHTML = "";
+      state.cardImages.forEach((imgUrl, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "admin-img-wrapper";
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.className = "admin-img-thumb";
+        img.alt = `Thumb ${idx}`;
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "&times;";
+        deleteBtn.className = "admin-img-delete";
+        deleteBtn.addEventListener("click", () => deleteCardImage(idx));
+        wrapper.appendChild(img);
+        wrapper.appendChild(deleteBtn);
+        adminCardImagesList.appendChild(wrapper);
+      });
+      
+      for (let i = 1; i <= 7; i++) {
+        const input = document.getElementById(`bgLvl${i}`);
+        if (input) {
+          input.value = state.bgImages[i] || "";
+        }
+      }
+    }
+
+    function addNewCardImage() {
+      const url = inputNewCardImg.value.trim();
+      if (!url) return;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        alert("Por favor, ingresa una URL web válida que empiece con http:// o https://");
+        return;
+      }
+      state.cardImages.push(url);
+      saveState();
+      populateAdminPanel();
+      inputNewCardImg.value = "";
+    }
+
+    function deleteCardImage(index) {
+      if (state.cardImages.length <= 20) {
+        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas para soportar el tablero máximo de 40 cartas (20 pares).");
+        return;
+      }
+      state.cardImages.splice(index, 1);
+      saveState();
+      populateAdminPanel();
+    }
+
+    function saveCustomBackgrounds() {
+      let updated = false;
+      for (let i = 1; i <= 7; i++) {
+        const input = document.getElementById(`bgLvl${i}`);
+        if (input && input.value.trim() !== "") {
+          state.bgImages[i] = input.value.trim();
+          updated = true;
+        }
+      }
+      if (updated) {
+        saveState();
+        alert("Configuración de fondos guardada correctamente.");
+        const currentBgIndex = Math.min(state.level, 7);
+        const bgUrl = state.bgImages[currentBgIndex] || state.bgImages[7];
+        document.body.style.backgroundImage = `url('${bgUrl}')`;
+      }
+    }
+
+    function restoreDefaults() {
+      if (confirm("¿Estás seguro de restablecer todos los elementos de administración, fondos y récords a sus valores originales de fábrica?")) {
+        localStorage.removeItem("mt_username");
+        localStorage.removeItem("mt_level");
+        localStorage.removeItem("mt_score");
+        localStorage.removeItem("mt_record");
+        localStorage.removeItem("mt_leaderboard");
+        localStorage.removeItem("mt_card_images");
+        localStorage.removeItem("mt_bg_images");
+        
+        loadState();
+        usernameInput.value = state.username;
+        populateAdminPanel();
+        startLevel(1);
+      }
+    }
+
+    // --- ALGORITMOS DE UTILIDAD (SHUFFLE) ---
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+  </script>
+</body>
+</html>
