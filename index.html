@@ -376,6 +376,8 @@
     .card-front {
       background: #080d16;
       transform: rotateY(180deg);
+      border: 3px solid transparent;
+      transition: border 0.3s, box-shadow 0.3s;
     }
     .card-front img {
       width: 100%;
@@ -861,9 +863,9 @@
       </div>
 
       <!-- NUEVO MARCADOR DE PARES PARA EL MODO DUELO -->
-      <div id="duelPairsScoreboard" style="display: none; justify-content: space-around; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); font-weight: bold; text-align: center;">
-          <div style="color: #4ade80;">🟢 Mis Pares: <span id="myPairsCount">0</span></div>
-          <div style="color: #f87171;">🔴 Pares Rival: <span id="rivalPairsCount">0</span></div>
+      <div id="duelPairsScoreboard" style="display: none; justify-content: space-around; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); font-weight: bold; text-align: center; flex-wrap: wrap;">
+          <div style="color: #4ade80; flex: 1; min-width: 120px;">🟢 Mis Pares: <span id="myPairsCount">0</span></div>
+          <div style="color: #f87171; flex: 1; min-width: 120px;">🔴 Pares Rival: <span id="rivalPairsCount">0</span></div>
           <div id="duelTurnIndicator" style="color: var(--accent-color); width: 100%; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">Cargando turno...</div>
       </div>
 
@@ -945,7 +947,7 @@
                   <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
               </div>
 
-              <!-- NUEVO CAMPO CORREO (Visible solo en Registro) -->
+              <!-- CAMPO CORREO (Visible solo en Registro) -->
               <div class="auth-form-group" id="regEmailField" style="display: none;">
                   <label for="authEmail">Correo de Recuperación</label>
                   <input type="email" id="authEmail" class="auth-input" placeholder="correo@ejemplo.com" autocomplete="email">
@@ -956,7 +958,7 @@
                   <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
               </div>
 
-              <!-- NUEVOS CAMPOS DE PREGUNTA DE SEGURIDAD (Visible solo en Registro) -->
+              <!-- CAMPOS DE PREGUNTA DE SEGURIDAD (Visible solo en Registro) -->
               <div id="regSecurityFields" style="display: none;">
                   <div class="auth-form-group">
                       <label for="authSecQuestion">Pregunta de Seguridad</label>
@@ -1232,7 +1234,7 @@
     const authToggleLink = document.getElementById("authToggleLink");
     const authToggleTextLabel = document.getElementById("authToggleTextLabel");
 
-    // Nuevas referencias para recuperación
+    // Referencias para recuperación
     const regEmailField = document.getElementById("regEmailField");
     const regSecurityFields = document.getElementById("regSecurityFields");
     const authMainFields = document.getElementById("authMainFields");
@@ -1269,7 +1271,7 @@
     const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
 
     let authMode = "LOGIN"; 
-    let recoveryStateStep = 1; // 1: Datos iniciales, 2: Responder pregunta, 3: Establecer nueva clave
+    let recoveryStateStep = 1; 
     let userToRecoverData = null;
 
     // --- SANEAMIENTO CONTRA INYECCIONES ---
@@ -1288,13 +1290,11 @@
     function alternarFormularioAutenticacion(forceMode = null) {
       if (forceMode) authMode = forceMode;
 
-      // Ocultar siempre la sección de recuperación cuando alternamos
       authMainFields.style.display = "block";
       authRecoveryFields.style.display = "none";
       document.getElementById("forgotPasswordContainer").style.display = "block";
 
-      if (authMode === "REGISTER") {
-        authMode = "LOGIN";
+      if (authMode === "LOGIN") {
         if(authTitle) authTitle.innerText = "Iniciar Sesión";
         if(authSubtitle) authSubtitle.innerText = "Ingresa tus credenciales para continuar tu progreso teocrático.";
         if(btnSubmitAuth) btnSubmitAuth.innerText = "Ingresar a la Partida";
@@ -1305,7 +1305,6 @@
         regSecurityFields.style.display = "none";
         document.getElementById("authPasswordFieldGroup").style.display = "block";
       } else {
-        authMode = "REGISTER";
         if(authTitle) authTitle.innerText = "Crear Cuenta";
         if(authSubtitle) authSubtitle.innerText = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
         if(btnSubmitAuth) btnSubmitAuth.innerText = "Confirmar Registro";
@@ -1339,7 +1338,6 @@
       });
     }
 
-    // Navegación hacia recuperación de contraseña
     if (btnGoToRecovery) {
       btnGoToRecovery.addEventListener("click", () => {
         authMode = "RECOVERY";
@@ -1353,7 +1351,6 @@
         if(authToggleTextLabel) authToggleTextLabel.innerText = "Volver a la pantalla de";
         if(authToggleLink) authToggleLink.innerText = "Iniciar Sesión";
         
-        // Resetear visibilidad de pasos de recuperación
         document.getElementById("recoverEmailGroup").style.display = "block";
         recoverUsername.disabled = false;
         recoverEmail.disabled = false;
@@ -1386,8 +1383,8 @@
       }
       
       if (authOverlay) {
-        authMode = "REGISTER"; 
-        alternarFormularioAutenticacion(); 
+        authMode = "LOGIN"; 
+        alternarFormularioAutenticacion("LOGIN"); 
         authOverlay.style.display = "flex";
       }
     }
@@ -1404,7 +1401,7 @@
       return Math.abs(hash).toString(16).padStart(8, "0");
     }
 
-    // --- PROCESAMIENTO DE ACCESO (LOGIN, REGISTRO, RECUPERACIÓN) ---
+    // --- PROCESAMIENTO DE ACCESO ---
     const authForm = document.getElementById("authForm");
 
     async function procesarFormularioAutenticacion() {
@@ -1416,15 +1413,15 @@
         const secA = authSecAnswer ? authSecAnswer.value.trim().toLowerCase() : "";
 
         if (!user || !pass) {
-          alert("⚠️ Por favor, completa tanto el usuario como la contraseña para poder ingresar.");
+          alert("⚠️ Por favor, completa tanto el usuario como la contraseña.");
           return;
         }
         if (user.length < 3 || pass.length < 6) {
-          alert("⚠️ Los datos ingresados no cumplen con el mínimo requerido (Usuario: 3 letras, Clave: 6 letras).");
+          alert("⚠️ El usuario debe tener mínimo 3 letras y la clave mínimo 6.");
           return;
         }
         if (!esCadenaSegura(user)) {
-          alert("⚠️ Caracteres prohibidos detectados en el usuario. Evita usar comillas o guiones.");
+          alert("⚠️ Caracteres prohibidos detectados en el usuario.");
           return;
         }
 
@@ -1433,7 +1430,7 @@
         try {
           if (authMode === "REGISTER") {
             if (!emailVal || !secA) {
-              alert("⚠️ Para registrarte, debes ingresar un correo de recuperación y la respuesta secreta.");
+              alert("⚠️ Para registrarte, debes ingresar un correo de recuperación y tu respuesta secreta.");
               return;
             }
 
@@ -1448,7 +1445,7 @@
               return;
             }
             if (existe) {
-              alert("❌ Este nombre de usuario ya está registrado. Elige otro.");
+              alert("❌ Este nombre de usuario ya está registrado.");
               return;
             }
 
@@ -1468,7 +1465,7 @@
               }]);
 
             if (errInsert) {
-              alert("❌ No se pudo guardar el progreso: " + errInsert.message);
+              alert("❌ No se pudo guardar el registro: " + errInsert.message);
               return;
             }
 
@@ -1487,7 +1484,7 @@
               return;
             }
             if (!dbUser) {
-              alert("❌ El nombre de usuario no existe. Haz clic en 'Crear Cuenta' si eres nuevo.");
+              alert("❌ El nombre de usuario no existe. Regístrate primero.");
               return;
             }
             if (dbUser.password_hash !== hash) {
@@ -1495,21 +1492,21 @@
               return;
             }
 
-            alert(`👋 ¡Bienvenido de vuelta, ${dbUser.username}!`);
+            alert(`👋 ¡Bienvenido, ${dbUser.username}!`);
             ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
           }
         } catch (err) {
           console.error(err);
-          alert("❌ Ocurrió un error inesperado al autenticar.");
+          alert("❌ Ocurrió un error inesperado.");
         }
       } else if (authMode === "RECOVERY") {
-        // --- PROCESO DE RECUPERACIÓN DE CONTRASEÑA EN PASOS ---
+        // --- PROCESO DE RECUPERACIÓN DE CONTRASEÑA ---
         if (recoveryStateStep === 1) {
           const userVal = recoverUsername.value.trim();
           const emailVal = recoverEmail.value.trim();
 
           if (!userVal || !emailVal) {
-            alert("⚠️ Por favor ingresa el nombre de usuario y el correo para continuar.");
+            alert("⚠️ Por favor ingresa tu usuario y correo.");
             return;
           }
 
@@ -1521,21 +1518,20 @@
               .maybeSingle();
 
             if (error || !dbUser) {
-              alert("❌ El usuario no existe o los datos de conexión fallaron.");
+              alert("❌ El usuario no existe.");
               return;
             }
 
             if (!dbUser.email || dbUser.email.toLowerCase() !== emailVal.toLowerCase()) {
-              alert("❌ Los datos ingresados no coinciden con nuestros registros.");
+              alert("❌ Los datos de verificación no coinciden.");
               return;
             }
 
             if (!dbUser.security_question || !dbUser.security_answer_hash) {
-              alert("❌ Tu cuenta no tiene configurados los parámetros de recuperación autogestionada.");
+              alert("❌ Tu cuenta no dispone de parámetros de recuperación configurados.");
               return;
             }
 
-            // Datos verificados, pasamos al paso 2: Pregunta secreta
             userToRecoverData = dbUser;
             displayRecoveryQuestion.innerText = dbUser.security_question;
             
@@ -1549,22 +1545,21 @@
 
           } catch (e) {
             console.error(e);
-            alert("Ocurrió un error al procesar la solicitud.");
+            alert("Error al procesar la solicitud.");
           }
         } else if (recoveryStateStep === 2) {
           const ansVal = recoverSecAnswer.value.trim().toLowerCase();
           if (!ansVal) {
-            alert("⚠️ Por favor, ingresa tu respuesta.");
+            alert("⚠️ Escribe tu respuesta.");
             return;
           }
 
           const hashAns = generarHashContrasena(ansVal);
           if (userToRecoverData.security_answer_hash !== hashAns) {
-            alert("❌ Respuesta incorrecta. Vuelve a intentarlo.");
+            alert("❌ Respuesta incorrecta.");
             return;
           }
 
-          // Respuesta correcta. Pasamos al paso 3: Nueva contraseña
           recoverVerificationStep.style.display = "none";
           recoverNewPasswordStep.style.display = "block";
           
@@ -1573,7 +1568,7 @@
         } else if (recoveryStateStep === 3) {
           const newPass = recoverNewPassword.value;
           if (!newPass || newPass.length < 6) {
-            alert("⚠️ La nueva contraseña debe tener al menos 6 caracteres.");
+            alert("⚠️ La contraseña debe tener al menos 6 caracteres.");
             return;
           }
 
@@ -1590,7 +1585,7 @@
               return;
             }
 
-            alert("🎉 ¡Contraseña restablecida de forma segura! Ahora puedes iniciar sesión.");
+            alert("🎉 ¡Contraseña restablecida con éxito! Ya puedes iniciar sesión.");
             alternarFormularioAutenticacion("LOGIN");
 
           } catch (e) {
@@ -1630,6 +1625,34 @@
       saveState();
       if (authOverlay) authOverlay.style.display = "none";
       startLevel(state.level);
+
+      // Activar las antenas del jugador autenticado
+      encenderAntenaNotificacionesCreador();
+    }
+
+    // --- ANTENA DE NOTIFICACIÓN PARA EL CREADOR DEL DUELO ---
+    function encenderAntenaNotificacionesCreador() {
+      if (window.challengerNotificationChannel) {
+        window.challengerNotificationChannel.unsubscribe();
+      }
+
+      window.challengerNotificationChannel = supabaseClient
+        .channel('notificaciones-desafios-creador')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'memorice_duels' },
+          async (payload) => {
+            const duel = payload.new;
+            // Si yo creé el duelo, estaba esperando, y ahora está en curso (PLAYING)
+            if (duel.challenger === state.username && payload.old.status === "WAITING" && duel.status === "PLAYING") {
+              const iniciar = confirm(`⚔️ ¡Tu desafío de Nivel ${duel.duel_level} fue aceptado por "${duel.opponent}"!\n\n¿Deseas ingresar a la partida en vivo ahora mismo?`);
+              if (iniciar) {
+                cargarPartidaDeDuelo(duel.id);
+              }
+            }
+          }
+        )
+        .subscribe();
     }
 
     // --- MANEJO DE PESTAÑAS DEL LOBBY ---
@@ -1670,7 +1693,7 @@
               challenger_score: 0,
               opponent_score: 0
             }]);
-          alert("¡Desafío publicado!");
+          alert("¡Desafío publicado en la cartelera!");
           switchDuelTab(tabLobby, secLobby);
           await actualizarListasDeDuelos();
         } catch (err) {
@@ -1842,8 +1865,8 @@
       if (!indicador) return;
       
       if (state.duelCurrentTurn === miRol) {
-        indicator.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
-        indicator.style.color = "#4ade80";
+        indicador.innerHTML = "🟢 ¡ES TU TURNO! Voltea dos cartas.";
+        indicador.style.color = "#4ade80";
       } else {
         const nombreRival = miRol === "CHALLENGER" ? state.duelOpponent : state.duelChallenger;
         indicador.innerHTML = `🔴 Turno de su rival: <strong>${nombreRival}</strong>. Esperando jugada...`;
@@ -1881,7 +1904,6 @@
         adminPanel.classList.remove("active");
       });
       
-      // Control de Cierre de Sesión Enlazado
       if (btnLogOut) {
         btnLogOut.addEventListener("click", () => {
           localStorage.removeItem("mt_logged_user");
@@ -2009,6 +2031,39 @@
       });
     }
 
+    // --- ACTUALIZACIÓN DINÁMICA DEL TABLERO SIN RECONSTRUIR EL DOM ---
+    function actualizarTableroVisual(board_state) {
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+      board_state.forEach(cardData => {
+        const cardElement = gameBoard.querySelector(`[data-id="${cardData.id}"]`);
+        if (cardElement) {
+          const cardFront = cardElement.querySelector(".card-front");
+          
+          if (cardData.matched) {
+            cardElement.classList.add("flipped", "matched");
+            if (cardData.claimedBy) {
+              if (cardData.claimedBy === miRol) {
+                cardFront.style.border = "3px solid #4ade80";
+                cardFront.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
+              } else {
+                cardFront.style.border = "3px solid #f87171";
+                cardFront.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.4)";
+              }
+            }
+          } else {
+            // No voltear de vuelta si es una carta seleccionada localmente en juego
+            if ((state.firstCardData && state.firstCardData.id === cardData.id) || 
+                (state.secondCardData && state.secondCardData.id === cardData.id)) {
+              return; 
+            }
+            cardElement.classList.remove("flipped", "matched");
+            cardFront.style.border = "3px solid transparent";
+            cardFront.style.boxShadow = "none";
+          }
+        }
+      });
+    }
+
     // --- ANTENA DE SEGUIMIENTO EN TIEMPO REAL PARA PARTIDAS EN CURSO ---
     function conectarCanalDePartidaEnVivo(duelId) {
       if (window.activeDuelChannel) {
@@ -2026,7 +2081,6 @@
             const datosActualizados = payload.new;
             
             state.duelCurrentTurn = datosActualizados.current_turn;
-            state.boardCards = datosActualizados.board_state || state.boardCards;
             
             const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
             state.score = miRol === "CHALLENGER" ? datosActualizados.challenger_score : datosActualizados.opponent_score;
@@ -2037,29 +2091,48 @@
               const el1 = gameBoard.querySelector(`[data-id="${move.card1}"]`);
               const el2 = move.card2 !== null ? gameBoard.querySelector(`[data-id="${move.card2}"]`) : null;
 
-              if (move.result === "MATCH") {
+              if (move.result === "FLIP_1") {
+                // Voltear la primera carta del oponente en vivo
+                if (el1) el1.classList.add("flipped");
+              } else if (move.result === "MATCH") {
+                // El rival acertó, marcamos las cartas e iluminamos en rojo
                 if (el1) el1.classList.add("flipped", "matched");
                 if (el2) el2.classList.add("flipped", "matched");
                 createScoreToast(el1, "¡Rival Acertó Par! 😮");
+                
+                state.boardCards = datosActualizados.board_state;
+                actualizarTableroVisual(state.boardCards);
               } else if (move.result === "MISMATCH") {
+                // El rival erró, dejamos ver sus cartas 2 segundos completos
                 state.isProcessing = true;
                 if (el1) el1.classList.add("flipped");
                 if (el2) el2.classList.add("flipped");
+                createScoreToast(el2 || el1, "Rival Erró... 🧐");
                 
                 setTimeout(() => {
                   if (el1) el1.classList.remove("flipped");
                   if (el2) el2.classList.remove("flipped");
                   state.isProcessing = false;
-                }, 1500); 
+                  
+                  state.boardCards = datosActualizados.board_state;
+                  actualizarTableroVisual(state.boardCards);
+                }, 2000); 
               } else if (move.result === "TIMEOUT") {
                 if (el1) el1.classList.add("flipped");
                 createScoreToast(el1, "⏱️ Rival agotó tiempo");
                 setTimeout(() => {
                   if (el1) el1.classList.remove("flipped");
-                }, 1000);
+                  state.boardCards = datosActualizados.board_state;
+                  actualizarTableroVisual(state.boardCards);
+                }, 1500);
               }
+            } else {
+              // Actualización normal, sincronizamos
+              state.boardCards = datosActualizados.board_state || state.boardCards;
+              actualizarTableroVisual(state.boardCards);
             }
 
+            // Recalcular conteo de pares de cada jugador
             state.myPairs = 0;
             state.rivalPairs = 0;
             state.boardCards.forEach(c => {
@@ -2073,7 +2146,6 @@
             document.getElementById("rivalPairsCount").textContent = Math.floor(state.rivalPairs);
 
             actualizarVisualizacionDeTurno();
-            renderBoard(getCardCountForLevel(state.level));
             evaluarFinDelDuelo();
           }
         )
@@ -2081,7 +2153,7 @@
     }
 
     // --- MANEJO DEL TURNO DEL JUEGO ---
-    function handleCardClick(cardElement, cardData) {
+    async function handleCardClick(cardElement, cardData) {
       if (state.isProcessing) return;
       if (cardData.matched) return;
       if (cardElement.classList.contains("flipped")) return;
@@ -2100,6 +2172,20 @@
         state.firstCardElement = cardElement;
         state.firstCardData = cardData;
         state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
+
+        // Informar primer volteo al oponente en tiempo real
+        if (state.isDuelMode) {
+          const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+          try {
+            await supabaseClient
+              .from("memorice_duels")
+              .update({ 
+                last_move: { card1: cardData.id, card2: null, result: "FLIP_1", player: miRol }
+              })
+              .eq("id", state.activeDuelId);
+          } catch(e) { console.error(e); }
+        }
+
         startTimer();
       } else {
         state.secondCardElement = cardElement;
@@ -2178,12 +2264,16 @@
         const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
         const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
         
+        state.boardCards[state.firstCardData.id].matched = false;
+        state.boardCards[state.secondCardData.id].matched = false;
+
         try {
           await supabaseClient
             .from("memorice_duels")
             .update({ 
               current_turn: siguienteTurno,
-              last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MISMATCH", player: miRol }
+              last_move: { card1: state.firstCardData.id, card2: state.secondCardData.id, result: "MISMATCH", player: miRol },
+              board_state: state.boardCards
             })
             .eq("id", state.activeDuelId);
         } catch(e) { console.error("Error sincronizando fallo:", e); }
@@ -2450,7 +2540,6 @@
       renderLeaderboard();
     }
 
-    // --- CANALES EN TIEMPO REAL ---
     // --- CANALES EN TIEMPO REAL ---
     function conectarTiempoReal() {
       supabaseClient
