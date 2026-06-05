@@ -1878,142 +1878,139 @@ document.getElementById("btnRestartLevel").addEventListener("click", () => {
       feedbackOverlay.style.display = "block";
     }
 
-    // --- RENDERIZADO ASÍNCRONO DEL TOP 10 GLOBAL (CONEXIÓN A SUPABASE) ---
-   async function renderLeaderboard() {
-  try {
-    // Consultamos la vista optimizada del Top 10 único
-    const { data, error } = await supabaseClient
-      .from('view_top_ten_leaderboard')
-      .select('*');
+    // --- RENDERIZADO ASÍNCRONO DEL TOP 10 GLOBAL (CONEXIÓN A SUPABASE - REPARADO) ---
+ async function renderLeaderboard() {
+   try {
+     // Consultamos la vista de líderes unificados únicos
+     const { data, error } = await supabaseClient
+       .from('view_top_ten_leaderboard')
+       .select('*');
+     
+     if (error) throw error;
+     
+     leaderboardBody.innerHTML = "";
+     
+     if (data && data.length > 0) {
+       data.forEach((user, idx) => {
+         const row = document.createElement("tr");
+         const isCurrentUser = (user.username === state.username);
+         
+         if (isCurrentUser) {
+           row.style.fontWeight = "bold";
+           row.style.color = "var(--accent-color)";
+           row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+         }
+         row.innerHTML = `
+           <td class="rank">#${idx + 1}</td>
+           <td>${user.username}</td>
+           <td class="score">${user.highest_score}</td>
+         `;
+         leaderboardBody.appendChild(row);
+       });
+     }
+   } catch (err) {
+     console.warn("Error de Supabase detectado. Usando Fallback de LocalStorage.", err);
+     
+     // --- FALLBACK MODO OFFLINE SEGURO ENCAPSULADO ---
+     leaderboardBody.innerHTML = "";
+     state.leaderboard.sort((a, b) => b.score - a.score);
+     
+     state.leaderboard.slice(0, 10).forEach((user, idx) => {
+       const row = document.createElement("tr");
+       const uName = user.username || user.name;
+       const isCurrentUser = (uName === state.username);
        
-    if (error) throw error;
-    
-    leaderboardBody.innerHTML = "";
-    
-    if (data && data.length > 0) {
-      data.forEach((user, idx) => {
-        const row = document.createElement("tr");
-        const isCurrentUser = (user.username === state.username);
-        
-        if (isCurrentUser) {
-          row.style.fontWeight = "bold";
-          row.style.color = "var(--accent-color)";
-          row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
-        }
-        row.innerHTML = `
-          <td class="rank">#${idx + 1}</td>
-          <td>${user.username}</td>
-          <td class="score">${user.highest_score}</td>
-        `;
-        leaderboardBody.appendChild(row);
-      });
-    }
-  } catch (err) {
-    console.error("Error al renderizar el tablero de líderes unificado:", err);
-  }
-}
-        // --- FALLBACK MODO OFFLINE ---
-        leaderboardBody.innerHTML = "";
-        state.leaderboard.sort((a, b) => b.score - a.score);
-        
-        state.leaderboard.slice(0, 10).forEach((user, idx) => {
-          const row = document.createElement("tr");
-          const uName = user.username || user.name;
-          const isCurrentUser = (uName === state.username);
-          
-          if (isCurrentUser) {
-            row.style.fontWeight = "bold";
-            row.style.color = "var(--accent-color)";
-            row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
-          }
-          row.innerHTML = `
-            <td class="rank">#${idx + 1}</td>
-            <td>${uName}</td>
-            <td class="score">${user.score}</td>
-          `;
-          leaderboardBody.appendChild(row);
-        });
-      }
-    }
+       if (isCurrentUser) {
+         row.style.fontWeight = "bold";
+         row.style.color = "var(--accent-color)";
+         row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+       }
+       row.innerHTML = `
+         <td class="rank">#${idx + 1}</td>
+         <td>${uName}</td>
+         <td class="score">${user.score}</td>
+       `;
+       leaderboardBody.appendChild(row);
+     });
+   }
+ }
 
-    // --- ENVÍO DE RÉCORD AUTOMÁTICO (VALIDACIÓN Y LIMPIEZA DE MÁXIMO 10 FILAS) ---
-    async function updateLeaderboardWithCurrent() {
-      // 1. Mantenemos el respaldo local por seguridad ante microcortes
-      const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
-      if (idx !== -1) {
-        if (state.score > state.leaderboard[idx].score) {
-          state.leaderboard[idx].score = state.score;
-        }
-      } else {
-        state.leaderboard.push({ name: state.username, score: state.score });
-      }
-      state.leaderboard.sort((a, b) => b.score - a.score);
-      if (state.leaderboard.length > 10) {
-        state.leaderboard = state.leaderboard.slice(0, 10);
-      }
-      saveState();
+ // --- ENVÍO DE RÉCORD AUTOMÁTICO (VALIDACIÓN Y LIMPIEZA CON UPSERT SEGURO) ---
+ async function updateLeaderboardWithCurrent() {
+   if (state.score <= 0) {
+     await renderLeaderboard();
+     return;
+   }
 
-      // 2. Transmisión controlada hacia Supabase
-      try {
-        // Consultamos los mejores récords guardados en internet
-        const { data: topActual, error: errorTop } = await supabaseClient
-          .from('memorice_leaderboard')
-          .select('id, Score')
-          .order('Score', { ascending: false })
-          .limit(10);
+   const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
+   if (idx !== -1) {
+     if (state.score > state.leaderboard[idx].score) {
+       state.leaderboard[idx].score = state.score;
+     }
+   } else {
+     state.leaderboard.push({ name: state.username, score: state.score });
+   }
+   state.leaderboard.sort((a, b) => b.score - a.score);
+   if (state.leaderboard.length > 10) {
+     state.leaderboard = state.leaderboard.slice(0, 10);
+   }
+   saveState();
 
-        if (errorTop) throw errorTop;
+   try {
+     const { data: usuarioExistente, error: errorFetch } = await supabaseClient
+       .from('memorice_leaderboard')
+       .select('Score')
+       .eq('username', state.username)
+       .maybeSingle();
 
-        // Analizamos si el puntaje actual tiene el mérito para calificar en el Top 10
-        const califica = !topActual || topActual.length < 10 || state.score > topActual[topActual.length - 1].Score;
+     if (errorFetch) throw errorFetch;
 
-        if (califica) {
-          // Insertamos la fila mapeando exclusivamente tus 4 columnas nativas
-          const { error: errorInsert } = await supabaseClient
-            .from('memorice_leaderboard')
-            .insert([{ username: state.username, Score: state.score }]);
+     if (!usuarioExistente || state.score > usuarioExistente.Score) {
+       const { error: errorUpsert } = await supabaseClient
+         .from('memorice_leaderboard')
+         .upsert(
+           { username: state.username, Score: state.score },
+           { onConflict: 'username' }
+         );
 
-          if (errorInsert) throw errorInsert;
+       if (errorUpsert) throw errorUpsert;
+     }
+   } catch (err) {
+     console.error("Fallo de sincronización automática en Supabase.", err);
+   }
+   
+   renderLeaderboard();
+ }
 
-          // Leemos la tabla completa para identificar si quedaron 11 registros y truncar la lista
-          const { data: nuevoTop } = await supabaseClient
-            .from('memorice_leaderboard')
-            .select('id')
-            .order('Score', { ascending: false });
+ // --- CANALES ACTIVOS EN TIEMPO REAL (ANTENAS RECEPTORAS MULTIJUGADOR) ---
+ function conectarTiempoReal() {
+   supabaseClient
+     .channel('cambios-leaderboard')
+     .on(
+       'postgres_changes',
+       { event: '*', schema: 'public', table: 'memorice_leaderboard' },
+       async () => {
+         await renderLeaderboard();
+       }
+     )
+     .subscribe();
+ }
 
-          if (nuevoTop && nuevoTop.length > 10) {
-            const idsAAfueras = nuevoTop.slice(10).map(fila => fila.id);
-            
-            // Eliminamos los sobrantes para mantener estrictamente un Top 10 limpio en la nube
-            await supabaseClient
-              .from('memorice_leaderboard')
-              .delete()
-              .in('id', idsAAfueras);
-          }
-        }
-      } catch (err) {
-        console.error("Fallo de sincronización automática del récord en Supabase.", err);
-      }
-      
-      // 3. Renderizamos para ver los cambios locales reflejados de inmediato
-      renderLeaderboard();
-    }
+ function encenderAntenaLobby() {
+   supabaseClient
+     .channel('cambios-lobby-duelos')
+     .on(
+       'postgres_changes',
+       { event: '*', schema: 'public', table: 'memorice_duels' },
+       async () => {
+         if (duelsPanel.classList.contains("active")) {
+           await actualizarListasDeDuelos();
+         }
+       }
+     )
+     .subscribe();
+ }
 
-    // --- CANAL ACTIVO EN TIEMPO REAL (LA ANTENA RECEPTORA) ---
-    function conectarTiempoReal() {
-      supabaseClient
-        .channel('cambios-leaderboard')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'memorice_leaderboard' },
-          async (payload) => {
-            console.log("¡La tabla global de récords se actualizó en la nube! Reajustando pantallas...", payload.eventType);
-            // Redescarga los datos de internet automáticamente al detectar inserciones o borrados de cualquier equipo
-            await renderLeaderboard();
-          }
-        )
-        .subscribe();
-    }
 
     // --- COMPARTIR PUNTOS (CLIPBOARD) ---
     function shareScore() {
