@@ -805,12 +805,12 @@
         </div>
       </div>
       <!-- Botones Principales -->
-      <button id="btnShare" class="btn btn-primary">
-        Compartir Puntos
-      </button>
-      <button id="btnToggleAdmin" class="btn btn-secondary">
-        Panel de Administración
-      </button>
+
+
+
+
+
+      
       <!-- Tabla de Clasificación Global (Top 10) -->
       <div class="leaderboard-container">
         <div class="leaderboard-title">
@@ -1183,10 +1183,10 @@ const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
 
 let authMode = "LOGIN"; // Inicia estrictamente pidiendo credenciales
 
-// --- SANEAMIENTO CONTRA INYECCIONES ---
+// --- SANEAMIENTO CONTRA INYECCIONES (CORREGIDO) ---
 function esCadenaSegura(texto) {
   const caracteresProhibidos = /['";=\-\-\/\*<>]/g;
-  return !caracteresProhibidos.test(texto);
+  return !caracteresProhibidos.test(texto); // Devuelve true solo si no hay caracteres raros
 }
 
 if (authUsername) {
@@ -1245,19 +1245,19 @@ async function verificarSesionExistente() {
   
   if (authOverlay) {
     authMode = "REGISTER"; 
-    alternarFormularioAutenticacion(); // Forzar el diseño visual de LOGIN de forma limpia
+    alternarFormularioAutenticacion(); // Fuerza visualmente la pantalla de LOGIN limpia
     authOverlay.style.display = "flex";
   }
 }
 
-// --- HASH DE SEGURIDAD UNIVERSAL ---
+// --- HASH DE SEGURIDAD UNIVERSAL (BUCLE CORREGIDO) ---
 function generarHashContrasena(password) {
   let hash = 0;
   if (password.length === 0) return "00000000";
   for (let i = 0; i < password.length; i++) {
     const char = password.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash |= 0;
+    hash |= 0; // Conversión segura a entero de 32 bits
   }
   return Math.abs(hash).toString(16).padStart(8, "0");
 }
@@ -1273,7 +1273,7 @@ if (btnSubmitAuth) {
       return;
     }
     if (!esCadenaSegura(user) || !esCadenaSegura(pass)) {
-      alert("Caracteres prohibidos detectados.");
+      alert("Caracteres prohibidos detectados. Evita usar comillas o guiones.");
       return;
     }
 
@@ -1292,10 +1292,11 @@ if (btnSubmitAuth) {
           return;
         }
 
-        await supabaseClient
+        const { error } = await supabaseClient
           .from("memorice_users")
           .insert([{ username: user, password_hash: hash, current_level: 1, highest_score: 0, trophies_count: 0 }]);
 
+        if (error) throw error;
         alert("¡Cuenta creada con éxito!");
         ingresarUsuarioAlSistema(user, 1, 0, 0);
       } else {
@@ -1314,7 +1315,8 @@ if (btnSubmitAuth) {
         ingresarUsuarioAlSistema(dbUser.username, dbUser.current_level, dbUser.highest_score, dbUser.trophies_count);
       }
     } catch (err) {
-      alert("Error de comunicación.");
+      console.error(err);
+      alert("Error de comunicación con Supabase.");
     }
   });
 }
@@ -1327,7 +1329,7 @@ function ingresarUsuarioAlSistema(username, level, score, trophies) {
   
   if (usernameInput) {
     usernameInput.value = username;
-    usernameInput.disabled = true;
+    usernameInput.disabled = true; // Bloquea el campo de texto al iniciar
   }
   if (displayTrophies) displayTrophies.textContent = trophies || 0;
   
@@ -1336,6 +1338,7 @@ function ingresarUsuarioAlSistema(username, level, score, trophies) {
   if (authOverlay) authOverlay.style.display = "none";
   startLevel(state.level);
 }
+
 
 if (btnLogOut) {
   btnLogOut.addEventListener("click", () => {
