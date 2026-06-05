@@ -1195,33 +1195,41 @@ if (authUsername) {
   });
 }
 
-// --- INTERRUPTOR DE ACCESO (LOGUEAR / REGISTRAR) ---
+// --- INTERRUPTOR DE ACCESO (LOGUEAR / REGISTRAR - CORREGIDO VISUAL) ---
 function alternarFormularioAutenticacion() {
+  const tTitulo = document.getElementById("authTitle");
+  const tSub = document.getElementById("authSubtitle");
+  const btnAuth = document.getElementById("btnSubmitAuth");
+  const tLabel = document.getElementById("authToggleTextLabel");
+  const tLink = document.getElementById("authToggleLink");
+
   if (authMode === "REGISTER") {
     authMode = "LOGIN";
-    authTitle.textContent = "Iniciar Sesión";
-    authSubtitle.textContent = "Ingresa tus credenciales para continuar tu progreso teocrático.";
-    btnSubmitAuth.textContent = "Ingresar a la Partida";
-    authToggleTextLabel.textContent = "¿No tienes una cuenta aún?";
-    authToggleLink.textContent = "Crear Cuenta";
+    if(tTitulo) tTitulo.innerText = "Iniciar Sesión";
+    if(tSub) tSub.innerText = "Ingresa tus credenciales para continuar tu progreso teocrático.";
+    if(btnAuth) btnAuth.innerText = "Ingresar a la Partida";
+    if(tLabel) tLabel.innerText = "¿No tienes una cuenta aún?";
+    if(tLink) tLink.innerText = "Crear Cuenta";
   } else {
     authMode = "REGISTER";
-    authTitle.textContent = "Crear Cuenta";
-    authSubtitle.textContent = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
-    btnSubmitAuth.textContent = "Confirmar Registro";
-    authToggleTextLabel.textContent = "¿Ya posees un usuario registrado?";
-    authToggleLink.textContent = "Iniciar Sesión";
+    if(tTitulo) tTitulo.innerText = "Crear Cuenta";
+    if(tSub) tSub.innerText = "Regístrate de forma segura para resguardar tu récord y jugar duelos.";
+    if(btnAuth) btnAuth.innerText = "Confirmar Registro";
+    if(tLabel) tLabel.innerText = "¿Ya posees un usuario registrado?";
+    if(tLink) tLink.innerText = "Iniciar Sesión";
   }
-  authUsername.value = "";
-  authPassword.value = "";
+  if(authUsername) authUsername.value = "";
+  if(authPassword) authPassword.value = "";
 }
 
 if (authToggleLink) {
   authToggleLink.addEventListener("click", (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Evita que el clic se traspase a las capas de atrás
     alternarFormularioAutenticacion();
   });
 }
+
 
 // --- COMPROBACIÓN DE SESIÓN ACTIVA AL CARGAR EL JUEGO ---
 async function verificarSesionExistente() {
