@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -369,64 +368,6 @@
     @keyframes modalEntry {
       from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
       to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-
-    /* Modal de Selección de Imágenes en Personalizar */
-    .image-selection-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(10, 15, 24, 0.95);
-      z-index: 3000;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(10px);
-    }
-    .image-selection-box {
-      background: #1e293b;
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 24px;
-      width: 90%;
-      max-width: 800px;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    .image-selection-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 12px;
-      margin: 15px 0;
-    }
-    .selectable-image {
-      aspect-ratio: 1/1;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      border: 3px solid transparent;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .selectable-image.selected {
-      border-color: var(--accent-color);
-      transform: scale(0.95);
-    }
-    .selectable-image.selected::after {
-      content: "✔";
-      position: absolute;
-      top: 5px; right: 5px;
-      background: var(--accent-color);
-      color: black;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: bold;
-    }
-    .selectable-image img {
-      width: 100%; height: 100%; object-fit: cover;
     }
 
     /* Panel de Administración */
@@ -1176,7 +1117,7 @@
 
     // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
     function loadState() {
-      state.username = localStorage.getItem("mt_logged_user") || "Jugador Teocrático";
+      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
       state.score = parseInt(localStorage.getItem("mt_score")) || 0;
       state.record = parseInt(localStorage.getItem("mt_record")) || 0;
