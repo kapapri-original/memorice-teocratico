@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memorice Teocrático</title>
+  <title>Memorice Teocrático — Premium</title>
   
   <!-- INCLUSIÓN DEL SDK DE SUPABASE (Versión 2 vía CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -41,7 +41,6 @@
       overflow-x: hidden;
       position: relative;
     }
-    /* Fondo degradado superpuesto para garantizar legibilidad */
     .bg-overlay {
       position: fixed;
       top: 0;
@@ -51,14 +50,13 @@
       background: linear-gradient(135deg, rgba(16, 22, 34, 0.92), rgba(28, 48, 74, 0.82));
       z-index: -2;
     }
-    /* Estructura Principal */
     .app-container {
       width: 100%;
       max-width: 1400px;
       margin: 0 auto;
       padding: 20px;
       display: grid;
-      grid-template-columns: 350px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 24px;
       flex-grow: 1;
     }
@@ -67,7 +65,6 @@
         grid-template-columns: 1fr;
       }
     }
-    /* Barra Lateral / Información */
     .sidebar {
       background: var(--glass-bg);
       backdrop-filter: blur(14px);
@@ -77,7 +74,7 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       height: fit-content;
     }
@@ -100,7 +97,24 @@
       text-transform: uppercase;
       font-weight: 600;
     }
-    /* Campo Nombre de Usuario */
+    .status-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .status-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-offline {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
     .user-profile {
       display: flex;
       flex-direction: column;
@@ -113,12 +127,7 @@
       letter-spacing: 1.5px;
       font-weight: 600;
     }
-    .username-input-container {
-      display: flex;
-      gap: 8px;
-    }
     .username-input {
-      flex-grow: 1;
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--glass-border);
       color: #ffffff;
@@ -126,12 +135,8 @@
       border-radius: 10px;
       font-size: 1rem;
       outline: none;
-      transition: border-color var(--transition-speed);
+      width: 100%;
     }
-    .username-input:focus {
-      border-color: var(--primary-light);
-    }
-    /* Tarjetas de Estadísticas */
     .stats-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -159,7 +164,8 @@
     .stat-value.accent {
       color: var(--accent-color);
     }
-    /* Botones de Acción */
+    
+    /* Botones de acción */
     .btn {
       width: 100%;
       padding: 12px 18px;
@@ -175,23 +181,12 @@
       font-size: 0.95rem;
       color: #ffffff;
     }
-    .btn-primary {
-      background: var(--primary-color);
-    }
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-1px);
-    }
-    .btn-secondary {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-    }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.18);
-      transform: translateY(-1px);
-    }
+    .btn-primary { background: var(--primary-color); }
+    .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .btn-secondary { background: var(--glass-bg); border: 1px solid var(--glass-border); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
 
-    /* Tabla Top 10 */
+    /* Clasificación */
     .leaderboard-container {
       border-top: 1px solid var(--glass-border);
       padding-top: 20px;
@@ -204,7 +199,6 @@
       margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
       font-weight: 600;
     }
     .leaderboard-table {
@@ -218,70 +212,54 @@
     }
     .leaderboard-table th {
       color: var(--text-muted);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      font-weight: 600;
-    }
-    .leaderboard-table tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     .leaderboard-table td.rank {
-      width: 32px;
-      font-weight: 700;
       color: var(--accent-color);
+      font-weight: bold;
     }
     .leaderboard-table td.score {
       text-align: right;
-      font-weight: 700;
+      font-weight: bold;
     }
+
     /* Área de Juego Central */
     .game-area {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-    /* Temporizador */
-    .timer-container {
+
+    /* Temporizadores e Indicadores de Nivel */
+    .hud-container {
       background: var(--glass-bg);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      padding: 14px 20px;
+      border-radius: 16px;
+      padding: 16px 20px;
       display: flex;
-      align-items: center;
-      gap: 16px;
+      flex-direction: column;
+      gap: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
-    .timer-label {
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hud-label {
       font-size: 0.8rem;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: bold;
       color: var(--text-muted);
-      min-width: 95px;
-      letter-spacing: 1px;
     }
-    .timer-track {
-      flex-grow: 1;
-      height: 12px;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 6px;
-      overflow: hidden;
-      position: relative;
+    .hud-value {
+      font-size: 1rem;
+      font-weight: bold;
     }
-    .timer-bar {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
-      border-radius: 6px;
-      transition: width 0.1s linear;
-    }
-    .timer-text {
-      font-size: 1.1rem;
-      font-weight: 700;
-      min-width: 45px;
-      text-align: right;
-    }
-    /* Tablero de Juego */
+
+    /* Tablero */
     .board-wrapper {
       background: var(--glass-bg);
       backdrop-filter: blur(14px);
@@ -297,6 +275,8 @@
       min-height: 500px;
       position: relative;
     }
+
+    /* Grillas adaptables */
     .game-board {
       display: grid;
       gap: 12px;
@@ -305,30 +285,8 @@
       margin: 0 auto;
       justify-content: center;
     }
-    /* Grillas del Tablero adaptables */
-    .grid-4 { grid-template-columns: repeat(2, 1fr); max-width: 320px; }
-    .grid-8 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
-    .grid-16 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
-    .grid-20 { grid-template-columns: repeat(5, 1fr); max-width: 720px; }
-    .grid-24 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
-    .grid-30 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
-    .grid-40 { grid-template-columns: repeat(8, 1fr); max-width: 900px; }
-    @media (max-width: 768px) {
-      .board-wrapper {
-        padding: 12px;
-        min-height: 400px;
-      }
-      .game-board {
-        gap: 8px;
-      }
-      /* Ajuste adaptativo para móviles reduciendo columnas */
-      .grid-16 { grid-template-columns: repeat(4, 1fr); }
-      .grid-20 { grid-template-columns: repeat(4, 1fr); }
-      .grid-24 { grid-template-columns: repeat(4, 1fr); }
-      .grid-30 { grid-template-columns: repeat(5, 1fr); }
-      .grid-40 { grid-template-columns: repeat(5, 1fr); }
-    }
-    /* Estructura 3D de las Tarjetas */
+
+    /* Tarjetas */
     .card {
       aspect-ratio: 1 / 1;
       perspective: 1000px;
@@ -358,10 +316,10 @@
       justify-content: center;
       overflow: hidden;
     }
-    /* Reverso de la tarjeta (Frente Común) */
     .card-back {
       background: linear-gradient(135deg, #1b355a, #0b1526);
       color: var(--accent-color);
+      transition: border var(--transition-speed), box-shadow var(--transition-speed);
     }
     .card-back::after {
       content: "✦";
@@ -369,11 +327,6 @@
       opacity: 0.6;
       animation: floatSymbol 2.5s ease-in-out infinite alternate;
     }
-    @keyframes floatSymbol {
-      from { transform: scale(1); opacity: 0.4; }
-      to { transform: scale(1.15); opacity: 0.8; }
-    }
-    /* Frente de la tarjeta (Imagen Oculta) */
     .card-front {
       background: #080d16;
       transform: rotateY(180deg);
@@ -385,7 +338,6 @@
       height: 100%;
       object-fit: cover;
     }
-    /* Efecto de Coincidencia (Match) */
     .matched {
       animation: matchSuccessPulse 0.5s ease-in-out forwards;
       pointer-events: none;
@@ -395,7 +347,8 @@
       50% { transform: scale(1.06); box-shadow: 0 0 20px var(--accent-color); }
       100% { transform: scale(1); opacity: 0.85; }
     }
-    /* Notificación Flotante (Overlay) */
+
+    /* Notificación de Overlay */
     .feedback-overlay {
       position: absolute;
       top: 50%;
@@ -417,24 +370,69 @@
       from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
       to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
-    .feedback-title {
-      font-size: 1.9rem;
-      font-weight: 700;
-      color: var(--accent-color);
-      margin-bottom: 12px;
+
+    /* Modal de Selección de Imágenes en Personalizar */
+    .image-selection-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 24, 0.95);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
     }
-    .feedback-subtitle {
-      font-size: 1rem;
-      color: var(--text-main);
-      margin-bottom: 24px;
-      line-height: 1.5;
+    .image-selection-box {
+      background: #1e293b;
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .image-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin: 15px 0;
+    }
+    .selectable-image {
+      aspect-ratio: 1/1;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .selectable-image.selected {
+      border-color: var(--accent-color);
+      transform: scale(0.95);
+    }
+    .selectable-image.selected::after {
+      content: "✔";
+      position: absolute;
+      top: 5px; right: 5px;
+      background: var(--accent-color);
+      color: black;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .selectable-image img {
+      width: 100%; height: 100%; object-fit: cover;
     }
 
     /* Panel de Administración */
     .admin-panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 28px;
@@ -453,91 +451,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: 700;
     }
     .admin-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
-    @media (max-width: 850px) {
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
-    }
     .admin-box {
       background: rgba(0, 0, 0, 0.3);
       border-radius: 14px;
       padding: 18px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .admin-box h3 {
-      font-size: 1.1rem;
-      margin-bottom: 14px;
-      color: var(--accent-color);
-      font-weight: 600;
-    }
-    .images-scroll-container {
-      max-height: 260px;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-      gap: 10px;
-      background: rgba(0,0,0,0.35);
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 14px;
-      border: 1px solid rgba(0,0,0,0.2);
-    }
-    .admin-img-wrapper {
-      position: relative;
-      aspect-ratio: 1/1;
-    }
-    .admin-img-thumb {
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-    .admin-img-delete {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #ef4444;
-      color: #ffffff;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      transition: background 0.2s;
-    }
-    .admin-img-delete:hover {
-      background: #dc2626;
-    }
-    .admin-form {
-      display: flex;
-      gap: 10px;
-    }
-    .admin-input {
-      flex-grow: 1;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid var(--glass-border);
-      color: #ffffff;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .admin-input:focus {
-      border-color: var(--primary-light);
     }
     .bg-setting-row {
       display: flex;
@@ -549,47 +472,23 @@
     .bg-setting-row label {
       font-size: 0.85rem;
       min-width: 90px;
-      font-weight: 600;
       color: var(--text-muted);
     }
-    /* Mensajes Flotantes de Puntos Gana (Toast) */
-    .score-toast {
-      position: absolute;
-      font-weight: 800;
-      font-size: 1.4rem;
-      color: var(--accent-color);
-      pointer-events: none;
-      animation: floatToastAnimation 1.4s ease-out forwards;
-      z-index: 100;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.85);
-    }
-    @keyframes floatToastAnimation {
-      0% { transform: translateY(10px) scale(0.85); opacity: 0; }
-      15% { opacity: 1; }
-      100% { transform: translateY(-90px) scale(1.15); opacity: 0; }
-    }
-    footer {
-      text-align: center;
-      padding: 24px;
-      margin-top: auto;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--glass-border);
-      backdrop-filter: blur(8px);
-    }
+    
     /* --- ESTILOS COMPLEMENTARIOS PARA LOGIN Y DUELOS --- */
     .auth-overlay {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         background: rgba(10, 15, 24, 0.98);
-        z-index: 2000;
+        z-index: 99999; /* Forzado a cubrir todo al cargar */
         display: flex;
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
     }
     .auth-box {
         background: linear-gradient(145deg, #162235, #0d1522);
@@ -765,6 +664,7 @@
       <div class="app-header">
         <h1>Memorice Teocrático</h1>
         <span>Estímulo & Concentración</span>
+        <div id="connectionStatusBadge" class="status-badge">Conectando...</div>
       </div>
       
       <!-- Perfil / Nombre de Usuario Sincronizado -->
@@ -841,6 +741,8 @@
           <div id="timerBar" class="timer-bar"></div>
         </div>
         <span id="timerText" class="timer-text">10s</span>
+        <span class="timer-label" style="margin-left: 15px; border-left: 1px solid var(--glass-border); padding-left: 15px;">Nivel:</span>
+        <span id="levelTimerText" class="timer-text" style="color: #38bdf8; min-width: 60px;">00:00</span>
       </div>
       
       <!-- Contenedor del Tablero -->
@@ -860,7 +762,6 @@
       <!-- Botones de Control de Partida -->
       <div id="soloGameControls" style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
           <button id="btnRestartLevel" class="btn btn-secondary" style="width: auto; min-width: 140px;">Reiniciar Nivel</button>
-          <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
       </div>
 
       <!-- NUEVO MARCADOR DE PARES PARA EL MODO DUELO -->
@@ -1022,7 +923,7 @@
   <!-- LOBBY MULTIJUGADOR -->
   <section id="duelsPanel" class="duels-panel">
       <div class="admin-title">
-          <h2>⚔️ Sala de Duelos Teocráticos</h2>
+          <h2> Sala de Duelos En Vivo</h2>
           <button id="btnCloseDuels" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
       </div>
       
@@ -1032,41 +933,137 @@
           <button id="tabCreateDuel" class="duel-tab-btn" style="color: var(--accent-color);">+ Crear Nuevo Duelo</button>
       </div>
 
-      <!-- SECCIÓN A: TABLERO DE ESPERA -->
       <div id="secLobby" class="duels-content-section active">
-          <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la lista para iniciar el duelo inmediatamente. El jugador desaparecerá de esta lista.</p>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la cartelera para iniciar inmediatamente.</p>
           <div id="lobbyDuelsList" class="duel-list-container"></div>
       </div>
 
-      <!-- SECCIÓN B: MIS DUELOS ACTIVOS -->
       <div id="secMyDuels" class="duels-content-section">
-          <p style="font-size: 0.9rem; color: var(--text-muted);">Listado de tus duelos activos en curso. Puedes alternar entre ellos para continuar tus turnos.</p>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Tus partidas en curso.</p>
           <div id="myActiveDuelsList" class="duel-list-container"></div>
       </div>
 
-      <!-- SECCIÓN C: CONFIGURAR DESAFÍO -->
       <div id="secCreateDuel" class="duels-content-section">
           <div class="admin-box" style="margin: 0;">
               <h3>Establecer Dificultad del Duelo</h3>
-              <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Escoge el nivel del tablero para el contrincante que acepte tu invitación desde el Lobby central.</p>
               <div class="bg-setting-row">
-                  <label>Nivel del Tablero</label>
+                  <label>Nivel de Juego</label>
                   <select id="selectDuelLevel" class="admin-input" style="background: #0d1522;">
                       <option value="5">24 Cartas / 12 Pares</option>
                       <option value="6">30 Cartas / 15 Pares</option>
                       <option value="7">40 Cartas / 20 Pares</option>
                   </select>
               </div>
-              <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 10px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
+              
+              <!-- Personalización temática -->
+              <div style="margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                  <h4 style="font-size: 0.9rem; color: var(--accent-color); margin-bottom: 8px;">🎨 Personalizar Temática del Duelo (Opcional)</h4>
+                  <div class="bg-setting-row">
+                      <label>Temas (2 palabras)</label>
+                      <input type="text" id="duelThemeKeywords" class="admin-input" placeholder="Ej: animales, selva">
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnTriggerThemeSearch" style="width: auto; margin-top: 5px;">🔍 Buscar y Seleccionar Imágenes</button>
+                  <span id="themeProgressBadge" style="font-size: 0.8rem; margin-left: 10px; color: var(--text-muted);">Estándar (Por Defecto)</span>
+              </div>
+
+              <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 20px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
           </div>
       </div>
   </section>
 
+  <!-- MODAL PARA LA SELECCIÓN DE IMÁGENES TEMÁTICAS -->
+  <div id="imageSelectionModal" class="image-selection-modal">
+      <div class="image-selection-box">
+          <h3 style="color: var(--accent-color);">🎨 Selección Estratégica de Imágenes</h3>
+          <p id="selectionHintText" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Selecciona imágenes para evitar ventajas previas de memorización.</p>
+          <div id="selectionGrid" class="image-selection-grid"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+              <span id="selectionCounter" style="font-weight: bold; color: var(--accent-color);">Seleccionadas: 0 / 12</span>
+              <button class="btn btn-primary btn-sm" id="btnConfirmImageSelection" disabled style="width: auto;">Confirmar Selección</button>
+          </div>
+      </div>
+  </div>
+
   <script>
-    // --- CREDENCIALES E INICIALIZACIÓN DE SUPABASE ---
-    const SUPABASE_URL = "https://wvgarzantccdfhrzmpho.supabase.co"; 
-    const SUPABASE_KEY = "sb_publishable_hSg8GIq6OlwB5hiVmHTkBQ_prRYfl2N";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // --- MODO OFFLINE AUTOMÁTICO DETECTADO ---
+    let isOfflineMode = false;
+    let supabaseClient = null;
+
+    try {
+      if (window.supabase) {
+        // Inicialización nativa
+        supabaseClient = window.supabase.createClient("https://wvgarzantccdfhrzmpho.supabase.co", "sb_publishable_hSg8GIq6OlwB5hiVmHTkBQ_prRYfl2N");
+      } else {
+        isOfflineMode = true;
+      }
+    } catch(e) {
+      console.warn("Fallo al inicializar Supabase. Activando respaldo offline de forma preventiva.", e);
+      isOfflineMode = true;
+    }
+
+    // --- MOCK CLIENT PARA COMPATIBILIDAD SIN CONEXIÓN ---
+    if (isOfflineMode || !supabaseClient) {
+      isOfflineMode = true;
+      supabaseClient = {
+        from: function(tableName) {
+          return {
+            select: function() {
+              return {
+                eq: function(colName, value) {
+                  return {
+                    maybeSingle: async function() {
+                      if (tableName === "memorice_users") {
+                        const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                        const user = offlineUsers.find(u => u[colName] === value);
+                        return { data: user || null, error: null };
+                      }
+                      return { data: null, error: null };
+                    }
+                  };
+                },
+                order: function() {
+                  return {
+                    then: function(resolve) { resolve({ data: [], error: null }); }
+                  };
+                }
+              };
+            },
+            insert: async function(rows) {
+              if (tableName === "memorice_users") {
+                const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                offlineUsers.push(...rows);
+                localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
+                return { data: rows, error: null };
+              }
+              return { data: null, error: null };
+            },
+            update: function(updates) {
+              return {
+                eq: function(colName, value) {
+                  if (tableName === "memorice_users") {
+                    const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                    const user = offlineUsers.find(u => u[colName] === value);
+                    if (user) {
+                      Object.assign(user, updates);
+                      localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
+                    }
+                  }
+                  return { data: null, error: null };
+                }
+              };
+            },
+            upsert: async function() { return { data: null, error: null }; }
+          };
+        },
+        channel: function() {
+          return {
+            on: function() { return this; },
+            subscribe: function() { return this; },
+            unsubscribe: function() { return this; }
+          };
+        }
+      };
+    }
 
     // --- ARREGLOS DE DATOS POR DEFECTO ---
     const DEFAULT_CARD_IMAGES = [
@@ -1162,7 +1159,7 @@
       seenCardsIndices: new Set(), 
       firstCardWasSeen: false,
       
-      // Temporizador
+      // Temporizadores
       timeLeft: 10,
       timerInterval: null,
       turnStartTime: null,
@@ -1179,7 +1176,7 @@
 
     // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
     function loadState() {
-      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
+      state.username = localStorage.getItem("mt_logged_user") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
       state.score = parseInt(localStorage.getItem("mt_score")) || 0;
       state.record = parseInt(localStorage.getItem("mt_record")) || 0;
@@ -1501,7 +1498,6 @@
           alert("❌ Ocurrió un error inesperado.");
         }
       } else if (authMode === "RECOVERY") {
-        // --- PROCESO DE RECUPERACIÓN DE CONTRASEÑA ---
         if (recoveryStateStep === 1) {
           const userVal = recoverUsername.value.trim();
           const emailVal = recoverEmail.value.trim();
@@ -2541,41 +2537,12 @@
       renderLeaderboard();
     }
 
-    // --- CANALES EN TIEMPO REAL ---
-    function conectarTiempoReal() {
-      supabaseClient
-        .channel('cambios-leaderboard')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'memorice_leaderboard' },
-          async () => {
-            await renderLeaderboard();
-          }
-        )
-        .subscribe();
-    }
-
-    function encenderAntenaLobby() {
-      supabaseClient
-        .channel('cambios-lobby-duelos')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'memorice_duels' },
-          async () => {
-            if (duelsPanel.classList.contains("active")) {
-              await actualizarListasDeDuelos();
-            }
-          }
-        )
-        .subscribe();
-    }
-
     // --- COMPARTIR PUNTOS ---
     function shareScore() {
-      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también y pon a prueba tu agilidad mental: ${window.location.href}`;
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también: ${window.location.href}`;
       
       navigator.clipboard.writeText(text).then(() => {
-        alert("¡Enlace e invitación de puntaje copiados al portapapeles con éxito!");
+        alert("¡Enlace copiado al portapapeles con éxito!");
       }).catch(err => {
         console.error("Fallo al copiar enlace: ", err);
       });
@@ -2634,7 +2601,7 @@
 
     function deleteCardImage(index) {
       if (state.cardImages.length <= 20) {
-        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas para soportar el tablero máximo de 40 cartas (20 pares).");
+        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas.");
         return;
       }
       state.cardImages.splice(index, 1);
