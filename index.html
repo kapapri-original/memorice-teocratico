@@ -10,14 +10,13 @@
   
   <style>
     :root {
-      --primary-color: #2a527a;
-      --primary-light: #4477a6;
-      --accent-color: #d4af37;
-      --bg-dark: #101622;
-      --glass-bg: rgba(255, 255, 255, 0.1);
-      --glass-border: rgba(255, 255, 255, 0.18);
-      --glass-card: rgba(255, 255, 255, 0.15);
-      --text-main: #f1f5f9;
+      --primary-color: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent-color: #fbbf24;
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --transition-speed: 0.3s;
     }
@@ -46,7 +45,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(16, 22, 34, 0.92), rgba(28, 48, 74, 0.82));
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
       z-index: -2;
     }
     .app-container {
@@ -66,15 +65,15 @@
     }
     .sidebar {
       background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       height: fit-content;
     }
     .app-header {
@@ -83,62 +82,60 @@
       padding-bottom: 16px;
     }
     .app-header h1 {
-      font-size: 1.9rem;
+      font-size: 1.8rem;
       color: #ffffff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-weight: 800;
     }
     .app-header span {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--accent-color);
-      letter-spacing: 2.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
     }
     .user-profile {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .user-profile label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 600;
+      letter-spacing: 1px;
+      font-weight: 700;
     }
     .username-input {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid var(--glass-border);
       color: #ffffff;
       padding: 10px 14px;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       width: 100%;
     }
     .stats-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
     .stat-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.03);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
     }
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
     .stat-value {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #ffffff;
     }
@@ -148,7 +145,7 @@
     
     /* Panel Tienda de Potenciadores */
     .shop-box {
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.2);
       border: 1px solid var(--glass-border);
       border-radius: 14px;
       padding: 14px;
@@ -205,51 +202,50 @@
     /* Botones de acción */
     .btn {
       width: 100%;
-      padding: 12px 18px;
+      padding: 12px;
       border: none;
       border-radius: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      transition: all 0.2s ease-in-out;
-      font-size: 0.95rem;
-      color: #ffffff;
+      gap: 8px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      color: white;
     }
     .btn-primary { background: var(--primary-color); }
-    .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .btn-primary:hover { background: var(--primary-light); }
     .btn-secondary { background: var(--glass-bg); border: 1px solid var(--glass-border); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
 
-    /* Clasificación */
+    /* Línea de Clasificación */
     .leaderboard-container {
       border-top: 1px solid var(--glass-border);
-      padding-top: 20px;
+      padding-top: 15px;
     }
     .leaderboard-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       color: var(--text-muted);
-      letter-spacing: 1.5px;
-      margin-bottom: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
-      align-weight: 600;
     }
     .leaderboard-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     .leaderboard-table th, .leaderboard-table td {
-      padding: 8px 6px;
+      padding: 6px 4px;
       text-align: left;
     }
     .leaderboard-table th {
       color: var(--text-muted);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .leaderboard-table td.rank {
       color: var(--accent-color);
@@ -271,14 +267,13 @@
     .hud-container {
       background: var(--glass-bg);
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
     .hud-row {
       display: flex;
@@ -299,18 +294,17 @@
     /* Barra de Inventario Rápido */
     .inventory-bar {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      background: rgba(0,0,0,0.3);
-      padding: 6px 12px;
+      background: rgba(0,0,0,0.2);
+      padding: 8px 12px;
       border-radius: 10px;
-      flex-wrap: wrap;
     }
     .inv-item-btn {
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
       color: white;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 8px;
       font-size: 0.8rem;
       cursor: pointer;
@@ -333,8 +327,7 @@
     /* Tablero */
     .board-wrapper {
       background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 24px;
@@ -342,7 +335,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       min-height: 500px;
       position: relative;
     }
@@ -390,7 +383,6 @@
     .card-back {
       background: linear-gradient(135deg, #1b355a, #0b1526);
       color: var(--accent-color);
-      transition: border var(--transition-speed), box-shadow var(--transition-speed);
     }
     .card-back::after {
       content: "✦";
@@ -401,8 +393,6 @@
     .card-front {
       background: #080d16;
       transform: rotateY(180deg);
-      border: 3px solid transparent;
-      transition: border 0.3s, box-shadow 0.3s;
     }
     .card-front img {
       width: 100%;
@@ -417,17 +407,6 @@
       0% { transform: scale(1); }
       50% { transform: scale(1.06); box-shadow: 0 0 20px var(--accent-color); }
       100% { transform: scale(1); opacity: 0.85; }
-    }
-
-    /* ESTILO RESALTADO COMODÍN DE PISTAS */
-    .comodin-highlight .card-inner .card-back {
-      border: 3px dashed var(--accent-color);
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.65);
-      animation: comodinGlow 1.5s infinite alternate;
-    }
-    @keyframes comodinGlow {
-      from { box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }
-      to { box-shadow: 0 0 20px rgba(212, 175, 55, 0.9); }
     }
 
     /* Notificación de Overlay */
@@ -581,8 +560,8 @@
       <!-- Mercado Virtual de Potenciadores -->
       <div class="shop-box">
           <div class="shop-title">
-              <span>🛒 Tienda de Ayudas</span>
-              <span style="font-size:0.75rem; color: #10b981;">Moneda: Pts</span>
+              <span>🛒 Tienda Teocrática</span>
+              <span style="font-size:0.75rem; color: #10b981;">Puntos como moneda</span>
           </div>
           <div class="shop-items">
               <div class="shop-item">
@@ -605,14 +584,6 @@
                       <span class="shop-item-cost">Costo: 300 Pts</span>
                   </div>
                   <button class="btn-buy" onclick="comprarPotenciador('magnet', 300)">Comprar</button>
-              </div>
-              <!-- NUEVO POTENCIADOR: COMODÍN -->
-              <div class="shop-item">
-                  <div class="shop-item-info">
-                      <span class="shop-item-name">🃏 Comodín</span>
-                      <span class="shop-item-cost">Costo: 200 Pts</span>
-                  </div>
-                  <button class="btn-buy" onclick="comprarPotenciador('wildcard', 200)">Comprar</button>
               </div>
           </div>
       </div>
@@ -691,7 +662,6 @@
                   <button class="inv-item-btn" onclick="usarFlashReveal()">💡 <span id="badgeFlash" class="inv-badge">0</span></button>
                   <button class="inv-item-btn" onclick="usarTimeStop()">⏱️ <span id="badgeFreeze" class="inv-badge">0</span></button>
                   <button class="inv-item-btn" onclick="usarMagnet()">🧲 <span id="badgeMagnet" class="inv-badge">0</span></button>
-                  <button class="inv-item-btn" onclick="usarWildcard()">🃏 <span id="badgeWildcard" class="inv-badge">0</span></button>
               </div>
           </div>
       </div>
@@ -959,19 +929,6 @@
       7: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
     };
 
-    const DEFAULT_LEADERBOARD = [
-      { name: "Noé", score: 3200 },
-      { name: "Daniel", score: 2800 },
-      { name: "Ester", score: 2500 },
-      { name: "Ruth", score: 2200 },
-      { name: "David", score: 1900 },
-      { name: "Lidia", score: 1700 },
-      { name: "Samuel", score: 1500 },
-      { name: "Sara", score: 1200 },
-      { name: "Enoc", score: 950 },
-      { name: "Job", score: 800 }
-    ];
-
     // --- ESTADO GENERAL ---
     let state = {
       username: "Jugador Teocrático",
@@ -983,7 +940,7 @@
       bgImages: {},
       
       // Inventario y Tienda
-      inventory: { flash: 0, freeze: 0, magnet: 0, wildcard: 0 },
+      inventory: { flash: 0, freeze: 0, magnet: 0 },
 
       // Control de Turnos
       boardCards: [], 
@@ -1002,7 +959,7 @@
       timerInterval: null,
       turnStartTime: null,
 
-      // Cronómetro General de Nivel
+      // NUEVO: Cronómetro General de Nivel
       levelStartTime: null,
       levelScore: 0,
       levelTimerInterval: null,
@@ -1022,7 +979,7 @@
 
     // --- PERSISTENCIA ---
     function loadState() {
-      state.username = localStorage.getItem("mt_logged_user") || "Jugador Teocrático";
+      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
       state.score = parseInt(localStorage.getItem("mt_score")) || 0;
       state.record = parseInt(localStorage.getItem("mt_record")) || 0;
@@ -1035,7 +992,7 @@
       state.bgImages = savedBgs ? JSON.parse(savedBgs) : {...DEFAULT_BG_IMAGES};
 
       const savedInv = localStorage.getItem("mt_inventory");
-      state.inventory = savedInv ? JSON.parse(savedInv) : { flash: 0, freeze: 0, magnet: 0, wildcard: 0 };
+      state.inventory = savedInv ? JSON.parse(savedInv) : { flash: 0, freeze: 0, magnet: 0 };
     }
 
     function saveState() {
@@ -1112,7 +1069,6 @@
     const badgeFlash = document.getElementById("badgeFlash");
     const badgeFreeze = document.getElementById("badgeFreeze");
     const badgeMagnet = document.getElementById("badgeMagnet");
-    const badgeWildcard = document.getElementById("badgeWildcard");
     const levelTimerText = document.getElementById("levelTimerText");
 
     // Personalización de duelos
@@ -1468,7 +1424,6 @@
       if (authOverlay) authOverlay.style.display = "none";
       startLevel(state.level);
 
-      // Activar las antenas del jugador autenticado
       encenderAntenaNotificacionesCreador();
     }
 
@@ -1485,7 +1440,6 @@
           { event: 'UPDATE', schema: 'public', table: 'memorice_duels' },
           async (payload) => {
             const duel = payload.new;
-            // Si yo creé el duelo, estaba esperando, y ahora está en curso (PLAYING)
             if (duel.challenger === state.username && payload.old.status === "WAITING" && duel.status === "PLAYING") {
               const iniciar = confirm(`⚔️ ¡Tu desafío fue aceptado por "${duel.opponent}"!\n\n¿Deseas ingresar a la partida en vivo ahora mismo?`);
               if (iniciar) {
@@ -1502,7 +1456,6 @@
       if(badgeFlash) badgeFlash.textContent = state.inventory.flash || 0;
       if(badgeFreeze) badgeFreeze.textContent = state.inventory.freeze || 0;
       if(badgeMagnet) badgeMagnet.textContent = state.inventory.magnet || 0;
-      if(badgeWildcard) badgeWildcard.textContent = state.inventory.wildcard || 0;
     }
 
     function comprarPotenciador(tipo, costo) {
@@ -1596,6 +1549,7 @@
 
       state.isProcessing = true;
       
+      // Encontrar el primer par disponible
       let card1Data = null;
       let card2Data = null;
       
@@ -1627,56 +1581,6 @@
       } else {
         state.isProcessing = false;
       }
-    }
-
-    // NUEVO: Usar Potenciador COMODÍN DE PISTAS
-    function usarWildcard() {
-      if (state.isDuelMode) {
-        alert("⚠️ No puedes usar potenciadores en el modo duelo.");
-        return;
-      }
-      if ((state.inventory.wildcard || 0) <= 0) {
-        alert("❌ No posees comodines de pistas.");
-        return;
-      }
-      if (!state.firstCardElement) {
-        alert("⚠️ Voltea primero una carta para que el Comodín te muestre 3 opciones candidatas.");
-        return;
-      }
-      if (state.isProcessing) return;
-
-      state.inventory.wildcard--;
-      saveState();
-      updateInventoryUI();
-
-      const targetImg = state.firstCardData.img;
-      const targetId = state.firstCardData.id;
-
-      // Buscar la pareja real de la carta
-      const matchingPartner = state.boardCards.find(c => c.id !== targetId && c.img === targetImg && !c.matched);
-      if (!matchingPartner) return;
-
-      // Buscar cartas incorrectas boca abajo
-      let incorrectOptions = state.boardCards.filter(c => c.id !== targetId && c.id !== matchingPartner.id && !c.matched);
-      shuffleArray(incorrectOptions);
-
-      // Agrupar la correcta y hasta 2 incorrectas para dar 3 candidatas en total
-      const candidateList = [matchingPartner];
-      for (let i = 0; i < Math.min(2, incorrectOptions.length); i++) {
-        candidateList.push(incorrectOptions[i]);
-      }
-
-      shuffleArray(candidateList);
-
-      // Resaltar en el DOM las candidatas
-      candidateList.forEach(cand => {
-        const cardEl = gameBoard.querySelector(`[data-id="${cand.id}"]`);
-        if (cardEl) {
-          cardEl.classList.add("comodin-highlight");
-        }
-      });
-
-      createScoreToast(state.firstCardElement, "🃏 ¡Candidatos Marcados!");
     }
 
     // --- MANEJO DE PESTAÑAS DEL LOBBY ---
@@ -1730,6 +1634,7 @@
             wrapper.className = "selectable-image";
             
             const img = document.createElement("img");
+            // Usamos un seed numérico único para que las imágenes sean distintas
             const imgUrl = `https://images.unsplash.com/featured/300x300/?${encodeURIComponent(rawKeywords)}&sig=${i + 1}`;
             img.src = imgUrl;
             img.loading = "lazy";
@@ -1873,6 +1778,7 @@
       }
     }
 
+    // Modal para previsualizar las fotos del creador antes de aceptar el duelo
     window.verImagenesTematicas = function(urlsArray) {
       if(!urlsArray || urlsArray.length === 0) return;
       selectionGrid.innerHTML = "";
@@ -1890,6 +1796,7 @@
       
       btnConfirmImageSelection.onclick = () => {
          imageSelectionModal.style.display = "none";
+         // Restaurar boton original de confirmación
          btnConfirmImageSelection.onclick = null;
          btnConfirmImageSelection.textContent = "Confirmar Selección";
       };
@@ -1947,6 +1854,7 @@
           const totalCards = getCardCountForLevel(state.level);
           const pairsCount = totalCards / 2;
           
+          // Verificar si el duelo trae temática personalizada
           let imagePool = (duel.theme_pool && duel.theme_pool.length >= pairsCount) ? [...duel.theme_pool] : [...state.cardImages];
           shuffleArray(imagePool);
           
@@ -2028,10 +1936,10 @@
       if (totalCards === 4) return 10;
       if (totalCards === 8) return 30;
       if (totalCards === 16) return 75;
-      if (totalCards === 20) return 120; 
-      if (totalCards === 24) return 150; 
-      if (totalCards === 30) return 210; 
-      return 360; 
+      if (totalCards === 20) return 120; // 2 min
+      if (totalCards === 24) return 150; // 2.5 min
+      if (totalCards === 30) return 210; // 3.5 min
+      return 360; // 6 minutos para 40 cartas
     }
 
     // --- SINC DE LOBBY Y TABLERO ---
@@ -2119,13 +2027,14 @@
         id: idx,
         img: img,
         matched: false,
-        flipCount: 0 
+        flipCount: 0 // Conteo de intentos de volteo individual
       }));
       
       renderBoard(totalCards);
       renderLeaderboard(); 
       populateAdminPanel();
 
+      // Lanzar cronómetro de nivel solo para modo solitario
       if (!state.isDuelMode) {
         startLevelTimer();
       }
@@ -2179,39 +2088,7 @@
       });
     }
 
-    // --- ACTUALIZACIÓN DINÁMICA DEL TABLERO SIN RECONSTRUIR EL DOM ---
-    function actualizarTableroVisual(board_state) {
-      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
-      board_state.forEach(cardData => {
-        const cardElement = gameBoard.querySelector(`[data-id="${cardData.id}"]`);
-        if (cardElement) {
-          const cardFront = cardElement.querySelector(".card-front");
-          
-          if (cardData.matched) {
-            cardElement.classList.add("flipped", "matched");
-            if (cardData.claimedBy) {
-              if (cardData.claimedBy === miRol) {
-                cardFront.style.border = "3px solid #4ade80";
-                cardFront.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
-              } else {
-                cardFront.style.border = "3px solid #f87171";
-                cardFront.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.4)";
-              }
-            }
-          } else {
-            if ((state.firstCardData && state.firstCardData.id === cardData.id) || 
-                (state.secondCardData && state.secondCardData.id === cardData.id)) {
-              return; 
-            }
-            cardElement.classList.remove("flipped", "matched", "comodin-highlight");
-            cardFront.style.border = "3px solid transparent";
-            cardFront.style.boxShadow = "none";
-          }
-        }
-      });
-    }
-
-    // --- ANTENA DE SEGUIMIENTO EN TIEMPO REAL PARA PARTIDAS EN CURSO ---
+    // --- SINC DEL CANAL EN TIEMPO REAL ---
     function conectarCanalDePartidaEnVivo(duelId) {
       if (window.activeDuelChannel) {
         window.activeDuelChannel.unsubscribe();
@@ -2308,6 +2185,7 @@
         }
       }
 
+      // Incrementar flipCount
       cardData.flipCount = (cardData.flipCount || 0) + 1;
       cardElement.classList.add("flipped");
       
@@ -2343,22 +2221,24 @@
       }
     }
 
-    // --- REGLAS DE PUNTUACIÓN Y TURNOS ---
+    // --- REGLAS DE PUNTUACIÓN SEGÚN INTENTOS ---
     async function handleMatch(firstSeen, secondSeen) {
       state.firstCardData.matched = true;
       state.secondCardData.matched = true;
       state.firstCardElement.classList.add("matched");
       state.secondCardElement.classList.add("matched");
       
+      // NUEVO: Puntuación según intentos
       const maxFlips = Math.max(state.firstCardData.flipCount || 1, state.secondCardData.flipCount || 1);
       let pointsGained = 1;
-      if (maxFlips === 1) pointsGained = 3;      
-      else if (maxFlips === 2) pointsGained = 2; 
-      else pointsGained = 1;                     
+      if (maxFlips === 1) pointsGained = 3;      // Primer intento
+      else if (maxFlips === 2) pointsGained = 2; // Segundo intento
+      else pointsGained = 1;                     // Tercer o más intentos
       
       state.seenCardsIndices.add(state.firstCardData.id);
       state.seenCardsIndices.add(state.secondCardData.id);
 
+      // Sumar acumulado temporal de nivel
       state.levelScore += pointsGained;
       state.score += pointsGained;
       if (state.score > state.record) state.record = state.score;
@@ -2439,10 +2319,6 @@
       state.secondCardData = null;
       state.isProcessing = false;
       resetTimerUI();
-
-      // Desactivar resaltados visuales de comodín de pistas del tablero
-      const elementsWithComodin = gameBoard.querySelectorAll(".comodin-highlight");
-      elementsWithComodin.forEach(el => el.classList.remove("comodin-highlight"));
     }
 
     function startTimer() {
@@ -2495,19 +2371,6 @@
       }, 1000);
     }
 
-    function createScoreToast(element, text) {
-      if (!element) return;
-      const rect = element.getBoundingClientRect();
-      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
-      const toast = document.createElement("div");
-      toast.className = "score-toast";
-      toast.textContent = text;
-      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
-      toast.style.top = `${rect.top - boardRect.top}px`;
-      document.getElementById("boardWrapper").appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 1400);
-    }
-
     // --- EVALUACIÓN DE GANADOR DE DUELOS (EL GANADOR SE LLEVA TODO Y LA COPA) ---
     async function evaluarFinDelDuelo() {
       const tableroCompleto = state.boardCards.every(card => card.matched);
@@ -2519,6 +2382,11 @@
       let tituloFinal = "";
       let subtituloFinal = "";
       const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+      // Obtener puntuación total del duelo combinando ambos puntajes
+      const totalPointsInGame = (payloadNew) => {
+        return (datosActualizados) => datosActualizados.challenger_score + datosActualizados.opponent_score;
+      };
 
       try {
         const { data: duelLatest } = await supabaseClient
@@ -2542,6 +2410,7 @@
           const nuevasCopas = (userDb?.trophies_count || 0) + 1;
           const nuevoRecordMax = (userDb?.highest_score || 0) + totalAcumuladoPuntos;
 
+          // Asignar recompensas
           await supabaseClient
             .from("memorice_users")
             .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
@@ -2585,6 +2454,7 @@
       if (isLevelComplete) {
         clearInterval(state.levelTimerInterval);
         
+        // Calcular bono de tiempo
         const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
         const totalCards = getCardCountForLevel(state.level);
         const limit = getLevelTimeLimit(totalCards);
@@ -2593,10 +2463,12 @@
         let gotBonus = false;
 
         if (elapsed <= limit) {
+          // Bono: multiplicar x1.5 y redondear hacia arriba
           finalGainedPoints = Math.ceil(state.levelScore * 1.5);
           gotBonus = true;
         }
 
+        // Aplicar la diferencia al total general
         const diff = finalGainedPoints - state.levelScore;
         state.score += diff;
         if (state.score > state.record) state.record = state.score;
@@ -2626,6 +2498,7 @@
       btnFeedbackAction.textContent = "Siguiente Nivel";
       btnFeedbackAction.onclick = () => {
         feedbackOverlay.style.display = "none";
+        // Avanzar de nivel (Ya no se puede retroceder)
         startLevel(state.level + 1);
       };
       feedbackOverlay.style.display = "block";
@@ -2771,7 +2644,9 @@
     }
 
     // --- REINICIOS ---
-    function resetAllGame() {}
+    function resetAllGame() {
+      // Función removida para evitar que las personas bajen deliberadamente de nivel.
+    }
 
     // --- CONTROL DEL PANEL DE ADMINISTRACIÓN ---
     function populateAdminPanel() {
