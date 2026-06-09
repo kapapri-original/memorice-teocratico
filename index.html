@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memorice Teocrático</title>
+  <title>Memorice Teocrático — Premium</title>
   
   <!-- INCLUSIÓN DEL SDK DE SUPABASE (Versión 2 vía CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
-      --primary-color: #2a527a;
-      --primary-light: #4477a6;
-      --accent-color: #d4af37;
-      --bg-dark: #101622;
-      --glass-bg: rgba(255, 255, 255, 0.1);
-      --glass-border: rgba(255, 255, 255, 0.18);
-      --glass-card: rgba(255, 255, 255, 0.15);
-      --text-main: #f1f5f9;
+      --primary-color: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent-color: #fbbf24;
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --transition-speed: 0.3s;
     }
@@ -40,24 +39,22 @@
       overflow-x: hidden;
       position: relative;
     }
-    /* Fondo degradado superpuesto para garantizar legibilidad */
     .bg-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(16, 22, 34, 0.92), rgba(28, 48, 74, 0.82));
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
       z-index: -2;
     }
-    /* Estructura Principal */
     .app-container {
       width: 100%;
       max-width: 1400px;
       margin: 0 auto;
       padding: 20px;
       display: grid;
-      grid-template-columns: 350px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 24px;
       flex-grow: 1;
     }
@@ -66,18 +63,17 @@
         grid-template-columns: 1fr;
       }
     }
-    /* Barra Lateral / Información */
     .sidebar {
       background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      gap: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       height: fit-content;
     }
     .app-header {
@@ -86,205 +82,252 @@
       padding-bottom: 16px;
     }
     .app-header h1 {
-      font-size: 1.9rem;
+      font-size: 1.8rem;
       color: #ffffff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-weight: 800;
     }
     .app-header span {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--accent-color);
-      letter-spacing: 2.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
     }
-    /* Campo Nombre de Usuario */
     .user-profile {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .user-profile label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 600;
-    }
-    .username-input-container {
-      display: flex;
-      gap: 8px;
+      letter-spacing: 1px;
+      font-weight: 700;
     }
     .username-input {
-      flex-grow: 1;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid var(--glass-border);
       color: #ffffff;
       padding: 10px 14px;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
-      transition: border-color var(--transition-speed);
+      width: 100%;
     }
-    .username-input:focus {
-      border-color: var(--primary-light);
-    }
-    /* Tarjetas de Estadísticas */
     .stats-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
     .stat-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.03);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
     }
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
     .stat-value {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: #ffffff;
     }
     .stat-value.accent {
       color: var(--accent-color);
     }
-    /* Botones de Acción */
+    
+    /* Panel Tienda de Potenciadores */
+    .shop-box {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .shop-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .shop-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    .shop-item-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .shop-item-name {
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .shop-item-cost {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .btn-buy {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-buy:hover {
+      background: #10b981;
+    }
+
+    /* Botones de acción */
     .btn {
       width: 100%;
-      padding: 12px 18px;
+      padding: 12px;
       border: none;
       border-radius: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      transition: all 0.2s ease-in-out;
-      font-size: 0.95rem;
-      color: #ffffff;
+      gap: 8px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      color: white;
     }
-    .btn-primary {
-      background: var(--primary-color);
-    }
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-1px);
-    }
-    .btn-secondary {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-    }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.18);
-      transform: translateY(-1px);
-    }
+    .btn-primary { background: var(--primary-color); }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-secondary { background: var(--glass-bg); border: 1px solid var(--glass-border); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
 
-    /* Tabla Top 10 */
+    /* Línea de Clasificación */
     .leaderboard-container {
       border-top: 1px solid var(--glass-border);
-      padding-top: 20px;
+      padding-top: 15px;
     }
     .leaderboard-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       color: var(--text-muted);
-      letter-spacing: 1.5px;
-      margin-bottom: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
     }
     .leaderboard-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     .leaderboard-table th, .leaderboard-table td {
-      padding: 8px 6px;
+      padding: 6px 4px;
       text-align: left;
     }
     .leaderboard-table th {
       color: var(--text-muted);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      font-weight: 600;
-    }
-    .leaderboard-table tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .leaderboard-table td.rank {
-      width: 32px;
-      font-weight: 700;
       color: var(--accent-color);
+      font-weight: bold;
     }
     .leaderboard-table td.score {
       text-align: right;
-      font-weight: 700;
+      font-weight: bold;
     }
+
     /* Área de Juego Central */
     .game-area {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-    /* Temporizador */
-    .timer-container {
+
+    /* Temporizadores e Indicadores de Nivel */
+    .hud-container {
       background: var(--glass-bg);
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      padding: 14px 20px;
+      border-radius: 16px;
+      padding: 16px 20px;
       display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
-    .timer-label {
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hud-label {
       font-size: 0.8rem;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: bold;
       color: var(--text-muted);
-      min-width: 95px;
-      letter-spacing: 1px;
     }
-    .timer-track {
-      flex-grow: 1;
-      height: 12px;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 6px;
-      overflow: hidden;
-      position: relative;
+    .hud-value {
+      font-size: 1rem;
+      font-weight: bold;
     }
-    .timer-bar {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
-      border-radius: 6px;
-      transition: width 0.1s linear;
+
+    /* Barra de Inventario Rápido */
+    .inventory-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+      padding: 8px 12px;
+      border-radius: 10px;
     }
-    .timer-text {
-      font-size: 1.1rem;
-      font-weight: 700;
-      min-width: 45px;
-      text-align: right;
+    .inv-item-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
     }
-    /* Tablero de Juego */
+    .inv-item-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .inv-badge {
+      background: var(--accent-color);
+      color: black;
+      font-size: 0.7rem;
+      padding: 1px 5px;
+      border-radius: 10px;
+    }
+
+    /* Tablero */
     .board-wrapper {
       background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 24px;
@@ -292,10 +335,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       min-height: 500px;
       position: relative;
     }
+
+    /* Grillas adaptables */
     .game-board {
       display: grid;
       gap: 12px;
@@ -304,30 +349,8 @@
       margin: 0 auto;
       justify-content: center;
     }
-    /* Grillas del Tablero adaptables */
-    .grid-4 { grid-template-columns: repeat(2, 1fr); max-width: 320px; }
-    .grid-8 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
-    .grid-16 { grid-template-columns: repeat(4, 1fr); max-width: 580px; }
-    .grid-20 { grid-template-columns: repeat(5, 1fr); max-width: 720px; }
-    .grid-24 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
-    .grid-30 { grid-template-columns: repeat(6, 1fr); max-width: 860px; }
-    .grid-40 { grid-template-columns: repeat(8, 1fr); max-width: 900px; }
-    @media (max-width: 768px) {
-      .board-wrapper {
-        padding: 12px;
-        min-height: 400px;
-      }
-      .game-board {
-        gap: 8px;
-      }
-      /* Ajuste adaptativo para móviles reduciendo columnas */
-      .grid-16 { grid-template-columns: repeat(4, 1fr); }
-      .grid-20 { grid-template-columns: repeat(4, 1fr); }
-      .grid-24 { grid-template-columns: repeat(4, 1fr); }
-      .grid-30 { grid-template-columns: repeat(5, 1fr); }
-      .grid-40 { grid-template-columns: repeat(5, 1fr); }
-    }
-    /* Estructura 3D de las Tarjetas */
+
+    /* Tarjetas */
     .card {
       aspect-ratio: 1 / 1;
       perspective: 1000px;
@@ -357,7 +380,6 @@
       justify-content: center;
       overflow: hidden;
     }
-    /* Reverso de la tarjeta (Frente Común) */
     .card-back {
       background: linear-gradient(135deg, #1b355a, #0b1526);
       color: var(--accent-color);
@@ -368,23 +390,15 @@
       opacity: 0.6;
       animation: floatSymbol 2.5s ease-in-out infinite alternate;
     }
-    @keyframes floatSymbol {
-      from { transform: scale(1); opacity: 0.4; }
-      to { transform: scale(1.15); opacity: 0.8; }
-    }
-    /* Frente de la tarjeta (Imagen Oculta) */
     .card-front {
       background: #080d16;
       transform: rotateY(180deg);
-      border: 3px solid transparent;
-      transition: border 0.3s, box-shadow 0.3s;
     }
     .card-front img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    /* Efecto de Coincidencia (Match) */
     .matched {
       animation: matchSuccessPulse 0.5s ease-in-out forwards;
       pointer-events: none;
@@ -394,7 +408,8 @@
       50% { transform: scale(1.06); box-shadow: 0 0 20px var(--accent-color); }
       100% { transform: scale(1); opacity: 0.85; }
     }
-    /* Notificación Flotante (Overlay) */
+
+    /* Notificación de Overlay */
     .feedback-overlay {
       position: absolute;
       top: 50%;
@@ -416,24 +431,69 @@
       from { transform: translate(-50%, -50%) scale(0.85); opacity: 0; }
       to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
-    .feedback-title {
-      font-size: 1.9rem;
-      font-weight: 700;
-      color: var(--accent-color);
-      margin-bottom: 12px;
+
+    /* Modal de Selección de Imágenes en Personalizar */
+    .image-selection-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 15, 24, 0.95);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
     }
-    .feedback-subtitle {
-      font-size: 1rem;
-      color: var(--text-main);
-      margin-bottom: 24px;
-      line-height: 1.5;
+    .image-selection-box {
+      background: #1e293b;
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .image-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin: 15px 0;
+    }
+    .selectable-image {
+      aspect-ratio: 1/1;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .selectable-image.selected {
+      border-color: var(--accent-color);
+      transform: scale(0.95);
+    }
+    .selectable-image.selected::after {
+      content: "✔";
+      position: absolute;
+      top: 5px; right: 5px;
+      background: var(--accent-color);
+      color: black;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .selectable-image img {
+      width: 100%; height: 100%; object-fit: cover;
     }
 
     /* Panel de Administración */
     .admin-panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
       padding: 28px;
@@ -452,91 +512,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: 700;
     }
     .admin-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
-    @media (max-width: 850px) {
-      .admin-grid {
-        grid-template-columns: 1fr;
-      }
-    }
     .admin-box {
       background: rgba(0, 0, 0, 0.3);
       border-radius: 14px;
       padding: 18px;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .admin-box h3 {
-      font-size: 1.1rem;
-      margin-bottom: 14px;
-      color: var(--accent-color);
-      font-weight: 600;
-    }
-    .images-scroll-container {
-      max-height: 260px;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-      gap: 10px;
-      background: rgba(0,0,0,0.35);
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 14px;
-      border: 1px solid rgba(0,0,0,0.2);
-    }
-    .admin-img-wrapper {
-      position: relative;
-      aspect-ratio: 1/1;
-    }
-    .admin-img-thumb {
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-    .admin-img-delete {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #ef4444;
-      color: #ffffff;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      transition: background 0.2s;
-    }
-    .admin-img-delete:hover {
-      background: #dc2626;
-    }
-    .admin-form {
-      display: flex;
-      gap: 10px;
-    }
-    .admin-input {
-      flex-grow: 1;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid var(--glass-border);
-      color: #ffffff;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .admin-input:focus {
-      border-color: var(--primary-light);
     }
     .bg-setting-row {
       display: flex;
@@ -548,210 +533,7 @@
     .bg-setting-row label {
       font-size: 0.85rem;
       min-width: 90px;
-      font-weight: 600;
       color: var(--text-muted);
-    }
-    /* Mensajes Flotantes de Puntos Gana (Toast) */
-    .score-toast {
-      position: absolute;
-      font-weight: 800;
-      font-size: 1.4rem;
-      color: var(--accent-color);
-      pointer-events: none;
-      animation: floatToastAnimation 1.4s ease-out forwards;
-      z-index: 100;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.85);
-    }
-    @keyframes floatToastAnimation {
-      0% { transform: translateY(10px) scale(0.85); opacity: 0; }
-      15% { opacity: 1; }
-      100% { transform: translateY(-90px) scale(1.15); opacity: 0; }
-    }
-    footer {
-      text-align: center;
-      padding: 24px;
-      margin-top: auto;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--glass-border);
-      backdrop-filter: blur(8px);
-    }
-    /* --- ESTILOS COMPLEMENTARIOS PARA LOGIN Y DUELOS --- */
-    .auth-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(10, 15, 24, 0.98);
-        z-index: 2000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(20px);
-    }
-    .auth-box {
-        background: linear-gradient(145deg, #162235, #0d1522);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: 40px;
-        width: 100%;
-        max-width: 440px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        text-align: center;
-        max-height: 95vh;
-        overflow-y: auto;
-    }
-    .auth-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 8px;
-    }
-    .auth-subtitle {
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        margin-bottom: 25px;
-    }
-    .auth-form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        text-align: left;
-        margin-bottom: 16px;
-    }
-    .auth-form-group label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--text-muted);
-        font-weight: 700;
-    }
-    .auth-input {
-        background: rgba(0,0,0,0.4);
-        border: 1px solid var(--glass-border);
-        color: #ffffff;
-        padding: 12px;
-        border-radius: 12px;
-        font-size: 0.95rem;
-        outline: none;
-        transition: border-color 0.2s;
-    }
-    .auth-input:focus {
-        border-color: var(--primary-light);
-    }
-    .auth-toggle-text {
-        margin-top: 15px;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
-    .auth-toggle-link {
-        color: var(--accent-color);
-        cursor: pointer;
-        font-weight: 600;
-        text-decoration: underline;
-    }
-
-    /* --- INTERFAZ DEL LOBBY DE DUELOS --- */
-    .duels-panel {
-        background: var(--glass-bg);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 28px;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
-        display: none;
-        flex-direction: column;
-        gap: 24px;
-        margin-top: 20px;
-    }
-    .duels-panel.active {
-        display: flex;
-    }
-    .duels-tabs {
-        display: flex;
-        gap: 12px;
-        border-bottom: 1px solid var(--glass-border);
-        padding-bottom: 12px;
-    }
-    .duel-tab-btn {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        font-size: 1rem;
-        font-weight: 600;
-        padding: 8px 16px;
-        cursor: pointer;
-        border-radius: 8px;
-        transition: all 0.2s;
-    }
-    .duel-tab-btn.active {
-        background: rgba(255,255,255,0.08);
-        color: #ffffff;
-    }
-    .duels-content-section {
-        display: none;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .duels-content-section.active {
-        display: flex;
-    }
-    .duel-list-container {
-        max-height: 300px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        background: rgba(0,0,0,0.3);
-        padding: 14px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .duel-item {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
-        padding: 14px 18px;
-        border-radius: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background 0.2s;
-    }
-    .duel-item:hover {
-        background: rgba(255,255,255,0.08);
-    }
-    .duel-item-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    .duel-player-title {
-        font-weight: 700;
-        font-size: 1.05rem;
-    }
-    .duel-meta-tag {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-    }
-    .btn-sm {
-        width: auto;
-        padding: 8px 16px;
-        font-size: 0.85rem;
-        border-radius: 8px;
-    }
-    .user-trophies-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.85rem;
-        color: var(--accent-color);
-        font-weight: 700;
-        background: rgba(212, 175, 55, 0.1);
-        padding: 4px 10px;
-        border-radius: 20px;
-        margin-top: 4px;
     }
   </style>
 </head>
@@ -762,22 +544,51 @@
     <!-- BARRA LATERAL -->
     <aside class="sidebar">
       <div class="app-header">
-        <h1>Memorice Teocrático</h1>
-        <span>Estímulo & Concentración</span>
+        <h1>Memorice</h1>
+        <span>Teocrático PvP</span>
       </div>
       
-      <!-- Perfil / Nombre de Usuario Sincronizado -->
+      <!-- Perfil -->
       <div class="user-profile">
           <label>Usuario Activo</label>
-          <div class="username-input-container">
-              <input type="text" id="usernameInput" class="username-input" value="Jugador" disabled>
-          </div>
+          <input type="text" id="usernameInput" class="username-input" value="Jugador" disabled>
           <div id="userTrophies" class="user-trophies-badge">
               🏆 <span id="displayTrophies">0</span> Copas ganadas
           </div>
       </div>
       
-      <!-- Botones Principales Extendidos -->
+      <!-- Mercado Virtual de Potenciadores -->
+      <div class="shop-box">
+          <div class="shop-title">
+              <span>🛒 Tienda Teocrática</span>
+              <span style="font-size:0.75rem; color: #10b981;">Puntos como moneda</span>
+          </div>
+          <div class="shop-items">
+              <div class="shop-item">
+                  <div class="shop-item-info">
+                      <span class="shop-item-name">💡 Destello</span>
+                      <span class="shop-item-cost">Costo: 150 Pts</span>
+                  </div>
+                  <button class="btn-buy" onclick="comprarPotenciador('flash', 150)">Comprar</button>
+              </div>
+              <div class="shop-item">
+                  <div class="shop-item-info">
+                      <span class="shop-item-name">⏱️ Congelar</span>
+                      <span class="shop-item-cost">Costo: 100 Pts</span>
+                  </div>
+                  <button class="btn-buy" onclick="comprarPotenciador('freeze', 100)">Comprar</button>
+              </div>
+              <div class="shop-item">
+                  <div class="shop-item-info">
+                      <span class="shop-item-name">🧲 Imán</span>
+                      <span class="shop-item-cost">Costo: 300 Pts</span>
+                  </div>
+                  <button class="btn-buy" onclick="comprarPotenciador('magnet', 300)">Comprar</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Botones principales -->
       <div style="display: flex; flex-direction: column; gap: 10px;">
           <button id="btnOpenDuelsLobby" class="btn btn-primary" style="background: linear-gradient(135deg, #b45309, #d97706);">
               ⚔️ Modo Duelos En Vivo
@@ -804,7 +615,7 @@
           <div id="displayRecord" class="stat-value accent">0</div>
         </div>
         <div class="stat-card" style="grid-column: span 2;">
-          <div class="stat-label">Puntaje de Partida</div>
+          <div class="stat-label">Puntaje Total</div>
           <div id="displayScore" class="stat-value">0</div>
         </div>
       </div>
@@ -823,9 +634,7 @@
               <th style="text-align: right;">Puntos</th>
             </tr>
           </thead>
-          <tbody id="leaderboardBody">
-            <!-- Rellenado dinámicamente desde Supabase -->
-          </tbody>
+          <tbody id="leaderboardBody"></tbody>
         </table>
       </div>
     </aside>
@@ -833,36 +642,47 @@
     <!-- ÁREA DE JUEGO -->
     <main class="game-area">
       
-      <!-- Temporizador -->
-      <div class="timer-container">
-        <span class="timer-label">Tiempo Par:</span>
-        <div class="timer-track">
-          <div id="timerBar" class="timer-bar"></div>
-        </div>
-        <span id="timerText" class="timer-text">10s</span>
+      <!-- HUD / Indicadores de Nivel y Potenciadores -->
+      <div class="hud-container">
+          <div class="hud-row">
+              <span class="hud-label">Tiempo Par:</span>
+              <span id="timerText" class="timer-text" style="color: var(--accent-color); font-size:1.1rem; font-weight:bold;">10s</span>
+          </div>
+          <div class="timer-track">
+              <div id="timerBar" class="timer-bar"></div>
+          </div>
+          <div class="hud-row" style="margin-top: 5px;">
+              <div>
+                  <span class="hud-label">Cronómetro General:</span>
+                  <span id="levelTimerText" style="font-weight: bold; color: #38bdf8;">00:00</span>
+              </div>
+              <!-- Barra de Inventario de Potenciadores -->
+              <div class="inventory-bar">
+                  <span style="font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--text-muted); margin-right: 5px;">Inventario:</span>
+                  <button class="inv-item-btn" onclick="usarFlashReveal()">💡 <span id="badgeFlash" class="inv-badge">0</span></button>
+                  <button class="inv-item-btn" onclick="usarTimeStop()">⏱️ <span id="badgeFreeze" class="inv-badge">0</span></button>
+                  <button class="inv-item-btn" onclick="usarMagnet()">🧲 <span id="badgeMagnet" class="inv-badge">0</span></button>
+              </div>
+          </div>
       </div>
       
-      <!-- Contenedor del Tablero -->
+      <!-- Tablero -->
       <div class="board-wrapper" id="boardWrapper">
-        <div id="gameBoard" class="game-board grid-4">
-          <!-- Las tarjetas se generan mediante JavaScript -->
-        </div>
+        <div id="gameBoard" class="game-board grid-4"></div>
         
-        <!-- Overlay de Feedback / Notificaciones de Fin de Nivel -->
         <div id="feedbackOverlay" class="feedback-overlay">
           <div id="feedbackTitle" class="feedback-title">¡Gran Trabajo!</div>
-          <div id="feedbackSubtitle" class="feedback-subtitle">Has superado el nivel actual. Prepárate para el siguiente reto.</div>
+          <div id="feedbackSubtitle" class="feedback-subtitle">Has superado el nivel actual.</div>
           <button id="btnFeedbackAction" class="btn btn-primary" style="margin: 0 auto; width: auto; min-width: 160px;">Siguiente Nivel</button>
         </div>
       </div>
       
-      <!-- Botones de Control de Partida -->
+      <!-- Controles Solo -->
       <div id="soloGameControls" style="display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap;">
           <button id="btnRestartLevel" class="btn btn-secondary" style="width: auto; min-width: 140px;">Reiniciar Nivel</button>
-          <button id="btnResetGame" class="btn btn-secondary" style="width: auto; min-width: 140px; color: #f87171; border-color: rgba(248, 113, 113, 0.25)">Reiniciar Todo</button>
       </div>
 
-      <!-- NUEVO MARCADOR DE PARES PARA EL MODO DUELO -->
+      <!-- MARCADOR DE PARES PARA EL MODO DUELO -->
       <div id="duelPairsScoreboard" style="display: none; justify-content: space-around; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--glass-border); font-weight: bold; text-align: center; flex-wrap: wrap;">
           <div style="color: #4ade80; flex: 1; min-width: 120px;">🟢 Mis Pares: <span id="myPairsCount">0</span></div>
           <div style="color: #f87171; flex: 1; min-width: 120px;">🔴 Pares Rival: <span id="rivalPairsCount">0</span></div>
@@ -876,49 +696,24 @@
           <button id="btnCloseAdmin" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
         </div>
         <div class="admin-grid">
-          <!-- Colección de Imágenes de Juego -->
           <div class="admin-box">
             <h3>Imágenes de las Tarjetas (Mínimo 20)</h3>
-            <div id="adminCardImagesList" class="images-scroll-container">
-              <!-- Las miniaturas se inyectan dinámicamente -->
-            </div>
+            <div id="adminCardImagesList" class="images-scroll-container"></div>
             <div class="admin-form">
               <input type="url" id="inputNewCardImg" class="admin-input" placeholder="Nueva URL de imagen (Unsplash, etc.)">
               <button id="btnAddCardImg" class="btn btn-primary" style="width: auto;">Añadir</button>
             </div>
           </div>
-          <!-- Fondos por Nivel -->
           <div class="admin-box">
             <h3>Imágenes de Fondo por Nivel</h3>
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              <div class="bg-setting-row">
-                <label>Nivel 1</label>
-                <input type="url" id="bgLvl1" class="admin-input bg-lvl-input" data-level="1">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 2</label>
-                <input type="url" id="bgLvl2" class="admin-input bg-lvl-input" data-level="2">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 3</label>
-                <input type="url" id="bgLvl3" class="admin-input bg-lvl-input" data-level="3">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 4</label>
-                <input type="url" id="bgLvl4" class="admin-input bg-lvl-input" data-level="4">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 5</label>
-                <input type="url" id="bgLvl5" class="admin-input bg-lvl-input" data-level="5">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 6</label>
-                <input type="url" id="bgLvl6" class="admin-input bg-lvl-input" data-level="6">
-              </div>
-              <div class="bg-setting-row">
-                <label>Nivel 7+</label>
-                <input type="url" id="bgLvl7" class="admin-input bg-lvl-input" data-level="7">
-              </div>
+              <div class="bg-setting-row"><label>Nivel 1</label><input type="url" id="bgLvl1" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 2</label><input type="url" id="bgLvl2" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 3</label><input type="url" id="bgLvl3" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 4</label><input type="url" id="bgLvl4" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 5</label><input type="url" id="bgLvl5" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 6</label><input type="url" id="bgLvl6" class="admin-input bg-lvl-input"></div>
+              <div class="bg-setting-row"><label>Nivel 7+</label><input type="url" id="bgLvl7" class="admin-input bg-lvl-input"></div>
             </div>
             <button id="btnSaveBgs" class="btn btn-primary" style="margin-top: 14px;">Guardar Fondos</button>
           </div>
@@ -929,36 +724,26 @@
       </section>
     </main>
   </div>
-  
-  <footer>
-    <p>Memorice Teocrático — Concentración, memoria y agilidad mental.</p>
-  </footer>
 
-  <!-- COMPONENTE DE ACCESO SEGURO AUTOCOMPLETABLE -->
+  <!-- INGRESO SEGURO -->
   <div id="authOverlay" class="auth-overlay">
       <form id="authForm" class="auth-box" onsubmit="return false;">
           <div id="authTitle" class="auth-title">Iniciar Sesión</div>
-          <div id="authSubtitle" class="auth-subtitle">Ingresa tus credenciales para continuar tu progreso teocrático.</div>
+          <div id="authSubtitle" class="auth-subtitle">Ingresa tus credenciales para continuar tu progreso.</div>
           
-          <!-- CONTENEDOR CAMPOS GENERALES (LOGIN Y REGISTRO) -->
           <div id="authMainFields">
               <div class="auth-form-group">
                   <label for="authUsername">Nombre de Usuario (Sin espacios)</label>
                   <input type="text" id="authUsername" class="auth-input" placeholder="Ej: Noe77" maxlength="15" required autocomplete="username">
               </div>
-
-              <!-- CAMPO CORREO (Visible solo en Registro) -->
               <div class="auth-form-group" id="regEmailField" style="display: none;">
                   <label for="authEmail">Correo de Recuperación</label>
                   <input type="email" id="authEmail" class="auth-input" placeholder="correo@ejemplo.com" autocomplete="email">
               </div>
-
               <div class="auth-form-group" id="authPasswordFieldGroup">
                   <label for="authPassword">Contraseña Secreta</label>
                   <input type="password" id="authPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
               </div>
-
-              <!-- CAMPOS DE PREGUNTA DE SEGURIDAD (Visible solo en Registro) -->
               <div id="regSecurityFields" style="display: none;">
                   <div class="auth-form-group">
                       <label for="authSecQuestion">Pregunta de Seguridad</label>
@@ -976,7 +761,6 @@
               </div>
           </div>
 
-          <!-- CONTENEDOR RECUPERACIÓN DE CONTRASEÑA -->
           <div id="authRecoveryFields" style="display: none;">
               <div class="auth-form-group">
                   <label for="recoverUsername">Nombre de Usuario</label>
@@ -986,7 +770,6 @@
                   <label for="recoverEmail">Correo Registrado</label>
                   <input type="email" id="recoverEmail" class="auth-input" placeholder="Escribe tu correo registrado" autocomplete="email">
               </div>
-              <!-- Se despliega dinámicamente si el correo y usuario coinciden -->
               <div id="recoverVerificationStep" style="display: none;">
                   <div class="auth-form-group" style="background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; border: 1px dashed var(--accent-color);">
                       <label style="color: var(--accent-color); font-weight: bold;">Pregunta de Seguridad:</label>
@@ -997,7 +780,6 @@
                       <input type="text" id="recoverSecAnswer" class="auth-input" placeholder="Escribe la respuesta exacta" autocomplete="off">
                   </div>
               </div>
-              <!-- Paso Final: Configurar nueva clave -->
               <div id="recoverNewPasswordStep" style="display: none;">
                   <div class="auth-form-group">
                       <label for="recoverNewPassword">Nueva Contraseña Secreta</label>
@@ -1021,7 +803,7 @@
   <!-- LOBBY MULTIJUGADOR -->
   <section id="duelsPanel" class="duels-panel">
       <div class="admin-title">
-          <h2>⚔️ Sala de Duelos Teocráticos</h2>
+          <h2> Sala de Duelos En Vivo</h2>
           <button id="btnCloseDuels" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height: 1;">&times;</button>
       </div>
       
@@ -1031,38 +813,59 @@
           <button id="tabCreateDuel" class="duel-tab-btn" style="color: var(--accent-color);">+ Crear Nuevo Duelo</button>
       </div>
 
-      <!-- SECCIÓN A: TABLERO DE ESPERA -->
       <div id="secLobby" class="duels-content-section active">
-          <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la lista para iniciar el duelo inmediatamente. El jugador desaparecerá de esta lista.</p>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Selecciona un rival de la cartelera para iniciar inmediatamente.</p>
           <div id="lobbyDuelsList" class="duel-list-container"></div>
       </div>
 
-      <!-- SECCIÓN B: MIS DUELOS ACTIVOS -->
       <div id="secMyDuels" class="duels-content-section">
-          <p style="font-size: 0.9rem; color: var(--text-muted);">Listado de tus duelos activos en curso. Puedes alternar entre ellos para continuar tus turnos.</p>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Tus partidas en curso.</p>
           <div id="myActiveDuelsList" class="duel-list-container"></div>
       </div>
 
-      <!-- SECCIÓN C: CONFIGURAR DESAFÍO -->
       <div id="secCreateDuel" class="duels-content-section">
           <div class="admin-box" style="margin: 0;">
               <h3>Establecer Dificultad del Duelo</h3>
-              <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Escoge el nivel del tablero para el contrincante que acepte tu invitación desde el Lobby central.</p>
               <div class="bg-setting-row">
-                  <label>Nivel del Tablero</label>
+                  <label>Nivel de Juego</label>
                   <select id="selectDuelLevel" class="admin-input" style="background: #0d1522;">
                       <option value="5">24 Cartas / 12 Pares</option>
                       <option value="6">30 Cartas / 15 Pares</option>
                       <option value="7">40 Cartas / 20 Pares</option>
                   </select>
               </div>
-              <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 10px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
+              
+              <!-- Personalización temática -->
+              <div style="margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+                  <h4 style="font-size: 0.9rem; color: var(--accent-color); margin-bottom: 8px;">🎨 Personalizar Temática del Duelo (Opcional)</h4>
+                  <div class="bg-setting-row">
+                      <label>Temas (2 palabras)</label>
+                      <input type="text" id="duelThemeKeywords" class="admin-input" placeholder="Ej: animales, selva">
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnTriggerThemeSearch" style="width: auto; margin-top: 5px;">🔍 Buscar y Seleccionar Imágenes</button>
+                  <span id="themeProgressBadge" style="font-size: 0.8rem; margin-left: 10px; color: var(--text-muted);">Estándar (Por Defecto)</span>
+              </div>
+
+              <button id="btnLaunchNewDuel" class="btn btn-primary" style="margin-top: 20px; background: var(--primary-color);">Lanzar al Tablero de Espera</button>
           </div>
       </div>
   </section>
 
+  <!-- MODAL PARA LA SELECCIÓN DE IMÁGENES TEMÁTICAS -->
+  <div id="imageSelectionModal" class="image-selection-modal">
+      <div class="image-selection-box">
+          <h3 style="color: var(--accent-color);">🎨 Selección Estratégica de Imágenes</h3>
+          <p id="selectionHintText" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Selecciona imágenes para evitar ventajas previas de memorización.</p>
+          <div id="selectionGrid" class="image-selection-grid"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+              <span id="selectionCounter" style="font-weight: bold; color: var(--accent-color);">Seleccionadas: 0 / 12</span>
+              <button class="btn btn-primary btn-sm" id="btnConfirmImageSelection" disabled style="width: auto;">Confirmar Selección</button>
+          </div>
+      </div>
+  </div>
+
   <script>
-    // --- CREDENCIALES E INICIALIZACIÓN DE SUPABASE ---
+    // --- CREDENCIALES DE CONEXIÓN ---
     const SUPABASE_URL = "https://wvgarzantccdfhrzmpho.supabase.co"; 
     const SUPABASE_KEY = "sb_publishable_hSg8GIq6OlwB5hiVmHTkBQ_prRYfl2N";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1126,19 +929,6 @@
       7: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80"
     };
 
-    const DEFAULT_LEADERBOARD = [
-      { name: "Noé", score: 3200 },
-      { name: "Daniel", score: 2800 },
-      { name: "Ester", score: 2500 },
-      { name: "Ruth", score: 2200 },
-      { name: "David", score: 1900 },
-      { name: "Lidia", score: 1700 },
-      { name: "Samuel", score: 1500 },
-      { name: "Sara", score: 1200 },
-      { name: "Enoc", score: 950 },
-      { name: "Job", score: 800 }
-    ];
-
     // --- ESTADO GENERAL ---
     let state = {
       username: "Jugador Teocrático",
@@ -1149,6 +939,9 @@
       cardImages: [],
       bgImages: {},
       
+      // Inventario y Tienda
+      inventory: { flash: 0, freeze: 0, magnet: 0 },
+
       // Control de Turnos
       boardCards: [], 
       firstCardElement: null,
@@ -1161,10 +954,15 @@
       seenCardsIndices: new Set(), 
       firstCardWasSeen: false,
       
-      // Temporizador
+      // Temporizadores
       timeLeft: 10,
       timerInterval: null,
       turnStartTime: null,
+
+      // NUEVO: Cronómetro General de Nivel
+      levelStartTime: null,
+      levelScore: 0,
+      levelTimerInterval: null,
 
       // Variables del Modo Duelo
       activeDuelId: null,
@@ -1173,10 +971,13 @@
       duelOpponent: "",
       duelCurrentTurn: "",
       myPairs: 0,
-      rivalPairs: 0
+      rivalPairs: 0,
+
+      // Selección Temática Personalizada en memoria
+      customThemeSelectedUrls: []
     };
 
-    // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
+    // --- PERSISTENCIA ---
     function loadState() {
       state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
@@ -1189,6 +990,9 @@
       state.cardImages = savedCards ? JSON.parse(savedCards) : [...DEFAULT_CARD_IMAGES];
       const savedBgs = localStorage.getItem("mt_bg_images");
       state.bgImages = savedBgs ? JSON.parse(savedBgs) : {...DEFAULT_BG_IMAGES};
+
+      const savedInv = localStorage.getItem("mt_inventory");
+      state.inventory = savedInv ? JSON.parse(savedInv) : { flash: 0, freeze: 0, magnet: 0 };
     }
 
     function saveState() {
@@ -1199,6 +1003,7 @@
       localStorage.setItem("mt_leaderboard", JSON.stringify(state.leaderboard));
       localStorage.setItem("mt_card_images", JSON.stringify(state.cardImages));
       localStorage.setItem("mt_bg_images", JSON.stringify(state.bgImages));
+      localStorage.setItem("mt_inventory", JSON.stringify(state.inventory));
     }
 
     // --- REFERENCIAS ELEMENTOS DOM ---
@@ -1224,17 +1029,7 @@
     const btnSaveBgs = document.getElementById("btnSaveBgs");
     const btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
 
-    // --- REFERENCIAS DOM DE AUTENTICACIÓN Y DUELOS ---
-    const authOverlay = document.getElementById("authOverlay");
-    const authTitle = document.getElementById("authTitle");
-    const authSubtitle = document.getElementById("authSubtitle");
-    const authUsername = document.getElementById("authUsername");
-    const authPassword = document.getElementById("authPassword");
-    const btnSubmitAuth = document.getElementById("btnSubmitAuth");
-    const authToggleLink = document.getElementById("authToggleLink");
-    const authToggleTextLabel = document.getElementById("authToggleTextLabel");
-
-    // Referencias para recuperación
+    // Referencias para recuperación y registro
     const regEmailField = document.getElementById("regEmailField");
     const regSecurityFields = document.getElementById("regSecurityFields");
     const authMainFields = document.getElementById("authMainFields");
@@ -1269,6 +1064,21 @@
     const myActiveDuelsList = document.getElementById("myActiveDuelsList");
     const selectDuelLevel = document.getElementById("selectDuelLevel");
     const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
+
+    // Potenciadores e interfaz de compras
+    const badgeFlash = document.getElementById("badgeFlash");
+    const badgeFreeze = document.getElementById("badgeFreeze");
+    const badgeMagnet = document.getElementById("badgeMagnet");
+    const levelTimerText = document.getElementById("levelTimerText");
+
+    // Personalización de duelos
+    const duelThemeKeywords = document.getElementById("duelThemeKeywords");
+    const btnTriggerThemeSearch = document.getElementById("btnTriggerThemeSearch");
+    const imageSelectionModal = document.getElementById("imageSelectionModal");
+    const selectionGrid = document.getElementById("selectionGrid");
+    const selectionCounter = document.getElementById("selectionCounter");
+    const btnConfirmImageSelection = document.getElementById("btnConfirmImageSelection");
+    const themeProgressBadge = document.getElementById("themeProgressBadge");
 
     let authMode = "LOGIN"; 
     let recoveryStateStep = 1; 
@@ -1389,18 +1199,6 @@
       }
     }
 
-    // --- HASH DE SEGURIDAD UNIVERSAL ---
-    function generarHashContrasena(password) {
-      let hash = 0;
-      if (password.length === 0) return "00000000";
-      for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash |= 0; 
-      }
-      return Math.abs(hash).toString(16).padStart(8, "0");
-    }
-
     // --- PROCESAMIENTO DE ACCESO ---
     const authForm = document.getElementById("authForm");
 
@@ -1500,7 +1298,6 @@
           alert("❌ Ocurrió un error inesperado.");
         }
       } else if (authMode === "RECOVERY") {
-        // --- PROCESO DE RECUPERACIÓN DE CONTRASEÑA ---
         if (recoveryStateStep === 1) {
           const userVal = recoverUsername.value.trim();
           const emailVal = recoverEmail.value.trim();
@@ -1623,10 +1420,10 @@
       
       localStorage.setItem("mt_logged_user", username);
       saveState();
+      updateInventoryUI();
       if (authOverlay) authOverlay.style.display = "none";
       startLevel(state.level);
 
-      // Activar las antenas del jugador autenticado
       encenderAntenaNotificacionesCreador();
     }
 
@@ -1643,9 +1440,8 @@
           { event: 'UPDATE', schema: 'public', table: 'memorice_duels' },
           async (payload) => {
             const duel = payload.new;
-            // Si yo creé el duelo, estaba esperando, y ahora está en curso (PLAYING)
             if (duel.challenger === state.username && payload.old.status === "WAITING" && duel.status === "PLAYING") {
-              const iniciar = confirm(`⚔️ ¡Tu desafío de Nivel ${duel.duel_level} fue aceptado por "${duel.opponent}"!\n\n¿Deseas ingresar a la partida en vivo ahora mismo?`);
+              const iniciar = confirm(`⚔️ ¡Tu desafío fue aceptado por "${duel.opponent}"!\n\n¿Deseas ingresar a la partida en vivo ahora mismo?`);
               if (iniciar) {
                 cargarPartidaDeDuelo(duel.id);
               }
@@ -1653,6 +1449,138 @@
           }
         )
         .subscribe();
+    }
+
+    // --- TIENDA VIRTUAL DE POTENCIADORES ---
+    function updateInventoryUI() {
+      if(badgeFlash) badgeFlash.textContent = state.inventory.flash || 0;
+      if(badgeFreeze) badgeFreeze.textContent = state.inventory.freeze || 0;
+      if(badgeMagnet) badgeMagnet.textContent = state.inventory.magnet || 0;
+    }
+
+    function comprarPotenciador(tipo, costo) {
+      if (state.score < costo) {
+        alert("❌ Puntos insuficientes para comprar este potenciador.");
+        return;
+      }
+      state.score -= costo;
+      state.inventory[tipo] = (state.inventory[tipo] || 0) + 1;
+      
+      saveState();
+      displayScore.textContent = state.score;
+      updateInventoryUI();
+      updateLeaderboardWithCurrent();
+      alert(`🛒 Potenciador adquirido. Restante: ${state.score} Pts`);
+    }
+
+    // Usar Potenciador: DESTELLO (Muestra todas las figuras 1.5s)
+    function usarFlashReveal() {
+      if (state.isDuelMode) {
+        alert("⚠️ No puedes usar potenciadores en el modo duelo.");
+        return;
+      }
+      if ((state.inventory.flash || 0) <= 0) {
+        alert("❌ No posees potenciadores de Destello.");
+        return;
+      }
+      if (state.isProcessing) return;
+
+      state.inventory.flash--;
+      saveState();
+      updateInventoryUI();
+
+      state.isProcessing = true;
+      const allCards = gameBoard.querySelectorAll(".card");
+      allCards.forEach(c => c.classList.add("flipped"));
+
+      setTimeout(() => {
+        allCards.forEach(c => {
+          const cardId = parseInt(c.dataset.id);
+          const cardData = state.boardCards.find(bc => bc.id === cardId);
+          if (cardData && !cardData.matched) {
+            c.classList.remove("flipped");
+          }
+        });
+        state.isProcessing = false;
+      }, 1500);
+    }
+
+    // Usar Potenciador: CONGELAR (Añade 10s al temporizador de turno)
+    function usarTimeStop() {
+      if (state.isDuelMode) {
+        alert("⚠️ No puedes usar potenciadores en el modo duelo.");
+        return;
+      }
+      if ((state.inventory.freeze || 0) <= 0) {
+        alert("❌ No posees potenciadores de Congelar.");
+        return;
+      }
+      if (!state.firstCardElement) {
+        alert("⚠️ Solo puedes usarlo después de revelar la primera tarjeta.");
+        return;
+      }
+
+      state.inventory.freeze--;
+      saveState();
+      updateInventoryUI();
+
+      state.timeLeft += 10;
+      updateTimerUI();
+    }
+
+    // Usar Potenciador: IMÁN (Auto-empareja un par al azar)
+    function usarMagnet() {
+      if (state.isDuelMode) {
+        alert("⚠️ No puedes usar potenciadores en el modo duelo.");
+        return;
+      }
+      if ((state.inventory.magnet || 0) <= 0) {
+        alert("❌ No posees potenciadores de Imán.");
+        return;
+      }
+      if (state.isProcessing) return;
+
+      const unmatched = state.boardCards.filter(c => !c.matched);
+      if (unmatched.length < 2) return;
+
+      state.inventory.magnet--;
+      saveState();
+      updateInventoryUI();
+
+      state.isProcessing = true;
+      
+      // Encontrar el primer par disponible
+      let card1Data = null;
+      let card2Data = null;
+      
+      for (let c of unmatched) {
+        const sibling = unmatched.find(o => o.id !== c.id && o.img === c.img);
+        if (sibling) {
+          card1Data = c;
+          card2Data = sibling;
+          break;
+        }
+      }
+
+      if (card1Data && card2Data) {
+        const el1 = gameBoard.querySelector(`[data-id="${card1Data.id}"]`);
+        const el2 = gameBoard.querySelector(`[data-id="${card2Data.id}"]`);
+
+        el1.classList.add("flipped");
+        el2.classList.add("flipped");
+
+        setTimeout(() => {
+          card1Data.flipCount = 1;
+          card2Data.flipCount = 1;
+          state.firstCardElement = el1;
+          state.firstCardData = card1Data;
+          state.secondCardElement = el2;
+          state.secondCardData = card2Data;
+          handleMatch(false, false);
+        }, 800);
+      } else {
+        state.isProcessing = false;
+      }
     }
 
     // --- MANEJO DE PESTAÑAS DEL LOBBY ---
@@ -1678,10 +1606,84 @@
       btnCloseDuels.addEventListener("click", () => duelsPanel.classList.remove("active"));
     }
 
+    // --- SISTEMA DE PERSONALIZACIÓN TEMÁTICA AVANZADA EN DUELOS ---
+    if (btnTriggerThemeSearch) {
+      btnTriggerThemeSearch.addEventListener("click", async () => {
+        const rawKeywords = duelThemeKeywords.value.trim();
+        if (!rawKeywords) {
+          alert("⚠️ Ingresa palabras clave primero para buscar imágenes de internet.");
+          return;
+        }
+
+        const levelVal = parseInt(selectDuelLevel.value) || 5;
+        const totalCardsNeeded = getCardCountForLevel(levelVal);
+        const pairsNeeded = totalCardsNeeded / 2;
+        const totalPoolSize = pairsNeeded * 3;
+
+        themeProgressBadge.textContent = "Buscando...";
+        state.customThemeSelectedUrls = [];
+
+        try {
+          selectionGrid.innerHTML = "";
+          selectionCounter.textContent = `Seleccionadas: 0 / ${pairsNeeded}`;
+          btnConfirmImageSelection.disabled = true;
+
+          // Búsqueda inteligente de fotos en Unsplash Source CDN
+          for (let i = 0; i < totalPoolSize; i++) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "selectable-image";
+            
+            const img = document.createElement("img");
+            // Usamos un seed numérico único para que las imágenes sean distintas
+            const imgUrl = `https://images.unsplash.com/featured/300x300/?${encodeURIComponent(rawKeywords)}&sig=${i + 1}`;
+            img.src = imgUrl;
+            img.loading = "lazy";
+
+            wrapper.appendChild(img);
+
+            wrapper.addEventListener("click", () => {
+              if (wrapper.classList.contains("selected")) {
+                wrapper.classList.remove("selected");
+                state.customThemeSelectedUrls = state.customThemeSelectedUrls.filter(url => url !== imgUrl);
+              } else {
+                if (state.customThemeSelectedUrls.length >= pairsNeeded) {
+                  alert(`⚠️ Ya has seleccionado las ${pairsNeeded} imágenes necesarias.`);
+                  return;
+                }
+                wrapper.classList.add("selected");
+                state.customThemeSelectedUrls.push(imgUrl);
+              }
+
+              selectionCounter.textContent = `Seleccionadas: ${state.customThemeSelectedUrls.length} / ${pairsNeeded}`;
+              btnConfirmImageSelection.disabled = (state.customThemeSelectedUrls.length !== pairsNeeded);
+            });
+
+            selectionGrid.appendChild(wrapper);
+          }
+
+          imageSelectionModal.style.display = "flex";
+
+        } catch (e) {
+          console.error(e);
+          themeProgressBadge.textContent = "Fallo en la búsqueda";
+        }
+      });
+    }
+
+    if (btnConfirmImageSelection) {
+      btnConfirmImageSelection.addEventListener("click", () => {
+        imageSelectionModal.style.display = "none";
+        themeProgressBadge.textContent = "🎨 Temática Personalizada Activa";
+        themeProgressBadge.style.color = "var(--accent-color)";
+      });
+    }
+
     // --- LANZAR UN NUEVO DUELO ---
     if (btnLaunchNewDuel) {
       btnLaunchNewDuel.addEventListener("click", async () => {
-        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 1;
+        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 5;
+        const keywords = duelThemeKeywords.value.trim() || "Estándar";
+        
         try {
           await supabaseClient
             .from("memorice_duels")
@@ -1691,9 +1693,19 @@
               status: "WAITING",
               current_turn: "CHALLENGER",
               challenger_score: 0,
-              opponent_score: 0
+              opponent_score: 0,
+              theme_keywords: keywords,
+              theme_pool: state.customThemeSelectedUrls.length > 0 ? state.customThemeSelectedUrls : null
             }]);
+          
           alert("¡Desafío publicado en la cartelera!");
+          
+          // Resetear estados visuales
+          state.customThemeSelectedUrls = [];
+          duelThemeKeywords.value = "";
+          themeProgressBadge.textContent = "Estándar (Por Defecto)";
+          themeProgressBadge.style.color = "var(--text-muted)";
+
           switchDuelTab(tabLobby, secLobby);
           await actualizarListasDeDuelos();
         } catch (err) {
@@ -1728,9 +1740,12 @@
             item.innerHTML = `
               <div class="duel-item-info">
                 <span class="duel-player-title">⚔️ Desafío de: ${duel.challenger}</span>
-                <span class="duel-meta-tag">Tablero de Nivel: ${duel.duel_level}</span>
+                <span class="duel-meta-tag">Temática: ${duel.theme_keywords || "Estándar"} | Nivel: ${duel.duel_level}</span>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
+              <div style="display: flex; gap: 8px;">
+                ${duel.theme_pool ? `<button class="btn btn-secondary btn-sm" onclick="verImagenesTematicas(${JSON.stringify(duel.theme_pool).replace(/"/g, '&quot;')})">Ver Temas</button>` : ''}
+                <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
+              </div>
             `;
             lobbyDuelsList.appendChild(item);
           });
@@ -1763,6 +1778,32 @@
       }
     }
 
+    // Modal para previsualizar las fotos del creador antes de aceptar el duelo
+    window.verImagenesTematicas = function(urlsArray) {
+      if(!urlsArray || urlsArray.length === 0) return;
+      selectionGrid.innerHTML = "";
+      urlsArray.forEach(url => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "selectable-image";
+        const img = document.createElement("img");
+        img.src = url;
+        wrapper.appendChild(img);
+        selectionGrid.appendChild(wrapper);
+      });
+      selectionCounter.textContent = "Previsualización de imágenes a jugar";
+      btnConfirmImageSelection.disabled = false;
+      btnConfirmImageSelection.textContent = "Cerrar Vista";
+      
+      btnConfirmImageSelection.onclick = () => {
+         imageSelectionModal.style.display = "none";
+         // Restaurar boton original de confirmación
+         btnConfirmImageSelection.onclick = null;
+         btnConfirmImageSelection.textContent = "Confirmar Selección";
+      };
+      
+      imageSelectionModal.style.display = "flex";
+    };
+
     window.aceptarDueloDelLobby = async function(duelId) {
       try {
         await supabaseClient
@@ -1794,6 +1835,7 @@
         state.duelCurrentTurn = duel.current_turn;
         
         clearInterval(state.timerInterval);
+        clearInterval(state.levelTimerInterval);
         resetTimerUI();
         feedbackOverlay.style.display = "none";
         
@@ -1811,8 +1853,11 @@
         if (!duel.board_state) {
           const totalCards = getCardCountForLevel(state.level);
           const pairsCount = totalCards / 2;
-          let imagePool = [...state.cardImages];
+          
+          // Verificar si el duelo trae temática personalizada
+          let imagePool = (duel.theme_pool && duel.theme_pool.length >= pairsCount) ? [...duel.theme_pool] : [...state.cardImages];
           shuffleArray(imagePool);
+          
           let selectedImages = [];
           for (let i = 0; i < pairsCount; i++) {
             const img = imagePool[i % imagePool.length];
@@ -1823,7 +1868,8 @@
             id: idx,
             img: img,
             matched: false,
-            claimedBy: "" 
+            claimedBy: "",
+            flipCount: 0
           }));
           
           await supabaseClient
@@ -1874,7 +1920,29 @@
       }
     }
 
-    // --- INICIALIZACIÓN ---
+    // --- TIMING / CRONÓMETRO GENERAL DE NIVEL ---
+    function startLevelTimer() {
+      state.levelStartTime = Date.now();
+      clearInterval(state.levelTimerInterval);
+      state.levelTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
+        const secs = (elapsed % 60).toString().padStart(2, "0");
+        levelTimerText.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function getLevelTimeLimit(totalCards) {
+      if (totalCards === 4) return 10;
+      if (totalCards === 8) return 30;
+      if (totalCards === 16) return 75;
+      if (totalCards === 20) return 120; // 2 min
+      if (totalCards === 24) return 150; // 2.5 min
+      if (totalCards === 30) return 210; // 3.5 min
+      return 360; // 6 minutos para 40 cartas
+    }
+
+    // --- SINC DE LOBBY Y TABLERO ---
     document.addEventListener("DOMContentLoaded", async () => {
       loadState();
       setupEvents();
@@ -1884,13 +1952,6 @@
     });
 
     function setupEvents() {
-      usernameInput.value = state.username;
-      usernameInput.addEventListener("change", () => {
-        state.username = usernameInput.value.trim() || "Jugador Teocrático";
-        saveState();
-        updateLeaderboardWithCurrent();
-      });
-      
       document.getElementById("btnShare").addEventListener("click", shareScore);
       
       btnToggleAdmin.addEventListener("click", () => {
@@ -1899,10 +1960,7 @@
           adminPanel.scrollIntoView({ behavior: "smooth" });
         }
       });
-      
-      btnCloseAdmin.addEventListener("click", () => {
-        adminPanel.classList.remove("active");
-      });
+      btnCloseAdmin.addEventListener("click", () => adminPanel.classList.remove("active"));
       
       if (btnLogOut) {
         btnLogOut.addEventListener("click", () => {
@@ -1911,6 +1969,7 @@
           localStorage.removeItem("mt_level");
           localStorage.removeItem("mt_score");
           localStorage.removeItem("mt_record");
+          localStorage.removeItem("mt_inventory");
           location.reload();
         });
       }
@@ -1924,24 +1983,16 @@
         saveState();
         startLevel(state.level);
       });
-      
-      document.getElementById("btnResetGame").addEventListener("click", resetAllGame);
     }
 
     // --- LÓGICA DE DIFICULTAD Y NIVELES ---
-    function getCardCountForLevel(level) {
-      if (level === 1) return 4;
-      if (level === 2) return 8;
-      if (level === 3) return 16;
-      if (level === 4) return 20;
-      if (level === 5) return 24;
-      if (level === 6) return 30;
-      return 40; 
-    }
-
     function startLevel(level) {
       state.scoreAtLevelStart = state.score;
+      state.levelScore = 0; 
+      
       clearInterval(state.timerInterval);
+      clearInterval(state.levelTimerInterval);
+      
       resetTimerUI();
       feedbackOverlay.style.display = "none";
       
@@ -1975,12 +2026,18 @@
       state.boardCards = selectedImages.map((img, idx) => ({
         id: idx,
         img: img,
-        matched: false
+        matched: false,
+        flipCount: 0 // Conteo de intentos de volteo individual
       }));
       
       renderBoard(totalCards);
       renderLeaderboard(); 
       populateAdminPanel();
+
+      // Lanzar cronómetro de nivel solo para modo solitario
+      if (!state.isDuelMode) {
+        startLevelTimer();
+      }
     }
 
     function renderBoard(totalCards) {
@@ -2031,40 +2088,7 @@
       });
     }
 
-    // --- ACTUALIZACIÓN DINÁMICA DEL TABLERO SIN RECONSTRUIR EL DOM ---
-    function actualizarTableroVisual(board_state) {
-      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
-      board_state.forEach(cardData => {
-        const cardElement = gameBoard.querySelector(`[data-id="${cardData.id}"]`);
-        if (cardElement) {
-          const cardFront = cardElement.querySelector(".card-front");
-          
-          if (cardData.matched) {
-            cardElement.classList.add("flipped", "matched");
-            if (cardData.claimedBy) {
-              if (cardData.claimedBy === miRol) {
-                cardFront.style.border = "3px solid #4ade80";
-                cardFront.style.boxShadow = "0 0 15px rgba(74, 222, 128, 0.4)";
-              } else {
-                cardFront.style.border = "3px solid #f87171";
-                cardFront.style.boxShadow = "0 0 15px rgba(248, 113, 113, 0.4)";
-              }
-            }
-          } else {
-            // No voltear de vuelta si es una carta seleccionada localmente en juego
-            if ((state.firstCardData && state.firstCardData.id === cardData.id) || 
-                (state.secondCardData && state.secondCardData.id === cardData.id)) {
-              return; 
-            }
-            cardElement.classList.remove("flipped", "matched");
-            cardFront.style.border = "3px solid transparent";
-            cardFront.style.boxShadow = "none";
-          }
-        }
-      });
-    }
-
-    // --- ANTENA DE SEGUIMIENTO EN TIEMPO REAL PARA PARTIDAS EN CURSO ---
+    // --- SINC DEL CANAL EN TIEMPO REAL ---
     function conectarCanalDePartidaEnVivo(duelId) {
       if (window.activeDuelChannel) {
         window.activeDuelChannel.unsubscribe();
@@ -2092,10 +2116,8 @@
               const el2 = move.card2 !== null ? gameBoard.querySelector(`[data-id="${move.card2}"]`) : null;
 
               if (move.result === "FLIP_1") {
-                // Voltear la primera carta del oponente en vivo
                 if (el1) el1.classList.add("flipped");
               } else if (move.result === "MATCH") {
-                // El rival acertó, marcamos las cartas e iluminamos en rojo
                 if (el1) el1.classList.add("flipped", "matched");
                 if (el2) el2.classList.add("flipped", "matched");
                 createScoreToast(el1, "¡Rival Acertó Par! 😮");
@@ -2103,7 +2125,6 @@
                 state.boardCards = datosActualizados.board_state;
                 actualizarTableroVisual(state.boardCards);
               } else if (move.result === "MISMATCH") {
-                // El rival erró, dejamos ver sus cartas 2 segundos completos
                 state.isProcessing = true;
                 if (el1) el1.classList.add("flipped");
                 if (el2) el2.classList.add("flipped");
@@ -2127,12 +2148,10 @@
                 }, 1500);
               }
             } else {
-              // Actualización normal, sincronizamos
               state.boardCards = datosActualizados.board_state || state.boardCards;
               actualizarTableroVisual(state.boardCards);
             }
 
-            // Recalcular conteo de pares de cada jugador
             state.myPairs = 0;
             state.rivalPairs = 0;
             state.boardCards.forEach(c => {
@@ -2166,6 +2185,8 @@
         }
       }
 
+      // Incrementar flipCount
+      cardData.flipCount = (cardData.flipCount || 0) + 1;
       cardElement.classList.add("flipped");
       
       if (!state.firstCardElement) {
@@ -2173,7 +2194,6 @@
         state.firstCardData = cardData;
         state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
 
-        // Informar primer volteo al oponente en tiempo real
         if (state.isDuelMode) {
           const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
           try {
@@ -2201,21 +2221,25 @@
       }
     }
 
-    // --- REGLAS DE PUNTUACIÓN Y TURNOS ---
+    // --- REGLAS DE PUNTUACIÓN SEGÚN INTENTOS ---
     async function handleMatch(firstSeen, secondSeen) {
       state.firstCardData.matched = true;
       state.secondCardData.matched = true;
       state.firstCardElement.classList.add("matched");
       state.secondCardElement.classList.add("matched");
       
-      let pointsGained = 100;
-      if (firstSeen || secondSeen) {
-        const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
-        pointsGained = Math.max(10, 100 - (Math.ceil(elapsedSeconds) * 10));
-      }
+      // NUEVO: Puntuación según intentos
+      const maxFlips = Math.max(state.firstCardData.flipCount || 1, state.secondCardData.flipCount || 1);
+      let pointsGained = 1;
+      if (maxFlips === 1) pointsGained = 3;      // Primer intento
+      else if (maxFlips === 2) pointsGained = 2; // Segundo intento
+      else pointsGained = 1;                     // Tercer o más intentos
       
       state.seenCardsIndices.add(state.firstCardData.id);
       state.seenCardsIndices.add(state.secondCardData.id);
+
+      // Sumar acumulado temporal de nivel
+      state.levelScore += pointsGained;
       state.score += pointsGained;
       if (state.score > state.record) state.record = state.score;
       saveState();
@@ -2347,20 +2371,7 @@
       }, 1000);
     }
 
-    function createScoreToast(element, text) {
-      if (!element) return;
-      const rect = element.getBoundingClientRect();
-      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
-      const toast = document.createElement("div");
-      toast.className = "score-toast";
-      toast.textContent = text;
-      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
-      toast.style.top = `${rect.top - boardRect.top}px`;
-      document.getElementById("boardWrapper").appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 1400);
-    }
-
-    // --- EVALUACIÓN DE GANADOR DE DUELOS ---
+    // --- EVALUACIÓN DE GANADOR DE DUELOS (EL GANADOR SE LLEVA TODO Y LA COPA) ---
     async function evaluarFinDelDuelo() {
       const tableroCompleto = state.boardCards.every(card => card.matched);
       if (!tableroCompleto) return; 
@@ -2372,11 +2383,24 @@
       let subtituloFinal = "";
       const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
 
-      if (state.myPairs > state.rivalPairs) {
-        tituloFinal = "🏆 ¡VICTORIA ABSOLUTA!";
-        subtituloFinal = `Has ganado el duelo con un total de ${Math.floor(state.myPairs)} pares frente a ${Math.floor(state.rivalPairs)} de tu rival.`;
-        
-        try {
+      // Obtener puntuación total del duelo combinando ambos puntajes
+      const totalPointsInGame = (payloadNew) => {
+        return (datosActualizados) => datosActualizados.challenger_score + datosActualizados.opponent_score;
+      };
+
+      try {
+        const { data: duelLatest } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("id", state.activeDuelId)
+          .maybeSingle();
+
+        const totalAcumuladoPuntos = (duelLatest.challenger_score || 0) + (duelLatest.opponent_score || 0);
+
+        if (state.myPairs > state.rivalPairs) {
+          tituloFinal = "🏆 ¡VICTORIA ABSOLUTA EN DUELO!";
+          subtituloFinal = `¡Te llevas todo el pozo de ${totalAcumuladoPuntos} Puntos y una Copa!`;
+          
           const { data: userDb } = await supabaseClient
             .from("memorice_users")
             .select("trophies_count, highest_score")
@@ -2384,12 +2408,16 @@
             .maybeSingle();
 
           const nuevasCopas = (userDb?.trophies_count || 0) + 1;
-          const nuevoRecordMax = Math.max(userDb?.highest_score || 0, state.score);
+          const nuevoRecordMax = (userDb?.highest_score || 0) + totalAcumuladoPuntos;
 
+          // Asignar recompensas
           await supabaseClient
             .from("memorice_users")
             .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
             .eq("username", state.username);
+
+          state.score = nuevoRecordMax;
+          saveState();
 
           await supabaseClient
             .from("memorice_duels")
@@ -2397,15 +2425,17 @@
             .eq("id", state.activeDuelId);
 
           if (displayTrophies) displayTrophies.textContent = nuevasCopas;
-        } catch(e) { console.error(e); }
+          displayScore.textContent = state.score;
 
-      } else if (state.myPairs < state.rivalPairs) {
-        tituloFinal = "😢 DERROTA EN DUELO";
-        subtituloFinal = `Tu rival ha conseguido ${Math.floor(state.rivalPairs)} pares superando tus ${Math.floor(state.myPairs)} combinaciones.`;
-      } else {
-        tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
-        subtituloFinal = `Ambos jugadores consiguieron exactamente la misma cantidad de pares (${Math.floor(state.myPairs)}).`;
-      }
+        } else if (state.myPairs < state.rivalPairs) {
+          tituloFinal = "😢 DERROTA EN DUELO";
+          subtituloFinal = `Tu rival se lleva la copa y el pozo de ${totalAcumuladoPuntos} Puntos.`;
+        } else {
+          tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+          subtituloFinal = `Ninguno de los dos obtiene copas en esta ocasión.`;
+        }
+
+      } catch(e) { console.error(e); }
 
       feedbackTitle.textContent = tituloFinal;
       feedbackSubtitle.textContent = subtituloFinal;
@@ -2416,23 +2446,59 @@
       feedbackOverlay.style.display = "block";
     }
 
-    // --- REVISIÓN DE FIN DE NIVEL ---
+    // --- REVISIÓN DE FIN DE NIVEL SOLITARIO ---
     function checkLevelCompletion() {
+      if (state.isDuelMode) return; 
+
       const isLevelComplete = state.boardCards.every(card => card.matched);
       if (isLevelComplete) {
+        clearInterval(state.levelTimerInterval);
+        
+        // Calcular bono de tiempo
+        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
+        const totalCards = getCardCountForLevel(state.level);
+        const limit = getLevelTimeLimit(totalCards);
+
+        let finalGainedPoints = state.levelScore;
+        let gotBonus = false;
+
+        if (elapsed <= limit) {
+          // Bono: multiplicar x1.5 y redondear hacia arriba
+          finalGainedPoints = Math.ceil(state.levelScore * 1.5);
+          gotBonus = true;
+        }
+
+        // Aplicar la diferencia al total general
+        const diff = finalGainedPoints - state.levelScore;
+        state.score += diff;
+        if (state.score > state.record) state.record = state.score;
+        saveState();
+
+        displayScore.textContent = state.score;
+        displayRecord.textContent = state.record;
+
         setTimeout(() => {
-          showLevelCompleteModal();
+          showLevelCompleteModal(elapsed, limit, gotBonus, finalGainedPoints);
         }, 800);
       }
     }
 
-    function showLevelCompleteModal() {
+    function showLevelCompleteModal(elapsed, limit, gotBonus, pointsGained) {
       feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
-      feedbackSubtitle.textContent = `Has emparejado todas las tarjetas con éxito. Tu puntaje actual es de ${state.score} puntos. Prepárate para el siguiente desafío.`;
-      btnFeedbackAction.textContent = "Continuar";
       
+      const timeString = `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+      const limitString = `${Math.floor(limit / 60)}m ${limit % 60}s`;
+
+      if (gotBonus) {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br><br><span style="color: var(--accent-color); font-weight:bold;">🎉 ¡BONO DE VELOCIDAD ACTIVADO! x1.5</span><br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      } else {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br>Completado fuera del tiempo límite para bono.<br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      }
+
+      btnFeedbackAction.textContent = "Siguiente Nivel";
       btnFeedbackAction.onclick = () => {
         feedbackOverlay.style.display = "none";
+        // Avanzar de nivel (Ya no se puede retroceder)
         startLevel(state.level + 1);
       };
       feedbackOverlay.style.display = "block";
@@ -2446,7 +2512,6 @@
           .select('*');
         
         if (error) throw error;
-        
         leaderboardBody.innerHTML = "";
         
         if (data && data.length > 0) {
@@ -2468,11 +2533,9 @@
           });
         }
       } catch (err) {
-        console.warn("Usando Fallback de LocalStorage debido a inconvenientes de red local.", err);
-        
+        console.warn("Fallback LocalStorage activo.", err);
         leaderboardBody.innerHTML = "";
         state.leaderboard.sort((a, b) => b.score - a.score);
-        
         state.leaderboard.slice(0, 10).forEach((user, idx) => {
           const row = document.createElement("tr");
           const uName = user.username || user.name;
@@ -2571,10 +2634,10 @@
 
     // --- COMPARTIR PUNTOS ---
     function shareScore() {
-      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también y pon a prueba tu agilidad mental: ${window.location.href}`;
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también: ${window.location.href}`;
       
       navigator.clipboard.writeText(text).then(() => {
-        alert("¡Enlace e invitación de puntaje copiados al portapapeles con éxito!");
+        alert("¡Enlace copiado al portapapeles con éxito!");
       }).catch(err => {
         console.error("Fallo al copiar enlace: ", err);
       });
@@ -2582,13 +2645,7 @@
 
     // --- REINICIOS ---
     function resetAllGame() {
-      if (confirm("¿Estás completamente seguro de querer reiniciar toda tu partida? Se restablecerá tu nivel y puntaje a cero.")) {
-        state.score = 0;
-        state.level = 1;
-        state.seenCardsIndices.clear();
-        saveState();
-        startLevel(1);
-      }
+      // Función removida para evitar que las personas bajen deliberadamente de nivel.
     }
 
     // --- CONTROL DEL PANEL DE ADMINISTRACIÓN ---
@@ -2633,7 +2690,7 @@
 
     function deleteCardImage(index) {
       if (state.cardImages.length <= 20) {
-        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas para soportar el tablero máximo de 40 cartas (20 pares).");
+        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas.");
         return;
       }
       state.cardImages.splice(index, 1);
@@ -2668,10 +2725,12 @@
         localStorage.removeItem("mt_leaderboard");
         localStorage.removeItem("mt_card_images");
         localStorage.removeItem("mt_bg_images");
+        localStorage.removeItem("mt_inventory");
         
         loadState();
         usernameInput.value = state.username;
         populateAdminPanel();
+        updateInventoryUI();
         startLevel(1);
       }
     }
@@ -2686,3 +2745,4 @@
   </script>
 </body>
 </html>
+```
