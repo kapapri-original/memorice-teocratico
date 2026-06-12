@@ -361,6 +361,7 @@
     .card-back {
       background: linear-gradient(135deg, #1b355a, #0b1526);
       color: var(--accent-color);
+      position: relative;
     }
     .card-back::after {
       content: "✦";
@@ -754,6 +755,120 @@
         border-radius: 20px;
         margin-top: 4px;
     }
+
+    /* --- ESTILOS ADICIONALES PARA LA SELECCIÓN DE IMÁGENES TEMÁTICAS --- */
+    .image-selection-modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(10, 15, 24, 0.95);
+        z-index: 999999; /* Mayor que todo */
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .image-selection-box {
+        background: #1e293b;
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 24px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    .image-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+        margin: 15px 0;
+    }
+    .selectable-image {
+        aspect-ratio: 1/1;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .selectable-image.selected {
+        border-color: var(--accent-color);
+        transform: scale(0.95);
+    }
+    .selectable-image.selected::after {
+        content: "✔";
+        position: absolute;
+        top: 5px; right: 5px;
+        background: var(--accent-color);
+        color: black;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+    .selectable-image img {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+
+    /* Estilos del Switch Deslizante de numeración */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255,255,255,0.15);
+      transition: .3s;
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary-light);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .card-number-badge {
+      position: absolute;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: white;
+      background: rgba(0,0,0,0.55);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--accent-color);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      z-index: 5;
+    }
   </style>
 </head>
 <body>
@@ -836,14 +951,28 @@
     <main class="game-area">
       
       <!-- Temporizador -->
-      <div class="timer-container">
-        <span class="timer-label">Tiempo Par:</span>
-        <div class="timer-track">
-          <div id="timerBar" class="timer-bar"></div>
-        </div>
-        <span id="timerText" class="timer-text">10s</span>
-        <span class="timer-label" style="margin-left: 15px; border-left: 1px solid var(--glass-border); padding-left: 15px;">Nivel:</span>
-        <span id="levelTimerText" class="timer-text" style="color: #38bdf8; min-width: 60px;">00:00</span>
+      <div class="hud-container">
+          <div class="hud-row">
+              <span class="hud-label">Tiempo Par:</span>
+              <span id="timerText" class="timer-text" style="color: var(--accent-color); font-size:1.1rem; font-weight:bold;">10s</span>
+          </div>
+          <div class="timer-track">
+              <div id="timerBar" class="timer-bar"></div>
+          </div>
+          <div class="hud-row" style="margin-top: 5px;">
+              <div>
+                  <span class="hud-label">Cronómetro General:</span>
+                  <span id="levelTimerText" style="font-weight: bold; color: #38bdf8;">00:00</span>
+              </div>
+              <!-- Switch Deslizante de Numeración -->
+              <div id="numberedCardsContainer" style="display: flex; align-items: center; gap: 8px;">
+                  <span class="hud-label" style="font-size:0.75rem;">Numeradas (Sí-No):</span>
+                  <label class="switch">
+                      <input type="checkbox" id="toggleNumberedCards">
+                      <span class="slider"></span>
+                  </label>
+              </div>
+          </div>
       </div>
       
       <!-- Contenedor del Tablero -->
@@ -1288,10 +1417,11 @@
       timerInterval: null,
       turnStartTime: null,
 
-      // Variables de Cronómetro General de Nivel
+      // Cronómetro de nivel y puntuación
       levelStartTime: null,
       levelScore: 0,
       levelTimerInterval: null,
+      scoreAtLevelStart: 0,
 
       // Variables del Modo Duelo
       activeDuelId: null,
@@ -1307,7 +1437,7 @@
 
     // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
     function loadState() {
-      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
+      state.username = localStorage.getItem("mt_logged_user") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
       state.score = parseInt(localStorage.getItem("mt_score")) || 0;
       state.record = parseInt(localStorage.getItem("mt_record")) || 0;
@@ -1793,77 +1923,6 @@
         .subscribe();
     }
 
-    // --- PERSONALIZACIÓN TEMÁTICA AVANZADA EN DUELOS ---
-    if (btnTriggerThemeSearch) {
-      btnTriggerThemeSearch.addEventListener("click", async () => {
-        const rawKeywords = duelThemeKeywords.value.trim();
-        if (!rawKeywords) {
-          alert("⚠️ Ingresa palabras clave primero para buscar imágenes de internet.");
-          return;
-        }
-
-        const levelVal = parseInt(selectDuelLevel.value) || 5;
-        const totalCardsNeeded = getCardCountForLevel(levelVal);
-        const pairsNeeded = totalCardsNeeded / 2;
-        const totalPoolSize = pairsNeeded * 3;
-
-        themeProgressBadge.textContent = "Buscando...";
-        state.customThemeSelectedUrls = [];
-
-        try {
-          selectionGrid.innerHTML = "";
-          selectionCounter.textContent = `Seleccionadas: 0 / ${pairsNeeded}`;
-          btnConfirmImageSelection.disabled = true;
-
-          // Búsqueda inteligente de fotos en Unsplash Source CDN
-          for (let i = 0; i < totalPoolSize; i++) {
-            const wrapper = document.createElement("div");
-            wrapper.className = "selectable-image";
-            
-            const img = document.createElement("img");
-            const imgUrl = `https://images.unsplash.com/featured/300x300/?${encodeURIComponent(rawKeywords)}&sig=${i + 1}`;
-            img.src = imgUrl;
-            img.loading = "lazy";
-
-            wrapper.appendChild(img);
-
-            wrapper.addEventListener("click", () => {
-              if (wrapper.classList.contains("selected")) {
-                wrapper.classList.remove("selected");
-                state.customThemeSelectedUrls = state.customThemeSelectedUrls.filter(url => url !== imgUrl);
-              } else {
-                if (state.customThemeSelectedUrls.length >= pairsNeeded) {
-                  alert(`⚠️ Ya has seleccionado las ${pairsNeeded} imágenes necesarias.`);
-                  return;
-                }
-                wrapper.classList.add("selected");
-                state.customThemeSelectedUrls.push(imgUrl);
-              }
-
-              selectionCounter.textContent = `Seleccionadas: ${state.customThemeSelectedUrls.length} / ${pairsNeeded}`;
-              btnConfirmImageSelection.disabled = (state.customThemeSelectedUrls.length !== pairsNeeded);
-            });
-
-            selectionGrid.appendChild(wrapper);
-          }
-
-          imageSelectionModal.style.display = "flex";
-
-        } catch (e) {
-          console.error(e);
-          themeProgressBadge.textContent = "Fallo en la búsqueda";
-        }
-      });
-    }
-
-    if (btnConfirmImageSelection) {
-      btnConfirmImageSelection.addEventListener("click", () => {
-        imageSelectionModal.style.display = "none";
-        themeProgressBadge.textContent = "🎨 Temática Personalizada Activa";
-        themeProgressBadge.style.color = "var(--accent-color)";
-      });
-    }
-
     // --- MANEJO DE PESTAÑAS DEL LOBBY ---
     function switchDuelTab(tabActive, sectionActive) {
       [tabLobby, tabMyDuels, tabCreateDuel].forEach(t => t.classList.remove("active"));
@@ -1890,9 +1949,7 @@
     // --- LANZAR UN NUEVO DUELO ---
     if (btnLaunchNewDuel) {
       btnLaunchNewDuel.addEventListener("click", async () => {
-        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 5;
-        const keywords = duelThemeKeywords.value.trim() || "Estándar";
-        
+        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 1;
         try {
           await supabaseClient
             .from("memorice_duels")
@@ -1902,19 +1959,9 @@
               status: "WAITING",
               current_turn: "CHALLENGER",
               challenger_score: 0,
-              opponent_score: 0,
-              theme_keywords: keywords,
-              theme_pool: state.customThemeSelectedUrls.length > 0 ? state.customThemeSelectedUrls : null
+              opponent_score: 0
             }]);
-          
           alert("¡Desafío publicado en la cartelera!");
-          
-          // Resetear estados visuales
-          state.customThemeSelectedUrls = [];
-          duelThemeKeywords.value = "";
-          themeProgressBadge.textContent = "Estándar (Por Defecto)";
-          themeProgressBadge.style.color = "var(--text-muted)";
-
           switchDuelTab(tabLobby, secLobby);
           await actualizarListasDeDuelos();
         } catch (err) {
@@ -1949,12 +1996,9 @@
             item.innerHTML = `
               <div class="duel-item-info">
                 <span class="duel-player-title">⚔️ Desafío de: ${duel.challenger}</span>
-                <span class="duel-meta-tag">Temática: ${duel.theme_keywords || "Estándar"} | Nivel: ${duel.duel_level}</span>
+                <span class="duel-meta-tag">Tablero de Nivel: ${duel.duel_level}</span>
               </div>
-              <div style="display: flex; gap: 8px;">
-                ${duel.theme_pool ? `<button class="btn btn-secondary btn-sm" onclick="verImagenesTematicas(${JSON.stringify(duel.theme_pool).replace(/"/g, '&quot;')})">Ver Temas</button>` : ''}
-                <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
-              </div>
+              <button class="btn btn-primary btn-sm" onclick="aceptarDueloDelLobby('${duel.id}')">Aceptar</button>
             `;
             lobbyDuelsList.appendChild(item);
           });
@@ -1987,30 +2031,6 @@
       }
     }
 
-    window.verImagenesTematicas = function(urlsArray) {
-      if(!urlsArray || urlsArray.length === 0) return;
-      selectionGrid.innerHTML = "";
-      urlsArray.forEach(url => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "selectable-image";
-        const img = document.createElement("img");
-        img.src = url;
-        wrapper.appendChild(img);
-        selectionGrid.appendChild(wrapper);
-      });
-      selectionCounter.textContent = "Previsualización de imágenes a jugar";
-      btnConfirmImageSelection.disabled = false;
-      btnConfirmImageSelection.textContent = "Cerrar Vista";
-      
-      btnConfirmImageSelection.onclick = () => {
-         imageSelectionModal.style.display = "none";
-         btnConfirmImageSelection.onclick = null;
-         btnConfirmImageSelection.textContent = "Confirmar Selección";
-      };
-      
-      imageSelectionModal.style.display = "flex";
-    };
-
     window.aceptarDueloDelLobby = async function(duelId) {
       try {
         await supabaseClient
@@ -2042,7 +2062,6 @@
         state.duelCurrentTurn = duel.current_turn;
         
         clearInterval(state.timerInterval);
-        clearInterval(state.levelTimerInterval);
         resetTimerUI();
         feedbackOverlay.style.display = "none";
         
@@ -2060,10 +2079,8 @@
         if (!duel.board_state) {
           const totalCards = getCardCountForLevel(state.level);
           const pairsCount = totalCards / 2;
-          
-          let imagePool = (duel.theme_pool && duel.theme_pool.length >= pairsCount) ? [...duel.theme_pool] : [...state.cardImages];
+          let imagePool = [...state.cardImages];
           shuffleArray(imagePool);
-          
           let selectedImages = [];
           for (let i = 0; i < pairsCount; i++) {
             const img = imagePool[i % imagePool.length];
@@ -2074,8 +2091,7 @@
             id: idx,
             img: img,
             matched: false,
-            claimedBy: "",
-            flipCount: 0
+            claimedBy: "" 
           }));
           
           await supabaseClient
@@ -2126,32 +2142,7 @@
       }
     }
 
-    // --- TIMING / CRONÓMETRO GENERAL DE NIVEL ---
-    function startLevelTimer() {
-      state.levelStartTime = Date.now();
-      clearInterval(state.levelTimerInterval);
-      state.levelTimerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
-        const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
-        const secs = (elapsed % 60).toString().padStart(2, "0");
-        const lTimerText = document.getElementById("levelTimerText");
-        if (lTimerText) {
-          lTimerText.textContent = `${mins}:${secs}`;
-        }
-      }, 1000);
-    }
-
-    function getLevelTimeLimit(totalCards) {
-      if (totalCards === 4) return 10;
-      if (totalCards === 8) return 30;
-      if (totalCards === 16) return 75;
-      if (totalCards === 20) return 120; 
-      if (totalCards === 24) return 150; 
-      if (totalCards === 30) return 210; 
-      return 360; 
-    }
-
-    // --- SINC DE LOBBY Y TABLERO ---
+    // --- INICIALIZACIÓN ---
     document.addEventListener("DOMContentLoaded", async () => {
       loadState();
       setupEvents();
@@ -2176,7 +2167,10 @@
           adminPanel.scrollIntoView({ behavior: "smooth" });
         }
       });
-      btnCloseAdmin.addEventListener("click", () => adminPanel.classList.remove("active"));
+      
+      btnCloseAdmin.addEventListener("click", () => {
+        adminPanel.classList.remove("active");
+      });
       
       if (btnLogOut) {
         btnLogOut.addEventListener("click", () => {
@@ -2213,11 +2207,7 @@
 
     function startLevel(level) {
       state.scoreAtLevelStart = state.score;
-      state.levelScore = 0; 
-      
       clearInterval(state.timerInterval);
-      clearInterval(state.levelTimerInterval);
-      
       resetTimerUI();
       feedbackOverlay.style.display = "none";
       
@@ -2251,17 +2241,12 @@
       state.boardCards = selectedImages.map((img, idx) => ({
         id: idx,
         img: img,
-        matched: false,
-        flipCount: 0 
+        matched: false
       }));
       
       renderBoard(totalCards);
       renderLeaderboard(); 
       populateAdminPanel();
-
-      if (!state.isDuelMode) {
-        startLevelTimer();
-      }
     }
 
     function renderBoard(totalCards) {
@@ -2332,6 +2317,7 @@
               }
             }
           } else {
+            // No voltear de vuelta si es una carta seleccionada localmente en juego
             if ((state.firstCardData && state.firstCardData.id === cardData.id) || 
                 (state.secondCardData && state.secondCardData.id === cardData.id)) {
               return; 
@@ -2372,8 +2358,10 @@
               const el2 = move.card2 !== null ? gameBoard.querySelector(`[data-id="${move.card2}"]`) : null;
 
               if (move.result === "FLIP_1") {
+                // Voltear la primera carta del oponente en vivo
                 if (el1) el1.classList.add("flipped");
               } else if (move.result === "MATCH") {
+                // El rival acertó, marcamos las cartas e iluminamos en rojo
                 if (el1) el1.classList.add("flipped", "matched");
                 if (el2) el2.classList.add("flipped", "matched");
                 createScoreToast(el1, "¡Rival Acertó Par! 😮");
@@ -2381,6 +2369,7 @@
                 state.boardCards = datosActualizados.board_state;
                 actualizarTableroVisual(state.boardCards);
               } else if (move.result === "MISMATCH") {
+                // El rival erró, dejamos ver sus cartas 2 segundos completos
                 state.isProcessing = true;
                 if (el1) el1.classList.add("flipped");
                 if (el2) el2.classList.add("flipped");
@@ -2404,10 +2393,12 @@
                 }, 1500);
               }
             } else {
+              // Actualización normal, sincronizamos
               state.boardCards = datosActualizados.board_state || state.boardCards;
               actualizarTableroVisual(state.boardCards);
             }
 
+            // Recalcular conteo de pares de cada jugador
             state.myPairs = 0;
             state.rivalPairs = 0;
             state.boardCards.forEach(c => {
@@ -2441,7 +2432,6 @@
         }
       }
 
-      cardData.flipCount = (cardData.flipCount || 0) + 1;
       cardElement.classList.add("flipped");
       
       if (!state.firstCardElement) {
@@ -2449,6 +2439,7 @@
         state.firstCardData = cardData;
         state.firstCardWasSeen = state.seenCardsIndices.has(cardData.id);
 
+        // Informar primer volteo al oponente en tiempo real
         if (state.isDuelMode) {
           const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
           try {
@@ -2483,16 +2474,14 @@
       state.firstCardElement.classList.add("matched");
       state.secondCardElement.classList.add("matched");
       
-      const maxFlips = Math.max(state.firstCardData.flipCount || 1, state.secondCardData.flipCount || 1);
-      let pointsGained = 1;
-      if (maxFlips === 1) pointsGained = 3;      
-      else if (maxFlips === 2) pointsGained = 2; 
-      else pointsGained = 1;                     
+      let pointsGained = 100;
+      if (firstSeen || secondSeen) {
+        const elapsedSeconds = (Date.now() - state.turnStartTime) / 1000;
+        pointsGained = Math.max(10, 100 - (Math.ceil(elapsedSeconds) * 10));
+      }
       
       state.seenCardsIndices.add(state.firstCardData.id);
       state.seenCardsIndices.add(state.secondCardData.id);
-
-      state.levelScore += pointsGained;
       state.score += pointsGained;
       if (state.score > state.record) state.record = state.score;
       saveState();
@@ -2649,19 +2638,11 @@
       let subtituloFinal = "";
       const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
 
-      try {
-        const { data: duelLatest } = await supabaseClient
-          .from("memorice_duels")
-          .select("*")
-          .eq("id", state.activeDuelId)
-          .maybeSingle();
-
-        const totalAcumuladoPuntos = (duelLatest.challenger_score || 0) + (duelLatest.opponent_score || 0);
-
-        if (state.myPairs > state.rivalPairs) {
-          tituloFinal = "🏆 ¡VICTORIA ABSOLUTA EN DUELO!";
-          subtituloFinal = `¡Te llevas todo el pozo de ${totalAcumuladoPuntos} Puntos y una Copa!`;
-          
+      if (state.myPairs > state.rivalPairs) {
+        tituloFinal = "🏆 ¡VICTORIA ABSOLUTA!";
+        subtituloFinal = `Has ganado el duelo con un total de ${Math.floor(state.myPairs)} pares frente a ${Math.floor(state.rivalPairs)} de tu rival.`;
+        
+        try {
           const { data: userDb } = await supabaseClient
             .from("memorice_users")
             .select("trophies_count, highest_score")
@@ -2669,15 +2650,12 @@
             .maybeSingle();
 
           const nuevasCopas = (userDb?.trophies_count || 0) + 1;
-          const nuevoRecordMax = (userDb?.highest_score || 0) + totalAcumuladoPuntos;
+          const nuevoRecordMax = Math.max(userDb?.highest_score || 0, state.score);
 
           await supabaseClient
             .from("memorice_users")
             .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
             .eq("username", state.username);
-
-          state.score = nuevoRecordMax;
-          saveState();
 
           await supabaseClient
             .from("memorice_duels")
@@ -2685,17 +2663,15 @@
             .eq("id", state.activeDuelId);
 
           if (displayTrophies) displayTrophies.textContent = nuevasCopas;
-          displayScore.textContent = state.score;
+        } catch(e) { console.error(e); }
 
-        } else if (state.myPairs < state.rivalPairs) {
-          tituloFinal = "😢 DERROTA EN DUELO";
-          subtituloFinal = `Tu rival se lleva la copa y el pozo de ${totalAcumuladoPuntos} Puntos.`;
-        } else {
-          tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
-          subtituloFinal = `Ninguno de los dos obtiene copas en esta ocasión.`;
-        }
-
-      } catch(e) { console.error(e); }
+      } else if (state.myPairs < state.rivalPairs) {
+        tituloFinal = "😢 DERROTA EN DUELO";
+        subtituloFinal = `Tu rival ha conseguido ${Math.floor(state.rivalPairs)} pares superando tus ${Math.floor(state.myPairs)} combinaciones.`;
+      } else {
+        tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+        subtituloFinal = `Ambos jugadores consiguieron exactamente la misma cantidad de pares (${Math.floor(state.myPairs)}).`;
+      }
 
       feedbackTitle.textContent = tituloFinal;
       feedbackSubtitle.textContent = subtituloFinal;
@@ -2708,51 +2684,19 @@
 
     // --- REVISIÓN DE FIN DE NIVEL SOLITARIO ---
     function checkLevelCompletion() {
-      if (state.isDuelMode) return;
-
       const isLevelComplete = state.boardCards.every(card => card.matched);
       if (isLevelComplete) {
-        clearInterval(state.levelTimerInterval);
-        
-        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
-        const totalCards = getCardCountForLevel(state.level);
-        const limit = getLevelTimeLimit(totalCards);
-
-        let finalGainedPoints = state.levelScore;
-        let gotBonus = false;
-
-        if (elapsed <= limit) {
-          finalGainedPoints = Math.ceil(state.levelScore * 1.5);
-          gotBonus = true;
-        }
-
-        const diff = finalGainedPoints - state.levelScore;
-        state.score += diff;
-        if (state.score > state.record) state.record = state.score;
-        saveState();
-
-        displayScore.textContent = state.score;
-        displayRecord.textContent = state.record;
-
         setTimeout(() => {
-          showLevelCompleteModal(elapsed, limit, gotBonus, finalGainedPoints);
+          showLevelCompleteModal();
         }, 800);
       }
     }
 
-    function showLevelCompleteModal(elapsed, limit, gotBonus, pointsGained) {
+    function showLevelCompleteModal() {
       feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
+      feedbackSubtitle.textContent = `Has emparejado todas las tarjetas con éxito. Tu puntaje actual es de ${state.score} puntos. Prepárate para el siguiente desafío.`;
+      btnFeedbackAction.textContent = "Continuar";
       
-      const timeString = `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
-      const limitString = `${Math.floor(limit / 60)}m ${limit % 60}s`;
-
-      if (gotBonus) {
-        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br><br><span style="color: var(--accent-color); font-weight:bold;">🎉 ¡BONO DE VELOCIDAD ACTIVADO! x1.5</span><br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
-      } else {
-        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br>Completado fuera del tiempo límite para bono.<br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
-      }
-
-      btnFeedbackAction.textContent = "Siguiente Nivel";
       btnFeedbackAction.onclick = () => {
         feedbackOverlay.style.display = "none";
         startLevel(state.level + 1);
