@@ -944,7 +944,7 @@
           <div id="displayRecord" class="stat-value accent">0</div>
         </div>
         <div class="stat-card" style="grid-column: span 2;">
-          <div class="stat-label">Puntaje de Partida</div>
+          <div class="stat-label">Puntaje Total</div>
           <div id="displayScore" class="stat-value">0</div>
         </div>
       </div>
@@ -2699,6 +2699,358 @@
         }
         resetTurnState();
       }, 1000);
+    }
+
+    function resetTurnState() {
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      resetTimerUI();
+    }
+
+    function startTimer() {
+      state.timeLeft = 10;
+      state.turnStartTime = Date.now();
+      updateTimerUI();
+      clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timeLeft = 10 - ((Date.now() - state.turnStartTime) / 1000);
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          state.timeLeft = 0;
+          updateTimerUI();
+          handleTimeout();
+        } else {
+          updateTimerUI();
+        }
+      }, 50);
+    }
+
+    function stopTimer() { clearInterval(state.timerInterval); }
+    function updateTimerUI() {
+      timerText.textContent = `${Math.max(0, Math.ceil(state.timeLeft))}s`;
+      timerBar.style.width = `${(state.timeLeft / 10) * 100}%`;
+    }
+    function resetTimerUI() { timerBar.style.width = "100%"; timerText.textContent = "10s"; }
+
+    async function handleTimeout() {
+      state.isProcessing = true;
+      if (state.firstCardData) state.seenCardsIndices.add(state.firstCardData.id);
+      createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
+      
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ 
+              current_turn: siguienteTurno,
+              last_move: { card1: state.firstCardData.id, card2: null, result: "TIMEOUT", player: miRol }
+            })
+            .eq("id", state.activeDuelId);
+        } catch(e) { console.error(e); }
+      }
+
+      setTimeout(() => {
+        if (state.firstCardElement) state.firstCardElement.classList.remove("flipped");
+        resetTurnState();
+      }, 1000);
+    }
+
+    function createScoreToast(element, text) {
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
+      const toast = document.createElement("div");
+      toast.className = "score-toast";
+      toast.textContent = text;
+      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
+      toast.style.top = `${rect.top - boardRect.top}px`;
+      document.getElementById("boardWrapper").appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 1400);
+    }
+
+    // --- EVALUACIÓN DE GANADOR DE DUELOS ---
+    async function evaluarFinDelDuelo() {
+      const tableroCompleto = state.boardCards.every(card => card.matched);
+      if (!tableroCompleto) return; 
+
+      state.isProcessing = true;
+      clearInterval(state.timerInterval);
+
+      let tituloFinal = "";
+      let subtituloFinal = "";
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+      try {
+        const { data: duelLatest } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("id", state.activeDuelId)
+          .maybeSingle();
+
+        const totalAcumuladoPuntos = (duelLatest.challenger_score || 0) + (duelLatest.opponent_score || 0);
+
+        if (state.myPairs > state.rivalPairs) {
+          tituloFinal = "🏆 ¡VICTORIA ABSOLUTA EN DUELO!";
+          subtituloFinal = `¡Te llevas todo el pozo de ${totalAcumuladoPuntos} Puntos y una Copa!`;
+          
+          const { data: userDb } = await supabaseClient
+            .from("memorice_users")
+            .select("trophies_count, highest_score")
+            .eq("username", state.username)
+            .maybeSingle();
+
+          const nuevasCopas = (userDb?.trophies_count || 0) + 1;
+          const nuevoRecordMax = (userDb?.highest_score || 0) + totalAcumuladoPuntos;
+
+          await supabaseClient
+            .from("memorice_users")
+            .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
+            .eq("username", state.username);
+
+          state.score = nuevoRecordMax;
+          saveState();
+
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ status: "FINISHED" })
+            .eq("id", state.activeDuelId);
+
+          if (displayTrophies) displayTrophies.textContent = nuevasCopas;
+          displayScore.textContent = state.score;
+
+        } else if (state.myPairs < state.rivalPairs) {
+          tituloFinal = "😢 DERROTA EN DUELO";
+          subtituloFinal = `Tu rival se lleva la copa y el pozo de ${totalAcumuladoPuntos} Puntos.`;
+        } else {
+          tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+          subtituloFinal = `Ninguno de los dos obtiene copas en esta ocasión.`;
+        }
+
+      } catch(e) { console.error(e); }
+
+      feedbackTitle.textContent = tituloFinal;
+      feedbackSubtitle.textContent = subtituloFinal;
+      btnFeedbackAction.textContent = "Volver al Lobby";
+      btnFeedbackAction.onclick = () => {
+        window.location.reload(); 
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- REVISIÓN DE FIN DE NIVEL SOLITARIO ---
+    function checkLevelCompletion() {
+      if (state.isDuelMode) return;
+
+      const isLevelComplete = state.boardCards.every(card => card.matched);
+      if (isLevelComplete) {
+        clearInterval(state.levelTimerInterval);
+        
+        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
+        const totalCards = getCardCountForLevel(state.level);
+        const limit = getLevelTimeLimit(totalCards);
+
+        let finalGainedPoints = state.levelScore;
+        let gotBonus = false;
+
+        if (elapsed <= limit) {
+          finalGainedPoints = Math.ceil(state.levelScore * 1.5);
+          gotBonus = true;
+        }
+
+        const diff = finalGainedPoints - state.levelScore;
+        state.score += diff;
+        if (state.score > state.record) state.record = state.score;
+        saveState();
+
+        displayScore.textContent = state.score;
+        displayRecord.textContent = state.record;
+
+        setTimeout(() => {
+          showLevelCompleteModal(elapsed, limit, gotBonus, finalGainedPoints);
+        }, 800);
+      }
+    }
+
+    function showLevelCompleteModal(elapsed, limit, gotBonus, pointsGained) {
+      feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
+      
+      const timeString = `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+      const limitString = `${Math.floor(limit / 60)}m ${limit % 60}s`;
+
+      if (gotBonus) {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br><br><span style="color: var(--accent-color); font-weight:bold;">🎉 ¡BONO DE VELOCIDAD ACTIVADO! x1.5</span><br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      } else {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br>Completado fuera del tiempo límite para bono.<br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      }
+
+      btnFeedbackAction.textContent = "Siguiente Nivel";
+      btnFeedbackAction.onclick = async () => {
+        feedbackOverlay.style.display = "none";
+        
+        // PERSISTENCIA REAL AL PASAR DE NIVEL EN LA NUBE
+        const nextLevelVal = state.level + 1;
+        state.level = nextLevelVal;
+        saveState();
+
+        if (!isOfflineMode) {
+          try {
+            await supabaseClient
+              .from("memorice_users")
+              .update({ current_level: nextLevelVal })
+              .eq("username", state.username);
+          } catch(e) {
+            console.warn("Fallo de red al sincronizar nivel avanzado en Supabase.", e);
+          }
+        }
+
+        startLevel(nextLevelVal);
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- RENDERIZADO DEL TOP 10 GLOBAL ---
+    async function renderLeaderboard() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('view_top_ten_leaderboard')
+          .select('*');
+        
+        if (error) throw error;
+        leaderboardBody.innerHTML = "";
+        
+        if (data && data.length > 0) {
+          data.forEach((user, idx) => {
+            const row = document.createElement("tr");
+            const isCurrentUser = (user.username === state.username);
+            
+            if (isCurrentUser) {
+              row.style.fontWeight = "bold";
+              row.style.color = "var(--accent-color)";
+              row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+            }
+            row.innerHTML = `
+              <td class="rank">#${idx + 1}</td>
+              <td>${user.username}</td>
+              <td class="score">${user.highest_score}</td>
+            `;
+            leaderboardBody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.warn("Fallback LocalStorage activo.", err);
+        leaderboardBody.innerHTML = "";
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        state.leaderboard.slice(0, 10).forEach((user, idx) => {
+          const row = document.createElement("tr");
+          const uName = user.username || user.name;
+          const isCurrentUser = (uName === state.username);
+          
+          if (isCurrentUser) {
+            row.style.fontWeight = "bold";
+            row.style.color = "var(--accent-color)";
+            row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+          }
+          row.innerHTML = `
+            <td class="rank">#${idx + 1}</td>
+            <td>${uName}</td>
+            <td class="score">${user.score}</td>
+          `;
+          leaderboardBody.appendChild(row);
+        });
+      }
+    }
+
+    // --- ENVÍO DE RÉCORD ---
+    async function updateLeaderboardWithCurrent() {
+      if (state.score <= 0) {
+        await renderLeaderboard();
+        return;
+      }
+
+      const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
+      if (idx !== -1) {
+        if (state.score > state.leaderboard[idx].score) {
+          state.leaderboard[idx].score = state.score;
+        }
+      } else {
+        state.leaderboard.push({ name: state.username, score: state.score });
+      }
+      state.leaderboard.sort((a, b) => b.score - a.score);
+      if (state.leaderboard.length > 10) {
+        state.leaderboard = state.leaderboard.slice(0, 10);
+      }
+      saveState();
+
+      try {
+        const { data: usuarioExistente, error: errorFetch } = await supabaseClient
+          .from('memorice_leaderboard')
+          .select('Score')
+          .eq('username', state.username)
+          .maybeSingle();
+
+        if (errorFetch) throw errorFetch;
+
+        if (!usuarioExistente || state.score > usuarioExistente.Score) {
+          const { error: errorUpsert } = await supabaseClient
+            .from('memorice_leaderboard')
+            .upsert(
+              { username: state.username, Score: state.score },
+              { onConflict: 'username' }
+            );
+
+          if (errorUpsert) throw errorUpsert;
+        }
+      } catch (err) {
+        console.error("Fallo de sincronización en Supabase.", err);
+      }
+      
+      renderLeaderboard();
+    }
+
+    // --- COMPARTIR PUNTOS ---
+    function shareScore() {
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también: ${window.location.href}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert("¡Enlace copiado al portapapeles con éxito!");
+      }).catch(err => {
+        console.error("Fallo al copiar enlace: ", err);
+      });
+    }
+
+    // --- REINICIOS ---
+    function resetAllGame() {}
+
+    // --- CONTROL DEL PANEL DE ADMINISTRACIÓN ---
+    function populateAdminPanel() {
+      adminCardImagesList.innerHTML = "";
+      state.cardImages.forEach((imgUrl, idx) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "admin-img-wrapper";
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.className = "admin-img-thumb";
+        img.alt = `Thumb ${idx}`;
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "&times;";
+        deleteBtn.className = "admin-img-delete";
+        deleteBtn.addEventListener("click", () => deleteCardImage(idx));
+        wrapper.appendChild(img);
+        wrapper.appendChild(deleteBtn);
+        adminCardImagesList.appendChild(wrapper);
+      });
+      
+      for (let i = 1; i <= 7; i++) {
+        const input = document.getElementById(`bgLvl${i}`);
+        if (input) {
+          input.value = state.bgImages[i] || "";
+        }
+      }
     }
 
     // --- ALGORITMOS DE UTILIDAD (SHUFFLE) ---
