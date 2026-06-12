@@ -99,6 +99,24 @@
       text-transform: uppercase;
       font-weight: 600;
     }
+    .status-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .status-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-offline {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
     /* Campo Nombre de Usuario */
     .user-profile {
       display: flex;
@@ -333,6 +351,7 @@
       perspective: 1000px;
       cursor: pointer;
       width: 100%;
+      container-type: size; /* CONTENEDOR HABILITADO PARA ESCALADO DE INTENTOS */
     }
     .card-inner {
       position: relative;
@@ -361,6 +380,7 @@
     .card-back {
       background: linear-gradient(135deg, #1b355a, #0b1526);
       color: var(--accent-color);
+      position: relative;
     }
     .card-back::after {
       content: "✦";
@@ -372,14 +392,15 @@
       from { transform: scale(1); opacity: 0.4; }
       to { transform: scale(1.15); opacity: 0.8; }
     }
-    /* CLASE PARA REEMPLAZAR LOGO POR NÚMERO ORDINAL SIN ALTERAR EL 3D */
+    /* CLASE CORREGIDA: CAMBIO DINÁMICO DE TAMAÑO AL 80% DE LA ALTURA CON 'CQH' */
     .card-back.numbered-back {
-      font-weight: 800;
-      font-size: 1.8rem;
+      font-weight: 900;
+      font-size: 72cqh; /* Cubre exactamente el 75-80% de la altura vertical de forma fluida */
       color: var(--accent-color);
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
     }
     .card-back.numbered-back::after {
       display: none !important;
@@ -536,10 +557,6 @@
     .admin-form {
       display: flex;
       gap: 10px;
-    }
-    .admin-img-wrapper {
-      position: relative;
-      aspect-ratio: 1/1;
     }
     .admin-input {
       flex-grow: 1;
@@ -771,52 +788,13 @@
         margin-top: 4px;
     }
     
-    /* Estilos del Switch Deslizante de numeración */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-    }
-    .switch input { 
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(255,255,255,0.15);
-      transition: .3s;
-      border-radius: 24px;
-      border: 1px solid var(--glass-border);
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: var(--primary-light);
-    }
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-
     /* --- ESTILOS ADICIONALES PARA LA SELECCIÓN DE IMÁGENES TEMÁTICAS --- */
     .image-selection-modal {
         display: none;
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background: rgba(10, 15, 24, 0.95);
-        z-index: 999999; /* Mayor que todo */
+        z-index: 9999999; /* Mayor que todo de forma preventiva */
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(10px);
@@ -920,7 +898,7 @@
           <div id="displayRecord" class="stat-value accent">0</div>
         </div>
         <div class="stat-card" style="grid-column: span 2;">
-          <div class="stat-label">Puntaje de Partida</div>
+          <div class="stat-label">Puntaje Total</div>
           <div id="displayScore" class="stat-value">0</div>
         </div>
       </div>
@@ -949,19 +927,15 @@
     <!-- ÁREA DE JUEGO -->
     <main class="game-area">
       
-      <!-- Temporizador -->
-      <div class="timer-container">
-        <span class="timer-label">Tiempo Par:</span>
-        <div class="timer-track">
-          <div id="timerBar" class="timer-bar"></div>
-        </div>
-        <span id="timerText" class="timer-text">10s</span>
-        <span class="timer-label" style="margin-left: 15px; border-left: 1px solid var(--glass-border); padding-left: 15px;">Nivel:</span>
-        <span id="levelTimerText" class="timer-text" style="color: #38bdf8; min-width: 60px;">00:00</span>
-      </div>
-      
       <!-- HUD DE CONTROL / AJUSTES RÁPIDOS -->
       <div class="hud-container">
+          <div class="hud-row">
+              <span class="hud-label">Tiempo Par:</span>
+              <span id="timerText" class="timer-text" style="color: var(--accent-color); font-size:1.1rem; font-weight:bold;">10s</span>
+          </div>
+          <div class="timer-track">
+              <div id="timerBar" class="timer-bar"></div>
+          </div>
           <div class="hud-row" style="margin-top: 5px;">
               <div>
                   <span class="hud-label">Cronómetro General:</span>
@@ -1440,7 +1414,7 @@
 
     // --- PERSISTENCIA DE DATOS (LOCAL STORAGE) ---
     function loadState() {
-      state.username = localStorage.getItem("mt_username") || "Jugador Teocrático";
+      state.username = localStorage.getItem("mt_logged_user") || "Jugador Teocrático";
       state.level = parseInt(localStorage.getItem("mt_level")) || 1;
       state.score = parseInt(localStorage.getItem("mt_score")) || 0;
       state.record = parseInt(localStorage.getItem("mt_record")) || 0;
@@ -2262,11 +2236,11 @@
         startLevel(state.level);
       });
 
-      // Evento del Switch Deslizante de numeración rápida
+      // EVENTO DEL SWITCH DE NUMERACIÓN ASIGNADO EN TIEMPO REAL
       const toggleNumbered = document.getElementById("toggleNumberedCards");
       if (toggleNumbered) {
         toggleNumbered.addEventListener("change", () => {
-          renderBoard(getCardCountForLevel(state.level));
+          actualizarNumeracionTarjetas();
         });
       }
     }
@@ -2326,7 +2300,6 @@
         flipCount: 0 
       }));
       
-      // Mostrar y habilitar panel de numeración (solo en modo solitario)
       document.getElementById("numberedCardsContainer").style.display = "flex";
 
       renderBoard(totalCards);
@@ -2356,7 +2329,7 @@
         const cardBack = document.createElement("div");
         cardBack.className = "card-back";
 
-        // Si la numeración está activa, aplicamos el estilo reemplazando el diseño por el número entero
+        // Asignación directa del formato reverso según switch en renderizado
         if (isNumberedActive) {
           cardBack.textContent = idx + 1;
           cardBack.classList.add("numbered-back");
@@ -2393,6 +2366,26 @@
         
         cardContainer.addEventListener("click", () => handleCardClick(cardContainer, cardData));
         gameBoard.appendChild(cardContainer);
+      });
+    }
+
+    // --- ACTUALIZACIÓN DINÁMICA DE NUMERACIÓN EN LOS REVERSOS ---
+    function actualizarNumeracionTarjetas() {
+      const isNumberedActive = document.getElementById("toggleNumberedCards").checked && !state.isDuelMode;
+      state.boardCards.forEach((cardData, idx) => {
+        const cardElement = gameBoard.querySelector(`[data-id="${cardData.id}"]`);
+        if (cardElement) {
+          const cardBack = cardElement.querySelector(".card-back");
+          if (cardBack) {
+            if (isNumberedActive) {
+              cardBack.textContent = idx + 1;
+              cardBack.classList.add("numbered-back");
+            } else {
+              cardBack.textContent = "";
+              cardBack.classList.remove("numbered-back");
+            }
+          }
+        }
       });
     }
 
@@ -2851,7 +2844,7 @@
       btnFeedbackAction.onclick = async () => {
         feedbackOverlay.style.display = "none";
         
-        // CORRECCIÓN CLAVE: Incrementar el nivel en Supabase para persistir progreso real al avanzar
+        // PERSISTENCIA REAL AL PASAR DE NIVEL EN LA NUBE
         const nextLevelVal = state.level + 1;
         state.level = nextLevelVal;
         saveState();
