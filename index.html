@@ -2245,7 +2245,7 @@
       await verificarSesionExistente(); 
     });
 
-    function setupEvents() {
+ function setupEvents() {
       usernameInput.value = state.username;
       usernameInput.addEventListener("change", () => {
         state.username = usernameInput.value.trim() || "Jugador Teocrático";
@@ -2261,7 +2261,10 @@
           adminPanel.scrollIntoView({ behavior: "smooth" });
         }
       });
-      btnCloseAdmin.addEventListener("click", () => adminPanel.classList.remove("active"));
+      
+      btnCloseAdmin.addEventListener("click", () => {
+        adminPanel.classList.remove("active");
+      });
       
       if (btnLogOut) {
         btnLogOut.addEventListener("click", () => {
@@ -2278,11 +2281,22 @@
       btnSaveBgs.addEventListener("click", saveCustomBackgrounds);
       btnRestoreDefaults.addEventListener("click", restoreDefaults);
       
-      document.getElementById("btnRestartLevel").addEventListener("click", () => {
-        state.score = state.scoreAtLevelStart; 
-        saveState();
-        startLevel(state.level);
-      });
+      // Evento Reiniciar Nivel enlazado de forma segura
+      const btnRestartLevel = document.getElementById("btnRestartLevel");
+      if (btnRestartLevel) {
+        btnRestartLevel.addEventListener("click", () => {
+          state.score = state.scoreAtLevelStart; 
+          saveState();
+          startLevel(state.level);
+        });
+      }
+      
+      // Solo enlazar si el botón "Reiniciar Todo" existe físicamente en el HTML
+      const btnResetGame = document.getElementById("btnResetGame");
+      if (btnResetGame) {
+        btnResetGame.addEventListener("click", resetAllGame);
+      }
+    }
 
       // EVENTO DEL SWITCH DE NUMERACIÓN ASIGNADO EN TIEMPO REAL
       const toggleNumbered = document.getElementById("toggleNumberedCards");
@@ -2364,7 +2378,10 @@
       gameBoard.innerHTML = "";
       
       const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
-      const isNumberedActive = document.getElementById("toggleNumberedCards").checked && !state.isDuelMode;
+      
+      // Comprobación segura de existencia del interruptor de numeración
+      const toggleEl = document.getElementById("toggleNumberedCards");
+      const isNumberedActive = toggleEl ? (toggleEl.checked && !state.isDuelMode) : false;
 
       state.boardCards.forEach((cardData, idx) => {
         const cardContainer = document.createElement("div");
@@ -2377,7 +2394,7 @@
         const cardBack = document.createElement("div");
         cardBack.className = "card-back";
 
-        // Asignación directa del formato reverso según switch en renderizado
+        // Asignación de formato reverso seguro
         if (isNumberedActive) {
           cardBack.textContent = idx + 1;
           cardBack.classList.add("numbered-back");
@@ -2438,9 +2455,11 @@
     }
 
     // --- ACTUALIZACIÓN DINÁMICA DEL TABLERO SIN RECONSTRUIR EL DOM ---
-    function actualizarTableroVisual(board_state) {
+   function actualizarTableroVisual(board_state) {
       const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
-      const isNumberedActive = document.getElementById("toggleNumberedCards").checked && !state.isDuelMode;
+      
+      const toggleEl = document.getElementById("toggleNumberedCards");
+      const isNumberedActive = toggleEl ? (toggleEl.checked && !state.isDuelMode) : false;
 
       board_state.forEach((cardData, idx) => {
         const cardElement = gameBoard.querySelector(`[data-id="${cardData.id}"]`);
