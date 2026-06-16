@@ -799,7 +799,7 @@
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background: rgba(10, 15, 24, 0.95);
-        z-index: 99999999; /* Mayor que todo de forma preventiva */
+        z-index: 9999999; /* Mayor que todo de forma preventiva */
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(10px);
@@ -1240,87 +1240,6 @@
   </div>
 
   <script>
-    // --- DECLARACIÓN DE VARIABLES DE REFERENCIA DOM GLOBALES ---
-    let usernameInput, displayLevel, displayRecord, displayScore, leaderboardBody, timerBar, timerText, gameBoard,
-        feedbackOverlay, feedbackTitle, feedbackSubtitle, btnFeedbackAction, adminPanel, btnToggleAdmin, btnCloseAdmin,
-        adminCardImagesList, inputNewCardImg, btnAddCardImg, btnSaveBgs, btnRestoreDefaults, authOverlay, authTitle,
-        authSubtitle, authUsername, authPassword, btnSubmitAuth, authToggleLink, authToggleTextLabel, regEmailField,
-        regSecurityFields, authMainFields, authRecoveryFields, btnGoToRecovery, authSecQuestion, authSecAnswer, authEmail,
-        recoverUsername, recoverEmail, recoverVerificationStep, displayRecoveryQuestion, recoverSecAnswer,
-        recoverNewPasswordStep, recoverNewPassword, duelsPanel, btnOpenDuelsLobby, btnCloseDuels, btnLogOut, displayTrophies,
-        tabLobby, tabMyDuels, tabCreateDuel, secLobby, secMyDuels, secCreateDuel, lobbyDuelsList, myActiveDuelsList,
-        selectDuelLevel, btnLaunchNewDuel, levelTimerText, duelThemeKeywords, btnTriggerThemeSearch, imageSelectionModal,
-        selectionGrid, selectionCounter, btnConfirmImageSelection, themeProgressBadge;
-
-    function initDOMReferences() {
-      usernameInput = document.getElementById("usernameInput");
-      displayLevel = document.getElementById("displayLevel");
-      displayRecord = document.getElementById("displayRecord");
-      displayScore = document.getElementById("displayScore");
-      leaderboardBody = document.getElementById("leaderboardBody");
-      timerBar = document.getElementById("timerBar");
-      timerText = document.getElementById("timerText");
-      gameBoard = document.getElementById("gameBoard");
-      feedbackOverlay = document.getElementById("feedbackOverlay");
-      feedbackTitle = document.getElementById("feedbackTitle");
-      feedbackSubtitle = document.getElementById("feedbackSubtitle");
-      btnFeedbackAction = document.getElementById("btnFeedbackAction");
-      adminPanel = document.getElementById("adminPanel");
-      btnToggleAdmin = document.getElementById("btnToggleAdmin");
-      btnCloseAdmin = document.getElementById("btnCloseAdmin");
-      adminCardImagesList = document.getElementById("adminCardImagesList");
-      inputNewCardImg = document.getElementById("inputNewCardImg");
-      btnAddCardImg = document.getElementById("btnAddCardImg");
-      btnSaveBgs = document.getElementById("btnSaveBgs");
-      btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
-      authOverlay = document.getElementById("authOverlay");
-      authTitle = document.getElementById("authTitle");
-      authSubtitle = document.getElementById("authSubtitle");
-      authUsername = document.getElementById("authUsername");
-      authPassword = document.getElementById("authPassword");
-      btnSubmitAuth = document.getElementById("btnSubmitAuth");
-      authToggleLink = document.getElementById("authToggleLink");
-      authToggleTextLabel = document.getElementById("authToggleTextLabel");
-      regEmailField = document.getElementById("regEmailField");
-      regSecurityFields = document.getElementById("regSecurityFields");
-      authMainFields = document.getElementById("authMainFields");
-      authRecoveryFields = document.getElementById("authRecoveryFields");
-      btnGoToRecovery = document.getElementById("btnGoToRecovery");
-      authSecQuestion = document.getElementById("authSecQuestion");
-      authSecAnswer = document.getElementById("authSecAnswer");
-      authEmail = document.getElementById("authEmail");
-      recoverUsername = document.getElementById("recoverUsername");
-      recoverEmail = document.getElementById("recoverEmail");
-      recoverVerificationStep = document.getElementById("recoverVerificationStep");
-      displayRecoveryQuestion = document.getElementById("displayRecoveryQuestion");
-      recoverSecAnswer = document.getElementById("recoverSecAnswer");
-      recoverNewPasswordStep = document.getElementById("recoverNewPasswordStep");
-      recoverNewPassword = document.getElementById("recoverNewPassword");
-      duelsPanel = document.getElementById("duelsPanel");
-      btnOpenDuelsLobby = document.getElementById("btnOpenDuelsLobby");
-      btnCloseDuels = document.getElementById("btnCloseDuels");
-      btnLogOut = document.getElementById("btnLogOut");
-      displayTrophies = document.getElementById("displayTrophies");
-      tabLobby = document.getElementById("tabLobby");
-      tabMyDuels = document.getElementById("tabMyDuels");
-      tabCreateDuel = document.getElementById("tabCreateDuel");
-      secLobby = document.getElementById("secLobby");
-      secMyDuels = document.getElementById("secMyDuels");
-      secCreateDuel = document.getElementById("secCreateDuel");
-      lobbyDuelsList = document.getElementById("lobbyDuelsList");
-      myActiveDuelsList = document.getElementById("myActiveDuelsList");
-      selectDuelLevel = document.getElementById("selectDuelLevel");
-      btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
-      levelTimerText = document.getElementById("levelTimerText");
-      duelThemeKeywords = document.getElementById("duelThemeKeywords");
-      btnTriggerThemeSearch = document.getElementById("btnTriggerThemeSearch");
-      imageSelectionModal = document.getElementById("imageSelectionModal");
-      selectionGrid = document.getElementById("selectionGrid");
-      selectionCounter = document.getElementById("selectionCounter");
-      btnConfirmImageSelection = document.getElementById("btnConfirmImageSelection");
-      themeProgressBadge = document.getElementById("themeProgressBadge");
-    }
-
     // --- MODO OFFLINE AUTOMÁTICO DETECTADO ---
     let isOfflineMode = false;
     let supabaseClient = null;
@@ -1340,95 +1259,79 @@
     // --- MOCK CLIENT PARA COMPATIBILIDAD SIN CONEXIÓN ---
     if (isOfflineMode || !supabaseClient) {
       isOfflineMode = true;
-      
-      const createMockQueryBuilder = (tableName) => {
-        const builder = {
-          filters: {},
-          updates: null,
-          select: function() { return this; },
-          eq: function(col, val) { 
-            this.filters[col] = val; 
-            if (this.updates) {
-              this.executeUpdates();
-            }
-            return this; 
-          },
-          not: function() { return this; },
-          or: function() { return this; },
-          order: function() { return this; },
-          insert: async function(rows) {
-            if (tableName === "memorice_users") {
-              const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
-              offlineUsers.push(...rows);
-              localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
-            }
-            if (tableName === "memorice_duels") {
-              const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
-              rows.forEach(r => {
-                r.id = "duel_" + Math.random().toString(36).substr(2, 9);
-                r.created_at = new Date().toISOString();
-              });
-              offlineDuels.push(...rows);
-              localStorage.setItem("mt_offline_duels", JSON.stringify(offlineDuels));
-            }
-            return { data: rows, error: null };
-          },
-          update: function(updates) {
-            this.updates = updates;
-            return this;
-          },
-          executeUpdates: function() {
-            if (tableName === "memorice_users") {
-              const usernameFilter = this.filters["username"];
-              if (usernameFilter && this.updates) {
-                const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
-                const user = offlineUsers.find(u => u.username === usernameFilter);
-                if (user) {
-                  Object.assign(user, this.updates);
-                  localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
-                }
-              }
-            }
-            if (tableName === "memorice_duels") {
-              const idFilter = this.filters["id"];
-              if (idFilter && this.updates) {
-                const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
-                const duel = offlineDuels.find(d => d.id === idFilter);
-                if (duel) {
-                  Object.assign(duel, this.updates);
-                  localStorage.setItem("mt_offline_duels", JSON.stringify(offlineDuels));
-                }
-              }
-            }
-          },
-          upsert: async function(values) {
-            return { data: values, error: null };
-          },
-          maybeSingle: async function() {
-            if (tableName === "memorice_users") {
-              const usernameFilter = this.filters["username"];
-              const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
-              const user = offlineUsers.find(u => u.username === usernameFilter);
-              return { data: user || null, error: null };
-            }
-            if (tableName === "memorice_duels") {
-              const idFilter = this.filters["id"];
-              const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
-              const duel = offlineDuels.find(d => d.id === idFilter);
-              return { data: duel || null, error: null };
-            }
-            return { data: null, error: null };
-          },
-          then: function(resolve) {
-            resolve({ data: [], error: null });
-          }
-        };
-        return builder;
-      };
-
       supabaseClient = {
         from: function(tableName) {
-          return createMockQueryBuilder(tableName);
+          return {
+            select: function() {
+              return {
+                eq: function(colName, value) {
+                  return {
+                    maybeSingle: async function() {
+                      if (tableName === "memorice_users") {
+                        const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                        const user = offlineUsers.find(u => u[colName] === value);
+                        return { data: user || null, error: null };
+                      }
+                      if (tableName === "memorice_duels") {
+                        const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
+                        const duel = offlineDuels.find(d => d[colName] === value);
+                        return { data: duel || null, error: null };
+                      }
+                      return { data: null, error: null };
+                    }
+                  };
+                },
+                order: function() {
+                  return {
+                    then: function(resolve) { resolve({ data: [], error: null }); }
+                  };
+                }
+              };
+            },
+            insert: async function(rows) {
+              if (tableName === "memorice_users") {
+                const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                offlineUsers.push(...rows);
+                localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
+                return { data: rows, error: null };
+              }
+              if (tableName === "memorice_duels") {
+                const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
+                rows.forEach(r => {
+                  r.id = "duel_" + Math.random().toString(36).substr(2, 9);
+                  r.created_at = new Date().toISOString();
+                });
+                offlineDuels.push(...rows);
+                localStorage.setItem("mt_offline_duels", JSON.stringify(offlineDuels));
+                return { data: rows, error: null };
+              }
+              return { data: null, error: null };
+            },
+            update: function(updates) {
+              return {
+                eq: function(colName, value) {
+                  if (tableName === "memorice_users") {
+                    const offlineUsers = JSON.parse(localStorage.getItem("mt_offline_users") || "[]");
+                    const user = offlineUsers.find(u => u[colName] === value);
+                    if (user) {
+                      Object.assign(user, updates);
+                      localStorage.setItem("mt_offline_users", JSON.stringify(offlineUsers));
+                    }
+                  }
+                  if (tableName === "memorice_duels") {
+                    const offlineDuels = JSON.parse(localStorage.getItem("mt_offline_duels") || "[]");
+                    const duel = offlineDuels.find(d => d[colName] === value);
+                    if (duel) {
+                      Object.assign(duel, updates);
+                      localStorage.setItem("mt_offline_duels", JSON.stringify(offlineDuels));
+                    }
+                  }
+                  return { data: null, error: null };
+                }
+              };
+            },
+            upsert: async function() { return { data: null, error: null }; }
+          };
         },
         channel: function() {
           return {
@@ -1582,7 +1485,102 @@
       localStorage.setItem("mt_bg_images", JSON.stringify(state.bgImages));
     }
 
-    // --- CONTROL DE ACCESO ---
+    // --- REFERENCIAS ELEMENTOS DOM ---
+    const usernameInput = document.getElementById("usernameInput");
+    const displayLevel = document.getElementById("displayLevel");
+    const displayRecord = document.getElementById("displayRecord");
+    const displayScore = document.getElementById("displayScore");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const timerBar = document.getElementById("timerBar");
+    const timerText = document.getElementById("timerText");
+    const gameBoard = document.getElementById("gameBoard");
+    
+    const feedbackOverlay = document.getElementById("feedbackOverlay");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackSubtitle = document.getElementById("feedbackSubtitle");
+    const btnFeedbackAction = document.getElementById("btnFeedbackAction");
+    const adminPanel = document.getElementById("adminPanel");
+    const btnToggleAdmin = document.getElementById("btnToggleAdmin");
+    const btnCloseAdmin = document.getElementById("btnCloseAdmin");
+    const adminCardImagesList = document.getElementById("adminCardImagesList");
+    const inputNewCardImg = document.getElementById("inputNewCardImg");
+    const btnAddCardImg = document.getElementById("btnAddCardImg");
+    const btnSaveBgs = document.getElementById("btnSaveBgs");
+    const btnRestoreDefaults = document.getElementById("btnRestoreDefaults");
+
+    // --- REFERENCIAS DOM DE AUTENTICACIÓN Y DUELOS ---
+    const authOverlay = document.getElementById("authOverlay");
+    const authTitle = document.getElementById("authTitle");
+    const authSubtitle = document.getElementById("authSubtitle");
+    const authUsername = document.getElementById("authUsername");
+    const authPassword = document.getElementById("authPassword");
+    const btnSubmitAuth = document.getElementById("btnSubmitAuth");
+    const authToggleLink = document.getElementById("authToggleLink");
+    const authToggleTextLabel = document.getElementById("authToggleTextLabel");
+
+    // Referencias para recuperación
+    const regEmailField = document.getElementById("regEmailField");
+    const regSecurityFields = document.getElementById("regSecurityFields");
+    const authMainFields = document.getElementById("authMainFields");
+    const authRecoveryFields = document.getElementById("authRecoveryFields");
+    const btnGoToRecovery = document.getElementById("btnGoToRecovery");
+    const authSecQuestion = document.getElementById("authSecQuestion");
+    const authSecAnswer = document.getElementById("authSecAnswer");
+    const authEmail = document.getElementById("authEmail");
+    
+    const recoverUsername = document.getElementById("recoverUsername");
+    const recoverEmail = document.getElementById("recoverEmail");
+    const recoverVerificationStep = document.getElementById("recoverVerificationStep");
+    const displayRecoveryQuestion = document.getElementById("displayRecoveryQuestion");
+    const recoverSecAnswer = document.getElementById("recoverSecAnswer");
+    const recoverNewPasswordStep = document.getElementById("recoverNewPasswordStep");
+    const recoverNewPassword = document.getElementById("recoverNewPassword");
+
+    const duelsPanel = document.getElementById("duelsPanel");
+    const btnOpenDuelsLobby = document.getElementById("btnOpenDuelsLobby");
+    const btnCloseDuels = document.getElementById("btnCloseDuels");
+    const btnLogOut = document.getElementById("btnLogOut");
+    const displayTrophies = document.getElementById("displayTrophies");
+
+    const tabLobby = document.getElementById("tabLobby");
+    const tabMyDuels = document.getElementById("tabMyDuels");
+    const tabCreateDuel = document.getElementById("tabCreateDuel");
+    const secLobby = document.getElementById("secLobby");
+    const secMyDuels = document.getElementById("secMyDuels");
+    const secCreateDuel = document.getElementById("secCreateDuel");
+
+    const lobbyDuelsList = document.getElementById("lobbyDuelsList");
+    const myActiveDuelsList = document.getElementById("myActiveDuelsList");
+    const selectDuelLevel = document.getElementById("selectDuelLevel");
+    const btnLaunchNewDuel = document.getElementById("btnLaunchNewDuel");
+
+    const levelTimerText = document.getElementById("levelTimerText");
+
+    const duelThemeKeywords = document.getElementById("duelThemeKeywords");
+    const btnTriggerThemeSearch = document.getElementById("btnTriggerThemeSearch");
+    const imageSelectionModal = document.getElementById("imageSelectionModal");
+    const selectionGrid = document.getElementById("selectionGrid");
+    const selectionCounter = document.getElementById("selectionCounter");
+    const btnConfirmImageSelection = document.getElementById("btnConfirmImageSelection");
+    const themeProgressBadge = document.getElementById("themeProgressBadge");
+
+    let authMode = "LOGIN"; 
+    let recoveryStateStep = 1; 
+    let userToRecoverData = null;
+
+    // --- SANEAMIENTO CONTRA INYECCIONES ---
+    function esCadenaSegura(texto) {
+      const caracteresProhibidos = /['";=\-\-\/\*<>]/g;
+      return !caracteresProhibidos.test(texto); 
+    }
+
+    if (authUsername) {
+      authUsername.addEventListener("input", () => {
+        authUsername.value = authUsername.value.replace(/[^a-zA-Z0-9_]/g, "");
+      });
+    }
+
+    // --- INTERRUPTOR DE ACCESO ---
     function alternarFormularioAutenticacion(forceMode = null) {
       if (forceMode) authMode = forceMode;
 
@@ -1626,6 +1624,38 @@
       userToRecoverData = null;
     }
 
+    if (authToggleLink) {
+      authToggleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); 
+        alternarFormularioAutenticacion();
+      });
+    }
+
+    if (btnGoToRecovery) {
+      btnGoToRecovery.addEventListener("click", () => {
+        authMode = "RECOVERY";
+        authMainFields.style.display = "none";
+        authRecoveryFields.style.display = "block";
+        document.getElementById("forgotPasswordContainer").style.display = "none";
+        
+        if(authTitle) authTitle.innerText = "Recuperar Acceso";
+        if(authSubtitle) authSubtitle.innerText = "Escribe tus datos de usuario para verificar tu identidad.";
+        if(btnSubmitAuth) btnSubmitAuth.innerText = "Verificar Datos";
+        if(authToggleTextLabel) authToggleTextLabel.innerText = "Volver a la pantalla de";
+        if(authToggleLink) authToggleLink.innerText = "Iniciar Sesión";
+        
+        document.getElementById("recoverEmailGroup").style.display = "block";
+        recoverUsername.disabled = false;
+        recoverEmail.disabled = false;
+        recoverVerificationStep.style.display = "none";
+        recoverNewPasswordStep.style.display = "none";
+        
+        recoveryStateStep = 1;
+        limpiarCamposAuth();
+      });
+    }
+
     // --- COMPROBACIÓN DE SESIÓN ACTIVA ---
     async function verificarSesionExistente() {
       const usuarioGuardado = localStorage.getItem("mt_logged_user");
@@ -1647,8 +1677,9 @@
       }
       
       if (authOverlay) {
-        authOverlay.style.display = "flex";
+        authMode = "LOGIN"; 
         alternarFormularioAutenticacion("LOGIN"); 
+        authOverlay.style.display = "flex";
       }
     }
 
@@ -1665,6 +1696,8 @@
     }
 
     // --- PROCESAMIENTO DE ACCESO ---
+    const authForm = document.getElementById("authForm");
+
     async function procesarFormularioAutenticacion() {
       if (authMode === "LOGIN" || authMode === "REGISTER") {
         const user = authUsername ? authUsername.value.trim() : "";
@@ -1856,6 +1889,19 @@
       }
     }
 
+    if (authForm) {
+      authForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        procesarFormularioAutenticacion();
+      });
+    }
+    if (btnSubmitAuth) {
+      btnSubmitAuth.addEventListener("click", (e) => {
+        e.preventDefault();
+        procesarFormularioAutenticacion();
+      });
+    }
+
     function ingresarUsuarioAlSistema(username, level, score, trophies) {
       state.username = username;
       state.level = parseInt(level) || 1;
@@ -1870,18 +1916,6 @@
       
       localStorage.setItem("mt_logged_user", username);
       saveState();
-      
-      const connectionBadge = document.getElementById("connectionStatusBadge");
-      if (connectionBadge) {
-        if (isOfflineMode) {
-          connectionBadge.textContent = "⚠️ Modo Local";
-          connectionBadge.className = "status-badge status-offline";
-        } else {
-          connectionBadge.textContent = "🟢 Conectado";
-          connectionBadge.className = "status-badge status-online";
-        }
-      }
-
       if (authOverlay) authOverlay.style.display = "none";
       startLevel(state.level);
 
@@ -1922,6 +1956,57 @@
       sectionActive.classList.add("active");
     }
 
+    if (tabLobby) tabLobby.addEventListener("click", () => switchDuelTab(tabLobby, secLobby));
+    if (tabMyDuels) tabMyDuels.addEventListener("click", () => switchDuelTab(tabMyDuels, secMyDuels));
+    if (tabCreateDuel) tabCreateDuel.addEventListener("click", () => switchDuelTab(tabCreateDuel, secCreateDuel));
+
+    if (btnOpenDuelsLobby) {
+      btnOpenDuelsLobby.addEventListener("click", () => {
+        duelsPanel.classList.add("active");
+        duelsPanel.scrollIntoView({ behavior: "smooth" });
+        actualizarListasDeDuelos();
+      });
+    }
+    if (btnCloseDuels) {
+      btnCloseDuels.addEventListener("click", () => duelsPanel.classList.remove("active"));
+    }
+
+    // --- LANZAR UN NUEVO DUELO ---
+    if (btnLaunchNewDuel) {
+      btnLaunchNewDuel.addEventListener("click", async () => {
+        const nivelSeleccionado = parseInt(selectDuelLevel.value) || 5;
+        const keywords = duelThemeKeywords.value.trim() || "Estándar";
+        
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .insert([{
+              challenger: state.username,
+              duel_level: nivelSeleccionado,
+              status: "WAITING",
+              current_turn: "CHALLENGER",
+              challenger_score: 0,
+              opponent_score: 0,
+              theme_keywords: keywords,
+              theme_pool: state.customThemeSelectedUrls.length > 0 ? state.customThemeSelectedUrls : null
+            }]);
+          
+          alert("¡Desafío publicado en la cartelera!");
+          
+          // Resetear estados visuales
+          state.customThemeSelectedUrls = [];
+          duelThemeKeywords.value = "";
+          themeProgressBadge.textContent = "Estándar (Por Defecto)";
+          themeProgressBadge.style.color = "var(--text-muted)";
+
+          switchDuelTab(tabLobby, secLobby);
+          await actualizarListasDeDuelos();
+        } catch (err) {
+          alert("Error al publicar desafío.");
+        }
+      });
+    }
+
     // --- DESCARGAR Y RENDERIZAR LISTAS DE DUELOS ---
     async function actualizarListasDeDuelos() {
       if (!duelsPanel.classList.contains("active")) return;
@@ -1948,7 +2033,7 @@
             item.innerHTML = `
               <div class="duel-item-info">
                 <span class="duel-player-title">⚔️ Desafío de: ${duel.challenger}</span>
-                <span class="duel-meta-tag">Temática: ${duel.theme_keywords || "Estándar"} | Tablero de Nivel: ${duel.duel_level}</span>
+                <span class="duel-meta-tag">Temática: ${duel.theme_keywords || "Estándar"} | Nivel: ${duel.duel_level}</span>
               </div>
               <div style="display: flex; gap: 8px;">
                 ${duel.theme_pool ? `<button class="btn btn-secondary btn-sm" onclick="verImagenesTematicas(${JSON.stringify(duel.theme_pool).replace(/"/g, '&quot;')})">Ver Temas</button>` : ''}
@@ -2153,8 +2238,6 @@
 
     // --- SINC DE LOBBY Y TABLERO ---
     document.addEventListener("DOMContentLoaded", async () => {
-      // INICIALIZADOR ASIGNADO DE FORMA SEGURA AL CARGAR LA PÁGINA (RESUELVE BOTONES Y LOGINS)
-      initDOMReferences();
       loadState();
       setupEvents();
       conectarTiempoReal(); 
@@ -2201,79 +2284,11 @@
         startLevel(state.level);
       });
 
-      // EVENTO DEL SWITCH DE NUMERACIÓN ASIGNADO EN TIEMPO REAL CON RE-INICIO INMEDIATO
+      // EVENTO DEL SWITCH DE NUMERACIÓN ASIGNADO EN TIEMPO REAL
       const toggleNumbered = document.getElementById("toggleNumberedCards");
       if (toggleNumbered) {
         toggleNumbered.addEventListener("change", () => {
-          // El switch ahora provoca de forma inmediata el reinicio con pérdida de avance y puntos del nivel
-          state.score = state.scoreAtLevelStart;
-          saveState();
-          startLevel(state.level);
-        });
-      }
-
-      // CORRECCIÓN CLAVE: BOTÓN DE BÚSQUEDA TEMÁTICA EN DUELOS MULTIJUGADOR ENLAZADO
-      if (btnTriggerThemeSearch) {
-        btnTriggerThemeSearch.addEventListener("click", async () => {
-          const rawKeywords = duelThemeKeywords.value.trim();
-          if (!rawKeywords) {
-            alert("⚠️ Ingresa palabras clave primero para buscar imágenes de internet.");
-            return;
-          }
-
-          const levelVal = parseInt(selectDuelLevel.value) || 5;
-          const totalCardsNeeded = getCardCountForLevel(levelVal);
-          const pairsNeeded = totalCardsNeeded / 2;
-          const totalPoolSize = pairsNeeded * 3;
-
-          themeProgressBadge.textContent = "Buscando...";
-          state.customThemeSelectedUrls = [];
-
-          try {
-            selectionGrid.innerHTML = "";
-            selectionCounter.textContent = `Seleccionadas: 0 / ${pairsNeeded}`;
-            btnConfirmImageSelection.disabled = true;
-
-            // Búsqueda inteligente de fotos en Unsplash CDN con firmas dinámicas para evadir caché
-            for (let i = 0; i < totalPoolSize; i++) {
-              const wrapper = document.createElement("div");
-              wrapper.className = "selectable-image";
-              
-              const img = document.createElement("img");
-              const randomSeed = Math.floor(Math.random() * 100000) + i;
-              const imgUrl = `https://images.unsplash.com/featured/300x300/?${encodeURIComponent(rawKeywords)}&sig=${randomSeed}`;
-              img.src = imgUrl;
-              img.loading = "lazy";
-
-              wrapper.appendChild(img);
-
-              wrapper.addEventListener("click", () => {
-                if (wrapper.classList.contains("selected")) {
-                  wrapper.classList.remove("selected");
-                  state.customThemeSelectedUrls = state.customThemeSelectedUrls.filter(url => url !== imgUrl);
-                } else {
-                  if (state.customThemeSelectedUrls.length >= pairsNeeded) {
-                    alert(`⚠️ Ya has seleccionado las ${pairsNeeded} imágenes necesarias.`);
-                    return;
-                  }
-                  wrapper.classList.add("selected");
-                  state.customThemeSelectedUrls.push(imgUrl);
-                }
-
-                selectionCounter.textContent = `Seleccionadas: ${state.customThemeSelectedUrls.length} / ${pairsNeeded}`;
-                btnConfirmImageSelection.disabled = (state.customThemeSelectedUrls.length !== pairsNeeded);
-              });
-
-              selectionGrid.appendChild(wrapper);
-            }
-
-            imageSelectionModal.style.display = "flex";
-            themeProgressBadge.textContent = "🔍 Seleccionando...";
-
-          } catch (e) {
-            console.error(e);
-            themeProgressBadge.textContent = "Fallo en la búsqueda";
-          }
+          actualizarNumeracionTarjetas();
         });
       }
     }
@@ -2529,7 +2544,6 @@
               actualizarTableroVisual(state.boardCards);
             }
 
-            // Recalcular conteo de pares de cada jugador
             state.myPairs = 0;
             state.rivalPairs = 0;
             state.boardCards.forEach(c => {
@@ -2687,6 +2701,328 @@
       }, 1000);
     }
 
+    function resetTurnState() {
+      state.firstCardElement = null;
+      state.firstCardData = null;
+      state.secondCardElement = null;
+      state.secondCardData = null;
+      state.isProcessing = false;
+      resetTimerUI();
+    }
+
+    function startTimer() {
+      state.timeLeft = 10;
+      state.turnStartTime = Date.now();
+      updateTimerUI();
+      clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timeLeft = 10 - ((Date.now() - state.turnStartTime) / 1000);
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          state.timeLeft = 0;
+          updateTimerUI();
+          handleTimeout();
+        } else {
+          updateTimerUI();
+        }
+      }, 50);
+    }
+
+    function stopTimer() { clearInterval(state.timerInterval); }
+    function updateTimerUI() {
+      timerText.textContent = `${Math.max(0, Math.ceil(state.timeLeft))}s`;
+      timerBar.style.width = `${(state.timeLeft / 10) * 100}%`;
+    }
+    function resetTimerUI() { timerBar.style.width = "100%"; timerText.textContent = "10s"; }
+
+    async function handleTimeout() {
+      state.isProcessing = true;
+      if (state.firstCardData) state.seenCardsIndices.add(state.firstCardData.id);
+      createScoreToast(state.firstCardElement, "¡Tiempo Agotado!");
+      
+      if (state.isDuelMode) {
+        const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+        const siguienteTurno = miRol === "CHALLENGER" ? "OPPONENT" : "CHALLENGER";
+        try {
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ 
+              current_turn: siguienteTurno,
+              last_move: { card1: state.firstCardData.id, card2: null, result: "TIMEOUT", player: miRol }
+            })
+            .eq("id", state.activeDuelId);
+        } catch(e) { console.error(e); }
+      }
+
+      setTimeout(() => {
+        if (state.firstCardElement) state.firstCardElement.classList.remove("flipped");
+        resetTurnState();
+      }, 1000);
+    }
+
+    function createScoreToast(element, text) {
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const boardRect = document.getElementById("boardWrapper").getBoundingClientRect();
+      const toast = document.createElement("div");
+      toast.className = "score-toast";
+      toast.textContent = text;
+      toast.style.left = `${rect.left - boardRect.left + (rect.width / 2)}px`;
+      toast.style.top = `${rect.top - boardRect.top}px`;
+      document.getElementById("boardWrapper").appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 1400);
+    }
+
+    // --- EVALUACIÓN DE GANADOR DE DUELOS ---
+    async function evaluarFinDelDuelo() {
+      const tableroCompleto = state.boardCards.every(card => card.matched);
+      if (!tableroCompleto) return; 
+
+      state.isProcessing = true;
+      clearInterval(state.timerInterval);
+
+      let tituloFinal = "";
+      let subtituloFinal = "";
+      const miRol = state.username === state.duelChallenger ? "CHALLENGER" : "OPPONENT";
+
+      try {
+        const { data: duelLatest } = await supabaseClient
+          .from("memorice_duels")
+          .select("*")
+          .eq("id", state.activeDuelId)
+          .maybeSingle();
+
+        const totalAcumuladoPuntos = (duelLatest.challenger_score || 0) + (duelLatest.opponent_score || 0);
+
+        if (state.myPairs > state.rivalPairs) {
+          tituloFinal = "🏆 ¡VICTORIA ABSOLUTA EN DUELO!";
+          subtituloFinal = `¡Te llevas todo el pozo de ${totalAcumuladoPuntos} Puntos y una Copa!`;
+          
+          const { data: userDb } = await supabaseClient
+            .from("memorice_users")
+            .select("trophies_count, highest_score")
+            .eq("username", state.username)
+            .maybeSingle();
+
+          const nuevasCopas = (userDb?.trophies_count || 0) + 1;
+          const nuevoRecordMax = (userDb?.highest_score || 0) + totalAcumuladoPuntos;
+
+          await supabaseClient
+            .from("memorice_users")
+            .update({ trophies_count: nuevasCopas, highest_score: nuevoRecordMax })
+            .eq("username", state.username);
+
+          state.score = nuevoRecordMax;
+          saveState();
+
+          await supabaseClient
+            .from("memorice_duels")
+            .update({ status: "FINISHED" })
+            .eq("id", state.activeDuelId);
+
+          if (displayTrophies) displayTrophies.textContent = nuevasCopas;
+          displayScore.textContent = state.score;
+
+        } else if (state.myPairs < state.rivalPairs) {
+          tituloFinal = "😢 DERROTA EN DUELO";
+          subtituloFinal = `Tu rival se lleva la copa y el pozo de ${totalAcumuladoPuntos} Puntos.`;
+        } else {
+          tituloFinal = "🤝 ¡EMPATE TÉCNICO!";
+          subtituloFinal = `Ninguno de los dos obtiene copas en esta ocasión.`;
+        }
+
+      } catch(e) { console.error(e); }
+
+      feedbackTitle.textContent = tituloFinal;
+      feedbackSubtitle.textContent = subtituloFinal;
+      btnFeedbackAction.textContent = "Volver al Lobby";
+      btnFeedbackAction.onclick = () => {
+        window.location.reload(); 
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- REVISIÓN DE FIN DE NIVEL SOLITARIO ---
+    function checkLevelCompletion() {
+      if (state.isDuelMode) return;
+
+      const isLevelComplete = state.boardCards.every(card => card.matched);
+      if (isLevelComplete) {
+        clearInterval(state.levelTimerInterval);
+        
+        const elapsed = Math.floor((Date.now() - state.levelStartTime) / 1000);
+        const totalCards = getCardCountForLevel(state.level);
+        const limit = getLevelTimeLimit(totalCards);
+
+        let finalGainedPoints = state.levelScore;
+        let gotBonus = false;
+
+        if (elapsed <= limit) {
+          finalGainedPoints = Math.ceil(state.levelScore * 1.5);
+          gotBonus = true;
+        }
+
+        const diff = finalGainedPoints - state.levelScore;
+        state.score += diff;
+        if (state.score > state.record) state.record = state.score;
+        saveState();
+
+        displayScore.textContent = state.score;
+        displayRecord.textContent = state.record;
+
+        setTimeout(() => {
+          showLevelCompleteModal(elapsed, limit, gotBonus, finalGainedPoints);
+        }, 800);
+      }
+    }
+
+    function showLevelCompleteModal(elapsed, limit, gotBonus, pointsGained) {
+      feedbackTitle.textContent = `¡Nivel ${state.level} Completado!`;
+      
+      const timeString = `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+      const limitString = `${Math.floor(limit / 60)}m ${limit % 60}s`;
+
+      if (gotBonus) {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br><br><span style="color: var(--accent-color); font-weight:bold;">🎉 ¡BONO DE VELOCIDAD ACTIVADO! x1.5</span><br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      } else {
+        feedbackSubtitle.innerHTML = `⏱️ Tiempo: <strong>${timeString}</strong> (Límite: ${limitString})<br>Completado fuera del tiempo límite para bono.<br>Ganaste <strong>${pointsGained} puntos</strong> en este nivel.`;
+      }
+
+      btnFeedbackAction.textContent = "Siguiente Nivel";
+      btnFeedbackAction.onclick = async () => {
+        feedbackOverlay.style.display = "none";
+        
+        // PERSISTENCIA REAL AL PASAR DE NIVEL EN LA NUBE
+        const nextLevelVal = state.level + 1;
+        state.level = nextLevelVal;
+        saveState();
+
+        if (!isOfflineMode) {
+          try {
+            await supabaseClient
+              .from("memorice_users")
+              .update({ current_level: nextLevelVal })
+              .eq("username", state.username);
+          } catch(e) {
+            console.warn("Fallo de red al sincronizar nivel avanzado en Supabase.", e);
+          }
+        }
+
+        startLevel(nextLevelVal);
+      };
+      feedbackOverlay.style.display = "block";
+    }
+
+    // --- RENDERIZADO DEL TOP 10 GLOBAL ---
+    async function renderLeaderboard() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('view_top_ten_leaderboard')
+          .select('*');
+        
+        if (error) throw error;
+        leaderboardBody.innerHTML = "";
+        
+        if (data && data.length > 0) {
+          data.forEach((user, idx) => {
+            const row = document.createElement("tr");
+            const isCurrentUser = (user.username === state.username);
+            
+            if (isCurrentUser) {
+              row.style.fontWeight = "bold";
+              row.style.color = "var(--accent-color)";
+              row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+            }
+            row.innerHTML = `
+              <td class="rank">#${idx + 1}</td>
+              <td>${user.username}</td>
+              <td class="score">${user.highest_score}</td>
+            `;
+            leaderboardBody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.warn("Fallback LocalStorage activo.", err);
+        leaderboardBody.innerHTML = "";
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        state.leaderboard.slice(0, 10).forEach((user, idx) => {
+          const row = document.createElement("tr");
+          const uName = user.username || user.name;
+          const isCurrentUser = (uName === state.username);
+          
+          if (isCurrentUser) {
+            row.style.fontWeight = "bold";
+            row.style.color = "var(--accent-color)";
+            row.style.backgroundColor = "rgba(212, 175, 55, 0.12)";
+          }
+          row.innerHTML = `
+            <td class="rank">#${idx + 1}</td>
+            <td>${uName}</td>
+            <td class="score">${user.score}</td>
+          `;
+          leaderboardBody.appendChild(row);
+        });
+      }
+    }
+
+    // --- ENVÍO DE RÉCORD ---
+    async function updateLeaderboardWithCurrent() {
+      if (state.score <= 0) {
+        await renderLeaderboard();
+        return;
+      }
+
+      const idx = state.leaderboard.findIndex(u => (u.name === state.username || u.username === state.username));
+      if (idx !== -1) {
+        if (state.score > state.leaderboard[idx].score) {
+          state.leaderboard[idx].score = state.score;
+        }
+      } else {
+        state.leaderboard.push({ name: state.username, score: state.score });
+      }
+      state.leaderboard.sort((a, b) => b.score - a.score);
+      if (state.leaderboard.length > 10) {
+        state.leaderboard = state.leaderboard.slice(0, 10);
+      }
+      saveState();
+
+      try {
+        const { data: usuarioExistente, error: errorFetch } = await supabaseClient
+          .from('memorice_leaderboard')
+          .select('Score')
+          .eq('username', state.username)
+          .maybeSingle();
+
+        if (errorFetch) throw errorFetch;
+
+        if (!usuarioExistente || state.score > usuarioExistente.Score) {
+          const { error: errorUpsert } = await supabaseClient
+            .from('memorice_leaderboard')
+            .upsert(
+              { username: state.username, Score: state.score },
+              { onConflict: 'username' }
+            );
+
+          if (errorUpsert) throw errorUpsert;
+        }
+      } catch (err) {
+        console.error("Fallo de sincronización en Supabase.", err);
+      }
+      
+      renderLeaderboard();
+    }
+
+    // --- COMPARTIR PUNTOS ---
+    function shareScore() {
+      const text = `¡Logré alcanzar la asombrosa cantidad de ${state.score} puntos en "Memorice Teocrático" (Superando el Nivel ${state.level})! Juega tú también: ${window.location.href}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert("¡Enlace copiado al portapapeles con éxito!");
+      }).catch(err => {
+        console.error("Fallo al copiar enlace: ", err);
+      });
+    }
+
     // --- REINICIOS ---
     function resetAllGame() {}
 
@@ -2714,64 +3050,6 @@
         if (input) {
           input.value = state.bgImages[i] || "";
         }
-      }
-    }
-
-    function addNewCardImage() {
-      const url = inputNewCardImg.value.trim();
-      if (!url) return;
-      if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        alert("Por favor, ingresa una URL web válida que empiece con http:// o https://");
-        return;
-      }
-      state.cardImages.push(url);
-      saveState();
-      populateAdminPanel();
-      inputNewCardImg.value = "";
-    }
-
-    function deleteCardImage(index) {
-      if (state.cardImages.length <= 20) {
-        alert("Por seguridad del juego, se requiere un mínimo de 20 imágenes cargadas.");
-        return;
-      }
-      state.cardImages.splice(index, 1);
-      saveState();
-      populateAdminPanel();
-    }
-
-    function saveCustomBackgrounds() {
-      let updated = false;
-      for (let i = 1; i <= 7; i++) {
-        const input = document.getElementById(`bgLvl${i}`);
-        if (input && input.value.trim() !== "") {
-          state.bgImages[i] = input.value.trim();
-          updated = true;
-        }
-      }
-      if (updated) {
-        saveState();
-        alert("Configuración de fondos guardada correctamente.");
-        const currentBgIndex = Math.min(state.level, 7);
-        const bgUrl = state.bgImages[currentBgIndex] || state.bgImages[7];
-        document.body.style.backgroundImage = `url('${bgUrl}')`;
-      }
-    }
-
-    function restoreDefaults() {
-      if (confirm("¿Estás seguro de restablecer todos los elementos de administración, fondos y récords a sus valores originales de fábrica?")) {
-        localStorage.removeItem("mt_username");
-        localStorage.removeItem("mt_level");
-        localStorage.removeItem("mt_score");
-        localStorage.removeItem("mt_record");
-        localStorage.removeItem("mt_leaderboard");
-        localStorage.removeItem("mt_card_images");
-        localStorage.removeItem("mt_bg_images");
-        
-        loadState();
-        usernameInput.value = state.username;
-        populateAdminPanel();
-        startLevel(1);
       }
     }
 
