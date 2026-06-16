@@ -1240,7 +1240,7 @@
   </div>
 
   <script>
-    // --- DECLARACIÓN DE REFERENCIAS DOM (GLOBALES PARA EVITAR REFERENCE_ERRORS) ---
+    // --- DECLARACIÓN DE VARIABLES DE REFERENCIA DOM GLOBALES ---
     let usernameInput, displayLevel, displayRecord, displayScore, leaderboardBody, timerBar, timerText, gameBoard,
         feedbackOverlay, feedbackTitle, feedbackSubtitle, btnFeedbackAction, adminPanel, btnToggleAdmin, btnCloseAdmin,
         adminCardImagesList, inputNewCardImg, btnAddCardImg, btnSaveBgs, btnRestoreDefaults, authOverlay, authTitle,
@@ -1634,6 +1634,18 @@
         authOverlay.style.display = "flex";
         alternarFormularioAutenticacion("LOGIN"); 
       }
+    }
+
+    // --- HASH DE SEGURIDAD UNIVERSAL ---
+    function generarHashContrasena(password) {
+      let hash = 0;
+      if (password.length === 0) return "00000000";
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; 
+      }
+      return Math.abs(hash).toString(16).padStart(8, "0");
     }
 
     // --- PROCESAMIENTO DE ACCESO ---
@@ -2123,6 +2135,144 @@
       return 360; 
     }
 
+    // --- SINC DE LOBBY Y TABLERO ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      // INICIALIZADOR ASIGNADO DE FORMA SEGURA AL CARGAR LA PÁGINA (RESUELVE BOTONES Y LOGINS)
+      initDOMReferences();
+      loadState();
+      setupEvents();
+      conectarTiempoReal(); 
+      encenderAntenaLobby(); 
+      await verificarSesionExistente(); 
+    });
+
+    function setupEvents() {
+      usernameInput.value = state.username;
+      usernameInput.addEventListener("change", () => {
+        state.username = usernameInput.value.trim() || "Jugador Teocrático";
+        saveState();
+        updateLeaderboardWithCurrent();
+      });
+      
+      document.getElementById("btnShare").addEventListener("click", shareScore);
+      
+      btnToggleAdmin.addEventListener("click", () => {
+        adminPanel.classList.toggle("active");
+        if (adminPanel.classList.contains("active")) {
+          adminPanel.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+      btnCloseAdmin.addEventListener("click", () => adminPanel.classList.remove("active"));
+      
+      if (btnLogOut) {
+        btnLogOut.addEventListener("click", () => {
+          localStorage.removeItem("mt_logged_user");
+          localStorage.removeItem("mt_username");
+          localStorage.removeItem("mt_level");
+          localStorage.removeItem("mt_score");
+          localStorage.removeItem("mt_record");
+          location.reload();
+        });
+      }
+      
+      btnAddCardImg.addEventListener("click", addNewCardImage);
+      btnSaveBgs.addEventListener("click", saveCustomBackgrounds);
+      btnRestoreDefaults.addEventListener("click", restoreDefaults);
+      
+      document.getElementById("btnRestartLevel").addEventListener("click", () => {
+        state.score = state.scoreAtLevelStart; 
+        saveState();
+        startLevel(state.level);
+      });
+
+      // EVENTO DEL SWITCH DE NUMERACIÓN ASIGNADO EN TIEMPO REAL CON RE-INICIO INMEDIATO
+      const toggleNumbered = document.getElementById("toggleNumberedCards");
+      if (toggleNumbered) {
+        toggleNumbered.addEventListener("change", () => {
+          // El switch ahora provoca de forma inmediata el reinicio con pérdida de avance y puntos del nivel
+          state.score = state.scoreAtLevelStart;
+          saveState();
+          startLevel(state.level);
+        });
+      }
+
+      // CORRECCIÓN CLAVE: BOTÓN DE BÚSQUEDA TEMÁTICA EN DUELOS MULTIJUGADOR ENLAZADO
+      if (btnTriggerThemeSearch) {
+        btnTriggerThemeSearch.addEventListener("click", async () => {
+          const rawKeywords = duelThemeKeywords.value.trim();
+          if (!rawKeywords) {
+            alert("⚠️ Ingresa palabras clave primero para buscar imágenes de internet.");
+            return;
+          }
+
+          const levelVal = parseInt(selectDuelLevel.value) || 5;
+          const totalCardsNeeded = getCardCountForLevel(levelVal);
+          const pairsNeeded = totalCardsNeeded / 2;
+          const totalPoolSize = pairsNeeded * 3;
+
+          themeProgressBadge.textContent = "Buscando...";
+          state.customThemeSelectedUrls = [];
+
+          try {
+            selectionGrid.innerHTML = "";
+            selectionCounter.textContent = `Seleccionadas: 0 / ${pairsNeeded}`;
+            btnConfirmImageSelection.disabled = true;
+
+            // Búsqueda inteligente de fotos en Unsplash CDN con firmas dinámicas para evadir caché
+            for (let i = 0; i < totalPoolSize; i++) {
+              const wrapper = document.createElement("div");
+              wrapper.className = "selectable-image";
+              
+              const img = document.createElement("img");
+              const randomSeed = Math.floor(Math.random() * 100000) + i;
+              const imgUrl = `https://images.unsplash.com/featured/300x300/?${encodeURIComponent(rawKeywords)}&sig=${randomSeed}`;
+              img.src = imgUrl;
+              img.loading = "lazy";
+
+              wrapper.appendChild(img);
+
+              wrapper.addEventListener("click", () => {
+                if (wrapper.classList.contains("selected")) {
+                  wrapper.classList.remove("selected");
+                  state.customThemeSelectedUrls = state.customThemeSelectedUrls.filter(url => url !== imgUrl);
+                } else {
+                  if (state.customThemeSelectedUrls.length >= pairsNeeded) {
+                    alert(`⚠️ Ya has seleccionado las ${pairsNeeded} imágenes necesarias.`);
+                    return;
+                  }
+                  wrapper.classList.add("selected");
+                  state.customThemeSelectedUrls.push(imgUrl);
+                }
+
+                selectionCounter.textContent = `Seleccionadas: ${state.customThemeSelectedUrls.length} / ${pairsNeeded}`;
+                btnConfirmImageSelection.disabled = (state.customThemeSelectedUrls.length !== pairsNeeded);
+              });
+
+              selectionGrid.appendChild(wrapper);
+            }
+
+            imageSelectionModal.style.display = "flex";
+            themeProgressBadge.textContent = "🔍 Seleccionando...";
+
+          } catch (e) {
+            console.error(e);
+            themeProgressBadge.textContent = "Fallo en la búsqueda";
+          }
+        });
+      }
+    }
+
+    // --- LÓGICA DE DIFICULTAD Y NIVELES ---
+    function getCardCountForLevel(level) {
+      if (level === 1) return 4;
+      if (level === 2) return 8;
+      if (level === 3) return 16;
+      if (level === 4) return 20;
+      if (level === 5) return 24;
+      if (level === 6) return 30;
+      return 40; 
+    }
+
     function startLevel(level) {
       state.scoreAtLevelStart = state.score;
       state.levelScore = 0; 
@@ -2228,6 +2378,7 @@
         
         cardFront.appendChild(img);
         cardInner.appendChild(cardBack);
+        cardFront.appendChild(img);
         cardInner.appendChild(cardFront);
         cardContainer.appendChild(cardInner);
         
@@ -2528,6 +2679,10 @@
       state.secondCardData = null;
       state.isProcessing = false;
       resetTimerUI();
+
+      // Desactivar resaltados visuales de comodín de pistas del tablero
+      const elementsWithComodin = gameBoard.querySelectorAll(".comodin-highlight");
+      elementsWithComodin.forEach(el => el.classList.remove("comodin-highlight"));
     }
 
     function startTimer() {
